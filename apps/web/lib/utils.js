@@ -170,3 +170,84 @@ export function generateShareText(batch, currentPrice) {
     `India's first crowd-powered bulk marketplace. Save more together! 🇮🇳`,
   ].join('\n');
 }
+
+/**
+ * Determine the current price tier for a batch based on how many slots
+ * have been filled.
+ *
+ * @param {object} batch
+ * @returns {{ minSlots: number, maxSlots: number, price: number }}
+ */
+export function getCurrentTier(batch) {
+  if (!batch || !batch.tiers || batch.tiers.length === 0) return null;
+
+  const filled = batch.currentSlots || 0;
+
+  // Walk tiers from highest to lowest and return the first match
+  for (let i = batch.tiers.length - 1; i >= 0; i--) {
+    if (filled >= batch.tiers[i].minSlots) {
+      return batch.tiers[i];
+    }
+  }
+
+  return batch.tiers[0];
+}
+
+/**
+ * Calculate the percentage saved between the first (highest) tier price
+ * and the current tier price.
+ *
+ * @param {object} batch
+ * @returns {number} e.g. 28 for 28%
+ */
+export function getSavingsPercent(batch) {
+  if (!batch || !batch.tiers || batch.tiers.length < 2) return 0;
+
+  const firstPrice = batch.tiers[0].price;
+  const currentTier = getCurrentTier(batch);
+  if (!currentTier || currentTier.price >= firstPrice) return 0;
+
+  return Math.round(((firstPrice - currentTier.price) / firstPrice) * 100);
+}
+
+/**
+ * Compute a countdown object from an ISO end-time string.
+ *
+ * @param {string} endTime - ISO 8601 date string
+ * @returns {{ hours: number, minutes: number, seconds: number }}
+ */
+export function getTimeRemaining(endTime) {
+  if (!endTime) return { hours: 0, minutes: 0, seconds: 0 };
+  const diff = Math.max(0, new Date(endTime) - new Date());
+  const totalSec = Math.floor(diff / 1000);
+
+  return {
+    hours: Math.floor(totalSec / 3600),
+    minutes: Math.floor((totalSec % 3600) / 60),
+    seconds: totalSec % 60,
+  };
+}
+
+/**
+ * How many more buyers are needed to unlock the next price tier?
+ *
+ * @param {object} batch
+ * @returns {number|null} null if already at the last tier
+ */
+export function getSlotsToNextTier(batch) {
+  if (!batch || !batch.tiers) return null;
+
+  const filled = batch.currentSlots || 0;
+  const currentTier = getCurrentTier(batch);
+  if (!currentTier) return null;
+  
+  const currentIdx = batch.tiers.findIndex(
+    (t) => t.id === currentTier.id || (t.minSlots === currentTier.minSlots && t.price === currentTier.price)
+  );
+
+  if (currentIdx === -1 || currentIdx >= batch.tiers.length - 1) return null;
+
+  const nextTier = batch.tiers[currentIdx + 1];
+  return Math.max(0, nextTier.minSlots - filled);
+}
+

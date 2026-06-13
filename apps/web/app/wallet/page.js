@@ -1,20 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { WALLET } from "@/lib/mock-data";
 import { formatPrice, formatDate } from "@/lib/utils";
 
 export default function WalletPage() {
+  const [balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [showAddMoney, setShowAddMoney] = useState(false);
   const [showReferEarn, setShowReferEarn] = useState(false);
   const [addAmount, setAddAmount] = useState("");
   const [isCopied, setIsCopied] = useState(false);
+  const [addingFunds, setAddingFunds] = useState(false);
 
-  const filteredTransactions = WALLET.transactions.filter((tx) => {
+  async function loadWallet() {
+    try {
+      const res = await fetch("/api/wallet");
+      if (res.ok) {
+        const data = await res.json();
+        setBalance(data.balance);
+        setTransactions(data.transactions);
+      }
+    } catch (err) {
+      console.error("Failed to load wallet:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadWallet();
+  }, []);
+
+  const filteredTransactions = transactions.filter((tx) => {
     if (filter === "credits") return tx.amount > 0;
     if (filter === "debits") return tx.amount < 0;
     return true;
@@ -24,6 +46,39 @@ export default function WalletPage() {
     navigator.clipboard.writeText("BULKREF500");
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleAddFunds = async () => {
+    if (!addAmount || parseFloat(addAmount) <= 0) {
+      alert("Please enter a valid amount to load");
+      return;
+    }
+    setAddingFunds(true);
+    try {
+      const res = await fetch("/api/wallet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: parseFloat(addAmount) })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBalance(data.balance);
+        if (data.transaction) {
+          setTransactions(prev => [data.transaction, ...prev]);
+        }
+        setShowAddMoney(false);
+        setAddAmount("");
+        alert(`₹${addAmount} loaded successfully via UPI Sandbox!`);
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to load funds");
+      }
+    } catch (error) {
+      console.error("Error loading funds:", error);
+      alert("Failed to load funds due to server error");
+    } finally {
+      setAddingFunds(false);
+    }
   };
 
   return (
@@ -46,7 +101,7 @@ export default function WalletPage() {
             <div className="balance-card__content">
               <span className="balance-label">Available Balance</span>
               <h2 className="balance-amount animate-pulse-soft">
-                {formatPrice(WALLET.balance, false)}
+                {loading ? "₹..." : formatPrice(balance, false)}
               </h2>
               <span className="balance-currency-label">BulkCash Credits (1 Credit = ₹1)</span>
               
@@ -172,13 +227,10 @@ export default function WalletPage() {
 
             <button 
               className="btn btn--primary w-full"
-              onClick={() => {
-                alert(`Added ₹${addAmount} successfully! (Mocked Sandbox Payment)`);
-                setShowAddMoney(false);
-                setAddAmount("");
-              }}
+              onClick={handleAddFunds}
+              disabled={addingFunds}
             >
-              Proceed to Pay
+              {addingFunds ? "Processing..." : "Proceed to Pay"}
             </button>
           </div>
         </div>

@@ -1,39 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/home/HeroSection";
 import BatchCard from "@/components/batch/BatchCard";
 import {
-  BATCHES,
   CATEGORIES,
-  MANUFACTURERS,
-  TRENDING_BATCHES,
-  ENDING_SOON_BATCHES,
-  NEW_BATCHES,
   STATS,
-  getManufacturerById,
 } from "@/lib/mock-data";
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeTab, setActiveTab] = useState("trending");
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadBatches() {
+      try {
+        const res = await fetch("/api/batches");
+        if (res.ok) {
+          const data = await res.json();
+          setBatches(data);
+        }
+      } catch (err) {
+        console.error("Failed to load batches:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadBatches();
+  }, []);
 
   const filteredBatches =
     activeCategory === "all"
-      ? BATCHES.filter((b) => b.status !== "CLOSED")
-      : BATCHES.filter(
+      ? batches.filter((b) => b.status !== "CLOSED")
+      : batches.filter(
           (b) => b.category === activeCategory && b.status !== "CLOSED"
         );
 
-  const tabBatches = {
-    trending: TRENDING_BATCHES,
-    ending: ENDING_SOON_BATCHES,
-    new: NEW_BATCHES,
+  const getTrending = () => {
+    return [...batches].sort((a, b) => (b.velocity || 0) - (a.velocity || 0));
   };
 
-  const currentTabBatches = tabBatches[activeTab] || TRENDING_BATCHES;
+  const getEnding = () => {
+    return [...batches]
+      .filter((b) => b.status === "LIVE")
+      .sort((a, b) => new Date(a.endTime) - new Date(b.endTime));
+  };
+
+  const getNew = () => {
+    return [...batches].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  };
+
+  const tabBatches = {
+    trending: getTrending(),
+    ending: getEnding(),
+    new: getNew(),
+  };
+
+  const currentTabBatches = tabBatches[activeTab] || getTrending();
 
   return (
     <>
@@ -51,7 +78,7 @@ export default function HomePage() {
                 <h2 className="section__title">
                   Live Batches
                   <span className="section__title-badge">
-                    {BATCHES.filter((b) => b.status !== "CLOSED").length} active
+                    {batches.filter((b) => b.status === "LIVE").length} active
                   </span>
                 </h2>
                 <p className="section__subtitle">
@@ -88,14 +115,24 @@ export default function HomePage() {
 
             {/* Featured Grid */}
             <div className="batch-grid batch-grid--featured">
-              {currentTabBatches.slice(0, 4).map((batch, i) => (
-                <BatchCard
-                  key={batch.id}
-                  batch={batch}
-                  manufacturer={getManufacturerById(batch.manufacturerId)}
-                  index={i}
-                />
-              ))}
+              {loading ? (
+                Array(4)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <div key={idx} className="skeleton-card skeleton" style={{ height: "360px", borderRadius: "var(--radius-lg)" }}></div>
+                  ))
+              ) : currentTabBatches.length > 0 ? (
+                currentTabBatches.slice(0, 4).map((batch, i) => (
+                  <BatchCard
+                    key={batch.id}
+                    batch={batch}
+                    manufacturer={batch.manufacturer}
+                    index={i}
+                  />
+                ))
+              ) : (
+                <p className="empty-text">No active batches available.</p>
+              )}
             </div>
           </div>
         </section>
@@ -135,12 +172,18 @@ export default function HomePage() {
 
             {/* Filtered Batch Grid */}
             <div className="batch-grid">
-              {filteredBatches.length > 0 ? (
+              {loading ? (
+                Array(4)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <div key={idx} className="skeleton-card skeleton" style={{ height: "360px", borderRadius: "var(--radius-lg)" }}></div>
+                  ))
+              ) : filteredBatches.length > 0 ? (
                 filteredBatches.map((batch, i) => (
                   <BatchCard
                     key={batch.id}
                     batch={batch}
-                    manufacturer={getManufacturerById(batch.manufacturerId)}
+                    manufacturer={batch.manufacturer}
                     index={i}
                   />
                 ))

@@ -2,17 +2,18 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import {
-  getBatchById,
-  getManufacturerById,
+  formatPrice,
   getCurrentTier,
   getSavingsPercent,
   getTimeRemaining,
   getSlotsToNextTier,
-} from "@/lib/mock-data";
-import { formatPrice } from "@/lib/utils";
+  getInitials,
+} from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 function LiveTimer({ endTime }) {
   const [time, setTime] = useState(getTimeRemaining(endTime));
@@ -57,18 +58,155 @@ function LiveTimer({ endTime }) {
 
 export default function BatchDetailPage({ params }) {
   const resolvedParams = use(params);
-  const batch = getBatchById(resolvedParams.id);
+  const { id } = resolvedParams;
+  const router = useRouter();
+
+  const [batch, setBatch] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [selectedQty, setSelectedQty] = useState(1);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [priceDropped, setPriceDropped] = useState(false);
+  const [recentJoinAlert, setRecentJoinAlert] = useState(null);
+  const [joiningBatch, setJoiningBatch] = useState(false);
+
+  async function loadBatch() {
+    try {
+      const res = await fetch(`/api/batches/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setBatch(data);
+      } else {
+        setBatch(null);
+      }
+    } catch (err) {
+      console.error("Failed to load batch details:", err);
+      setBatch(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!id) return;
+    loadBatch();
+
+    // Subscribe to changes in the Batch table
+    const batchChannel = supabase
+      .channel(`batch-realtime-${id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "Batch",
+          filter: `id=eq.${id}`,
+        },
+        (payload) => {
+          console.log("Realtime batch update received:", payload.new);
+          setBatch((prev) => {
+            if (!prev) return prev;
+            const prevPrice = getCurrentTier(prev)?.price || 0;
+            const updatedBatch = {
+              ...prev,
+              currentSlots: payload.new.currentSlots,
+              status: payload.new.status,
+            };
+            const newPrice = getCurrentTier(updatedBatch)?.price || 0;
+            if (newPrice < prevPrice) {
+              setPriceDropped(true);
+              setTimeout(() => setPriceDropped(false), 4000);
+            }
+            return updatedBatch;
+          });
+        }
+      )
+      .subscribe();
+
+    // Subscribe to insertions in SlotReservation table
+    const reservationChannel = supabase
+      .channel(`reservation-realtime-${id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "SlotReservation",
+          filter: `batchId=eq.${id}`,
+        },
+        (payload) => {
+          console.log("Realtime reservation received:", payload.new);
+          const qtyJoined = payload.new.quantity;
+          setRecentJoinAlert(`A buyer just reserved ${qtyJoined} slot(s)!`);
+          setTimeout(() => setRecentJoinAlert(null), 4000);
+          
+          // Refresh batch data to display the reservation in the UI
+          loadBatch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(batchChannel);
+      supabase.removeChannel(reservationChannel);
+    };
+  }, [id]);
+
+  const handleJoinBatch = async () => {
+    setJoiningBatch(true);
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ batchId: id, quantity: selectedQty }),
+      });
+
+      if (res.ok) {
+        const order = await res.json();
+        alert(`Success! You have reserved ${selectedQty} slots.\n₹${order.totalAmount} was debited from your wallet escrow.`);
+        router.push("/orders");
+      } else {
+        const err = await res.json();
+        if (err.error && err.error.includes("Insufficient wallet balance")) {
+          const confirmGo = window.confirm(
+            `${err.error}\n\nWould you like to go to your wallet to load funds?`
+          );
+          if (confirmGo) {
+            router.push("/wallet");
+          }
+        } else {
+          alert(err.error || "Failed to join batch");
+        }
+      }
+    } catch (err) {
+      console.error("Error joining batch:", err);
+      alert("Server error occurred while joining batch. Please try again.");
+    } finally {
+      setJoiningBatch(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <main className="batch-detail" style={{ paddingTop: "120px", minHeight: "80vh" }}>
+          <div className="container">
+            <div className="skeleton-card skeleton" style={{ height: "450px", borderRadius: "var(--radius-xl)" }}></div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   if (!batch) {
     return (
       <>
         <Header />
         <main style={{ paddingTop: "120px", textAlign: "center", minHeight: "60vh" }}>
-          <h1>Batch not found</h1>
+          <h1>Batch listing not found</h1>
           <p style={{ color: "var(--text-secondary)" }}>
-            This batch may have ended or doesn&apos;t exist.
+            This batch listing may have closed, been cancelled, or does not exist.
           </p>
           <Link href="/" className="btn btn--primary" style={{ marginTop: "20px" }}>
             ← Back to Home
@@ -79,12 +217,20 @@ export default function BatchDetailPage({ params }) {
     );
   }
 
-  const manufacturer = getManufacturerById(batch.manufacturerId);
+  const manufacturer = batch.manufacturer
+    ? {
+        ...batch.manufacturer,
+        name: batch.manufacturer.businessName,
+        avatar: getInitials(batch.manufacturer.businessName),
+      }
+    : null;
+
   const currentTier = getCurrentTier(batch);
   const savingsPercent = getSavingsPercent(batch);
   const slotsToNext = getSlotsToNextTier(batch);
   const fillPercent = Math.min((batch.currentSlots / batch.maxSlots) * 100, 100);
   const nextTier = batch.tiers.find((t) => t.minSlots > batch.currentSlots);
+
 
   return (
     <>
@@ -176,7 +322,7 @@ export default function BatchDetailPage({ params }) {
 
             {/* Right Column — Pricing & Actions */}
             <div className="batch-detail__right">
-              <div className="pricing-panel animate-fade-in-up animate-delay-100" id="pricing-panel">
+              <div className={`pricing-panel ${priceDropped ? "animate-price-drop price-drop-celebration" : ""} animate-fade-in-up animate-delay-100`} id="pricing-panel">
                 {/* Title */}
                 <h1 className="pricing-panel__title">{batch.title}</h1>
                 <p className="pricing-panel__description">{batch.description}</p>
@@ -278,8 +424,13 @@ export default function BatchDetailPage({ params }) {
 
                 {/* Action Buttons */}
                 <div className="pricing-panel__actions">
-                  <button className="btn btn--primary btn--lg w-full" id="join-batch-btn">
-                    Join This Batch — {formatPrice(currentTier.price * selectedQty)}
+                  <button 
+                    className="btn btn--primary btn--lg w-full" 
+                    id="join-batch-btn"
+                    onClick={handleJoinBatch}
+                    disabled={joiningBatch}
+                  >
+                    {joiningBatch ? "Processing..." : `Join This Batch — ${formatPrice(currentTier.price * selectedQty)}`}
                   </button>
                   <button
                     className="btn btn--secondary w-full"
@@ -317,6 +468,14 @@ export default function BatchDetailPage({ params }) {
       </main>
 
       <Footer />
+
+      {/* Real-time Join Alert Toast */}
+      {recentJoinAlert && (
+        <div className="recent-join-toast animate-notification">
+          <span className="toast-icon">⚡</span>
+          <p>{recentJoinAlert}</p>
+        </div>
+      )}
 
       {/* Share Modal */}
       {showShareModal && (
@@ -388,14 +547,14 @@ export default function BatchDetailPage({ params }) {
         .review__date { font-size: 0.7rem; color: var(--text-tertiary); }
 
         /* Pricing Panel - Sticky sidebar */
-        .pricing-panel { position: sticky; top: calc(64px + var(--space-4)); padding: var(--space-6); background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); display: flex; flex-direction: column; gap: var(--space-5); }
+        .pricing-panel { position: sticky; top: calc(64px + var(--space-4)); padding: var(--space-6); background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); display: flex; flex-direction: column; gap: var(--space-5); transition: all var(--transition-base); }
         .pricing-panel__title { font-family: var(--font-heading), sans-serif; font-size: 1.4rem; font-weight: 800; margin: 0; line-height: 1.3; }
         .pricing-panel__description { font-size: 0.875rem; color: var(--text-secondary); margin: 0; line-height: 1.6; }
         .pricing-panel__timer-wrap { display: flex; flex-direction: column; gap: var(--space-2); }
         .pricing-panel__timer-label { font-size: 0.7rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
         /* Current Price */
-        .pricing-panel__current { padding: var(--space-4); background: var(--accent-success-light); border-radius: var(--radius-lg); }
+        .pricing-panel__current { padding: var(--space-4); background: var(--accent-success-light); border-radius: var(--radius-lg); transition: all var(--transition-base); }
         .pricing-panel__price-row { display: flex; align-items: center; gap: var(--space-3); }
         .pricing-panel__price { font-family: var(--font-heading), sans-serif; font-size: 2rem; font-weight: 800; color: var(--accent-success); font-variant-numeric: tabular-nums; }
         .pricing-panel__original { font-size: 1rem; color: var(--text-tertiary); text-decoration: line-through; }
@@ -457,6 +616,32 @@ export default function BatchDetailPage({ params }) {
         .modal__share-btn { padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--border-default); background: var(--bg-surface); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); color: var(--text-primary); }
         .modal__share-btn:hover { background: var(--bg-elevated); }
         .modal__share-btn--whatsapp:hover { background: #dcf8c6; border-color: #25d366; }
+
+        /* Realtime alert toast styling */
+        .recent-join-toast {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          background: var(--bg-surface);
+          border: 1px solid var(--accent-success);
+          border-radius: var(--radius-lg);
+          padding: var(--space-3) var(--space-5);
+          box-shadow: var(--shadow-xl), 0 0 20px rgba(16, 185, 129, 0.2);
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          z-index: 1000;
+          color: var(--text-primary);
+        }
+        .toast-icon {
+          font-size: 1.25rem;
+          animation: bounce 1s infinite;
+        }
+        .recent-join-toast p {
+          margin: 0;
+          font-weight: 600;
+          font-size: 0.9rem;
+        }
       `}</style>
     </>
   );

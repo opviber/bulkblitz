@@ -76,43 +76,7 @@ export default function Footer() {
           </div>
 
           {/* Links Columns */}
-          <div className="footer__links-group">
-            <h4 className="footer__heading">For Buyers</h4>
-            <Link href="/" className="footer__link">
-              Browse Batches
-            </Link>
-            <Link href="/orders" className="footer__link">
-              My Orders
-            </Link>
-            <Link href="/wallet" className="footer__link">
-              BulkCash Wallet
-            </Link>
-            <Link href="#" className="footer__link">
-              How It Works
-            </Link>
-            <Link href="#" className="footer__link">
-              Pickup Points
-            </Link>
-          </div>
 
-          <div className="footer__links-group">
-            <h4 className="footer__heading">For Manufacturers</h4>
-            <Link href="/manufacturer" className="footer__link">
-              Dashboard
-            </Link>
-            <Link href="#" className="footer__link">
-              Create a Batch
-            </Link>
-            <Link href="#" className="footer__link">
-              Pricing Calculator
-            </Link>
-            <Link href="#" className="footer__link">
-              Success Stories
-            </Link>
-            <Link href="#" className="footer__link">
-              API Docs
-            </Link>
-          </div>
 
           <div className="footer__links-group">
             <h4 className="footer__heading">Company</h4>
@@ -170,7 +134,7 @@ export default function Footer() {
 
         @media (min-width: 768px) {
           .footer__grid {
-            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            grid-template-columns: 2fr 1fr;
             gap: var(--space-10);
           }
         }

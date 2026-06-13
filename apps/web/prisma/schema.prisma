@@ -1,0 +1,174 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  BUYER
+  MANUFACTURER
+  ADMIN
+}
+
+enum BatchStatus {
+  DRAFT
+  LIVE
+  CLOSED
+  CANCELLED
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum OrderStatus {
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum TxType {
+  CREDIT
+  DEBIT
+}
+
+model User {
+  id           String                @id @default(uuid())
+  phone        String                @unique
+  email        String?               @unique
+  name         String
+  role         Role                  @default(BUYER)
+  walletBalance Float                @default(0.0)
+  trustScore   Int                   @default(100)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  // Relationships
+  manufacturer Manufacturer?
+  reservations SlotReservation[]
+  orders       Order[]
+  transactions BulkCashTransaction[]
+  reviews      Review[]
+  addresses    Address[]
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // e.g. "Home", "Office"
+  street    String
+  city      String
+  state     String
+  pin       String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Manufacturer {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  businessName    String
+  city            String
+  state           String
+  gstNumber       String?
+  gstVerified     Boolean  @default(false)
+  rating          Float    @default(5.0)
+  yearsInBusiness Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  // Relationships
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  batches         Batch[]
+}
+
+model Batch {
+  id             String            @id @default(uuid())
+  manufacturerId String
+  title          String
+  description    String
+  images         String[]          // Array of URLs
+  category       String
+  status         BatchStatus       @default(DRAFT)
+  moq            Int               // Minimum Order Quantity slots
+  maxSlots       Int               // Maximum capacity slots
+  currentSlots   Int               @default(0)
+  startTime      DateTime          @default(now())
+  endTime        DateTime
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  // Relationships
+  manufacturer   Manufacturer      @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+  tiers          TierSchedule[]
+  reservations   SlotReservation[]
+  orders         Order[]
+}
+
+model TierSchedule {
+  id        String   @id @default(uuid())
+  batchId   String
+  minSlots  Int
+  maxSlots  Int
+  price     Float
+
+  batch     Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+}
+
+model SlotReservation {
+  id             String            @id @default(uuid())
+  batchId        String
+  userId         String
+  quantity       Int               @default(1)
+  status         ReservationStatus @default(PENDING)
+  paymentHoldId  String?           // Authorization ID from payment gateway (Razorpay)
+  joinedAt       DateTime          @default(now())
+
+  batch          Batch             @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  batchId          String
+  userId           String
+  quantity         Int
+  pricePerUnit     Float
+  totalAmount      Float
+  paymentCaptureId String?     // Captured payment ID from Razorpay
+  status           OrderStatus @default(CONFIRMED)
+  trackingNumber   String?
+  orderedAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  batch            Batch       @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BulkCashTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  amount      Float
+  type        TxType
+  description String
+  date        DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id             String   @id @default(uuid())
+  userId         String
+  manufacturerId String
+  rating         Int      @default(5)
+  comment        String?
+  date           DateTime @default(now())
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -1,21 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { USER, BATCHES } from "@/lib/mock-data";
 import { formatDate } from "@/lib/utils";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("info");
   const [profile, setProfile] = useState({
-    name: USER.name,
-    email: USER.email,
-    phone: USER.phone,
+    name: "",
+    email: "",
+    phone: "",
+    trustScore: 100,
+    joinedAt: "",
   });
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [addresses, setAddresses] = useState(USER.addresses);
+  const [addresses, setAddresses] = useState([]);
+  const [savedBatches, setSavedBatches] = useState([]);
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [newAddress, setNewAddress] = useState({
     type: "Home",
@@ -25,46 +28,138 @@ export default function ProfilePage() {
     pin: "",
   });
 
-  // Use some active batches as wishlist/saved
-  const savedBatches = BATCHES.slice(0, 3);
+  async function loadProfile() {
+    try {
+      const res = await fetch("/api/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setProfile({
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          trustScore: data.trustScore || 100,
+          joinedAt: data.createdAt || "",
+        });
+        setAddresses(data.addresses || []);
+      }
+    } catch (err) {
+      console.error("Failed to load profile:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  const handleSaveProfile = (e) => {
+  async function loadSavedBatches() {
+    try {
+      const res = await fetch("/api/batches");
+      if (res.ok) {
+        const data = await res.json();
+        setSavedBatches(data.slice(0, 3));
+      }
+    } catch (err) {
+      console.error("Failed to load saved batches:", err);
+    }
+  }
+
+  useEffect(() => {
+    loadProfile();
+    loadSavedBatches();
+  }, []);
+
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
-    setIsEditing(false);
-    alert("Profile details updated successfully!");
+    try {
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: profile.name, email: profile.email }),
+      });
+      if (res.ok) {
+        setIsEditing(false);
+        alert("Profile details updated successfully!");
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to update profile");
+      }
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      alert("Server error occurred while saving profile");
+    }
   };
 
-  const handleAddAddress = (e) => {
+  const handleAddAddress = async (e) => {
     e.preventDefault();
     if (!newAddress.street || !newAddress.city || !newAddress.state || !newAddress.pin) {
       alert("Please fill all fields");
       return;
     }
-    const addr = {
-      id: `addr-${Date.now()}`,
-      ...newAddress,
-      default: addresses.length === 0,
-    };
-    setAddresses([...addresses, addr]);
-    setShowAddAddress(false);
-    setNewAddress({ type: "Home", street: "", city: "", state: "", pin: "" });
-    alert("New address added successfully!");
-  };
-
-  const handleDeleteAddress = (id) => {
-    if (confirm("Are you sure you want to delete this address?")) {
-      setAddresses(addresses.filter((addr) => addr.id !== id));
+    try {
+      const res = await fetch("/api/profile/addresses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newAddress),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAddresses((prev) => [...prev, data]);
+        setShowAddAddress(false);
+        setNewAddress({ type: "Home", street: "", city: "", state: "", pin: "" });
+        alert("New address added successfully!");
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to add address");
+      }
+    } catch (err) {
+      console.error("Error adding address:", err);
+      alert("Server error occurred while adding address");
     }
   };
 
-  const handleSetDefaultAddress = (id) => {
-    setAddresses(
-      addresses.map((addr) => ({
-        ...addr,
-        default: addr.id === id,
-      }))
-    );
+  const handleDeleteAddress = async (id) => {
+    if (!confirm("Are you sure you want to delete this address?")) return;
+    try {
+      const res = await fetch(`/api/profile/addresses?id=${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setAddresses((prev) => prev.filter((addr) => addr.id !== id));
+        alert("Address deleted successfully!");
+        loadProfile();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to delete address");
+      }
+    } catch (err) {
+      console.error("Error deleting address:", err);
+      alert("Server error occurred while deleting address");
+    }
   };
+
+  const handleSetDefaultAddress = async (id) => {
+    try {
+      const res = await fetch("/api/profile/addresses", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        setAddresses((prev) =>
+          prev.map((addr) => ({
+            ...addr,
+            isDefault: addr.id === id,
+          }))
+        );
+        alert("Default address updated successfully!");
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to update default address");
+      }
+    } catch (err) {
+      console.error("Error setting default address:", err);
+      alert("Server error occurred while setting default address");
+    }
+  };
+
 
   return (
     <>
@@ -83,8 +178,8 @@ export default function ProfilePage() {
                   {profile.name.charAt(0)}
                 </div>
                 <div className="user-header-details">
-                  <h1 className="user-name">{profile.name}</h1>
-                  <span className="user-join-date">Member since {formatDate(USER.joinedAt)}</span>
+                  <h1 className="user-name">{profile.name || "Loading..."}</h1>
+                  <span className="user-join-date">Member since {profile.joinedAt ? formatDate(profile.joinedAt) : "..."}</span>
                 </div>
               </div>
               <div className="trust-score-badge">
@@ -94,11 +189,11 @@ export default function ProfilePage() {
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
                     <path className="circle"
-                      strokeDasharray={`${USER.trustScore}, 100`}
+                      strokeDasharray={`${profile.trustScore}, 100`}
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
                   </svg>
-                  <div className="percentage">{USER.trustScore}</div>
+                  <div className="percentage">{profile.trustScore}</div>
                 </div>
                 <div className="trust-text">
                   <span>Trust Score</span>
@@ -180,7 +275,7 @@ export default function ProfilePage() {
                         Save Changes
                       </button>
                       <button type="button" className="btn btn--ghost" onClick={() => {
-                        setProfile({ name: USER.name, email: USER.email, phone: USER.phone });
+                        loadProfile();
                         setIsEditing(false);
                       }}>
                         Cancel
@@ -203,17 +298,17 @@ export default function ProfilePage() {
 
                 <div className="address-grid">
                   {addresses.map((addr) => (
-                    <div key={addr.id} className={`address-card ${addr.default ? "address-card--default" : ""}`}>
+                    <div key={addr.id} className={`address-card ${addr.isDefault ? "address-card--default" : ""}`}>
                       <div className="address-card__header">
                         <span className="address-type">{addr.type}</span>
-                        {addr.default && <span className="default-badge">DEFAULT</span>}
+                        {addr.isDefault && <span className="default-badge">DEFAULT</span>}
                       </div>
                       <p className="address-text">
                         {addr.street}<br />
                         {addr.city}, {addr.state} - <strong>{addr.pin}</strong>
                       </p>
                       <div className="address-card__actions">
-                        {!addr.default && (
+                        {!addr.isDefault && (
                           <button className="action-btn-text" onClick={() => handleSetDefaultAddress(addr.id)}>
                             Set Default
                           </button>

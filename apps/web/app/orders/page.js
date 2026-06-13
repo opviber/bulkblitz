@@ -1,14 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { ORDERS } from "@/lib/mock-data";
 import { formatPrice, formatDate } from "@/lib/utils";
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  useEffect(() => {
+    async function loadOrders() {
+      try {
+        const res = await fetch("/api/orders");
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data);
+        }
+      } catch (err) {
+        console.error("Failed to load orders:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadOrders();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -46,7 +64,7 @@ export default function OrdersPage() {
             <div>
               <h1 className="orders-title">
                 My Orders
-                <span className="orders-count-badge">{ORDERS.length}</span>
+                {!loading && <span className="orders-count-badge">{orders.length}</span>}
               </h1>
               <p className="orders-subtitle">
                 Track your active crowd-buys and order history.
@@ -57,7 +75,14 @@ export default function OrdersPage() {
             </Link>
           </div>
 
-          {ORDERS.length === 0 ? (
+          {loading ? (
+            <div className="orders-list">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="skeleton" style={{ height: "200px", borderRadius: "var(--radius-lg)", marginBottom: "var(--space-4)" }}></div>
+              ))}
+            </div>
+          ) : orders.length === 0 ? (
+
             <div className="empty-state animate-fade-in-up">
               <div className="empty-state__icon">📦</div>
               <h3>No orders yet</h3>
@@ -70,7 +95,7 @@ export default function OrdersPage() {
             <div className="orders-layout">
               {/* Orders List */}
               <div className="orders-list stagger-children">
-                {ORDERS.map((order, index) => {
+                {orders.map((order, index) => {
                   const isActive = selectedOrder?.id === order.id;
                   const stepIndex = getStepIndex(order.status);
                   

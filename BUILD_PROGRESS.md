@@ -125,9 +125,9 @@ e:\BulkBlitz\
 ### Phase 4: Backend Foundation
 | Task | Status | Notes |
 |------|--------|-------|
-| Prisma schema | ⬜ Not Started | All core tables |
+| Prisma schema | ✅ Completed | All core tables modeled and synced to Supabase |
 | API routes (Next.js) | ⬜ Not Started | Auth, batches, orders, wallet |
-| Mock data service | ⬜ Not Started | Realistic test data |
+| Mock data service | ✅ Completed | Prisma seed script built and executed on Supabase |
 
 ### Phase 5: Real-Time Engine
 | Task | Status | Notes |
