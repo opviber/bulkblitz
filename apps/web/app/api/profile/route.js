@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, getScopedUser } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    // Default to the first buyer user (Ashish Sharma) for MVP simplicity
-    const user = await prisma.user.findFirst({
-      where: { role: "BUYER" },
+    const user = await getScopedUser(request);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "No buyer profile found. Please seed the database." },
+        { status: 404 }
+      );
+    }
+
+    const userWithAddresses = await prisma.user.findUnique({
+      where: { id: user.id },
       include: {
         addresses: {
           orderBy: {
@@ -15,14 +23,7 @@ export async function GET() {
       },
     });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "No buyer profile found. Please seed the database." },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(user);
+    return NextResponse.json(userWithAddresses);
   } catch (error) {
     console.error("Error fetching profile:", error);
     return NextResponse.json(
@@ -44,10 +45,7 @@ export async function POST(request) {
       );
     }
 
-    // Default to first buyer user (Ashish Sharma)
-    const user = await prisma.user.findFirst({
-      where: { role: "BUYER" },
-    });
+    const user = await getScopedUser(request);
 
     if (!user) {
       return NextResponse.json(

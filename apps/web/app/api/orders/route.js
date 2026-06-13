@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, getScopedUser } from "@/lib/prisma";
+import { sendWhatsAppNotification, sendPushNotification, sendEmailNotification } from "@/lib/notifications";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    // Default to the first buyer user (Ashish Sharma) for MVP simplicity
-    const user = await prisma.user.findFirst({
-      where: { role: "BUYER" },
-    });
+    const user = await getScopedUser(request);
 
     if (!user) {
       return NextResponse.json(
@@ -69,18 +67,16 @@ export async function POST(request) {
       );
     }
 
-    const qty = parseInt(quantity);
-    if (qty <= 0) {
+    // Input validation: Must be an integer, positive, and within limit
+    const qty = Number(quantity);
+    if (!Number.isInteger(qty) || qty <= 0 || qty > 100) {
       return NextResponse.json(
-        { error: "Quantity must be greater than zero" },
+        { error: "Quantity must be a positive integer (maximum 100 per transaction)" },
         { status: 400 }
       );
     }
 
-    // Default to first buyer user (Ashish Sharma)
-    const user = await prisma.user.findFirst({
-      where: { role: "BUYER" },
-    });
+    const user = await getScopedUser(request);
 
     if (!user) {
       return NextResponse.json(
@@ -91,17 +87,11 @@ export async function POST(request) {
 
     // Start a transaction to ensure database consistency
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Fetch batch details with lock
-      const batch = await tx.batch.findUnique({
-        where: { id: batchId },
-        include: {
-          tiers: {
-            orderBy: {
-              minSlots: "asc",
-            },
-          },
-        },
-      });
+      // 1. Fetch batch details with pessimistic row-level lock (FOR UPDATE)
+      const batches = await tx.$queryRaw`
+        SELECT * FROM "Batch" WHERE id = ${batchId} FOR UPDATE
+      `;
+      const batch = batches[0];
 
       if (!batch) {
         throw new Error("Batch listing not found");
@@ -115,6 +105,13 @@ export async function POST(request) {
       if (newSlotsCount > batch.maxSlots) {
         throw new Error(`Insufficient slots remaining. Only ${batch.maxSlots - batch.currentSlots} slots left.`);
       }
+
+      // Query tiers separately
+      const tiers = await tx.tierSchedule.findMany({
+        where: { batchId },
+        orderBy: { minSlots: "asc" }
+      });
+      batch.tiers = tiers;
 
       // 2. Create the slot reservation
       const reservation = await tx.slotReservation.create({
@@ -199,6 +196,23 @@ export async function POST(request) {
 
       return order;
     });
+
+    // Trigger notification stubs
+    try {
+      const message = `🛍️ Order Confirmed! You have reserved ${result.quantity} slots for "${result.batch.title}" at ₹${result.pricePerUnit}/unit (Total: ₹${result.totalAmount}).\nAs more buyers join, the final price will drop even lower! Share with friends to save more: http://localhost:3000/batch/${result.batchId}`;
+      
+      await sendWhatsAppNotification(user.phone, message);
+      await sendPushNotification(user.id, "Batch Joined", `Reserved ${result.quantity} units of ${result.batch.title}`);
+      if (user.email) {
+        await sendEmailNotification(
+          user.email,
+          `Order Confirmed: ${result.batch.title}`,
+          `Hi ${user.name},\n\nThank you for participating! Your slot reservation has been placed successfully.\n\nProduct: ${result.batch.title}\nQuantity: ${result.quantity}\nPrice: ₹${result.pricePerUnit}/unit\nTotal Hold: ₹${result.totalAmount}\n\nWe will notify you as soon as the price drops further or when the batch completes.\n\nCheers,\nTeam BulkBlitz`
+        );
+      }
+    } catch (notifErr) {
+      console.error("Failed to trigger order confirmation notification:", notifErr);
+    }
 
     // Format response to match front-end
     const formattedOrder = {

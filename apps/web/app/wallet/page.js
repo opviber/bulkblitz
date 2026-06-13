@@ -48,6 +48,20 @@ export default function WalletPage() {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handleAddFunds = async () => {
     if (!addAmount || parseFloat(addAmount) <= 0) {
       alert("Please enter a valid amount to load");
@@ -55,28 +69,108 @@ export default function WalletPage() {
     }
     setAddingFunds(true);
     try {
-      const res = await fetch("/api/wallet", {
+      // 1. Create Razorpay order on our backend
+      const res = await fetch("/api/payments/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: parseFloat(addAmount) })
       });
-      if (res.ok) {
-        const data = await res.json();
-        setBalance(data.balance);
-        if (data.transaction) {
-          setTransactions(prev => [data.transaction, ...prev]);
-        }
-        setShowAddMoney(false);
-        setAddAmount("");
-        alert(`₹${addAmount} loaded successfully via UPI Sandbox!`);
-      } else {
+      
+      if (!res.ok) {
         const err = await res.json();
-        alert(err.error || "Failed to load funds");
+        throw new Error(err.error || "Failed to create payment order");
       }
+      
+      const orderData = await res.json();
+      
+      // Define Razorpay options and verify callback handler
+      const options = {
+        key: orderData.key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "BulkBlitz Wallet Load",
+        description: `Load ₹${addAmount} into BulkCash`,
+        order_id: orderData.mock ? null : orderData.id,
+        handler: async function (response) {
+          setAddingFunds(true);
+          try {
+            const verifyRes = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id || orderData.id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature || "",
+                amount: parseFloat(addAmount),
+                mock: orderData.mock
+              })
+            });
+            
+            if (verifyRes.ok) {
+              const verifyData = await verifyRes.json();
+              setBalance(verifyData.balance);
+              // reload transaction history and wallet
+              await loadWallet();
+              setShowAddMoney(false);
+              setAddAmount("");
+              alert(`₹${addAmount} loaded successfully via Razorpay!`);
+            } else {
+              const err = await verifyRes.json();
+              alert(err.error || "Payment verification failed");
+            }
+          } catch (err) {
+            console.error("Verification error:", err);
+            alert("Error verifying payment");
+          } finally {
+            setAddingFunds(false);
+          }
+        },
+        prefill: {
+          name: "Ashish Sharma",
+          email: "ashish@bulkblitz.in",
+          contact: "+919999999999"
+        },
+        theme: {
+          color: "#0D6EFD"
+        },
+        modal: {
+          ondismiss: function () {
+            setAddingFunds(false);
+          }
+        }
+      };
+
+      // 2. Sandbox simulation check
+      if (orderData.mock) {
+        const confirmSuccess = window.confirm(
+          `[BulkBlitz Sandbox] Simulating Razorpay checkout popup for ₹${addAmount}.\n\nClick OK to simulate a successful payment callback.\nClick Cancel to simulate modal close.`
+        );
+        
+        if (confirmSuccess) {
+          options.handler({
+            razorpay_order_id: orderData.id,
+            razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(2, 12)}`,
+            razorpay_signature: "mock_signature_abc123"
+          });
+        } else {
+          setAddingFunds(false);
+        }
+        return;
+      }
+
+      // 3. Load Razorpay script and open live checkout modal
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) {
+        alert("Failed to load Razorpay SDK. Please check your internet connection.");
+        setAddingFunds(false);
+        return;
+      }
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (error) {
       console.error("Error loading funds:", error);
-      alert("Failed to load funds due to server error");
-    } finally {
+      alert(error.message || "Failed to load funds due to server error");
       setAddingFunds(false);
     }
   };

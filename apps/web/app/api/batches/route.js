@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, getScopedManufacturer } from "@/lib/prisma";
 
 export async function GET(request) {
   try {
@@ -64,8 +64,7 @@ export async function POST(request) {
       );
     }
 
-    // Default to the first manufacturer in our database for MVP simplicity
-    const manufacturer = await prisma.manufacturer.findFirst();
+    const manufacturer = await getScopedManufacturer(request);
     if (!manufacturer) {
       return NextResponse.json(
         { error: "No manufacturer profiles found. Please seed the database first." },

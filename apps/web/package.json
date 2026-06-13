@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
@@ -14,6 +15,7 @@
     "framer-motion": "^12.40.0",
     "next": "16.2.9",
     "pg": "^8.21.0",
+    "razorpay": "^2.9.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -21,7 +23,8 @@
     "@prisma/client": "^7.8.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
-    "prisma": "^7.8.0"
+    "prisma": "^7.8.0",
+    "vitest": "^4.1.8"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

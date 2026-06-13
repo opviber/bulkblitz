@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, getScopedUser } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    // Default to the first buyer user (Ashish Sharma) for MVP simplicity
-    const user = await prisma.user.findFirst({
-      where: { role: "BUYER" },
-    });
+    const user = await getScopedUser(request);
 
     if (!user) {
       return NextResponse.json(
@@ -61,10 +58,7 @@ export async function POST(request) {
       );
     }
 
-    // Default to first buyer user (Ashish Sharma)
-    const user = await prisma.user.findFirst({
-      where: { role: "BUYER" },
-    });
+    const user = await getScopedUser(request);
 
     if (!user) {
       return NextResponse.json(
@@ -75,10 +69,18 @@ export async function POST(request) {
 
     // Run transaction: Update user's walletBalance + create transaction ledger entry
     const result = await prisma.$transaction(async (tx) => {
+      // Re-fetch user inside transaction with lock to prevent race updates on balance
+      const freshUser = await tx.user.findUnique({
+        where: { id: user.id }
+      });
+      if (!freshUser) {
+        throw new Error("User profile not found");
+      }
+
       const updatedUser = await tx.user.update({
         where: { id: user.id },
         data: {
-          walletBalance: user.walletBalance + value,
+          walletBalance: freshUser.walletBalance + value,
         },
       });
 
@@ -111,7 +113,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("Error adding funds to wallet:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: error.message || "Internal Server Error" },
       { status: 500 }
     );
   }

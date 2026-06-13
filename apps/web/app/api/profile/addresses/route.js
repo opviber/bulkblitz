@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, getScopedUser } from "@/lib/prisma";
 
 export async function POST(request) {
   try {
@@ -14,10 +14,7 @@ export async function POST(request) {
     }
 
     // Fetch default buyer user
-    const user = await prisma.user.findFirst({
-      where: { role: "BUYER" },
-      include: { addresses: true }
-    });
+    const user = await getScopedUser(request);
 
     if (!user) {
       return NextResponse.json(
@@ -26,8 +23,12 @@ export async function POST(request) {
       );
     }
 
+    const addresses = await prisma.address.findMany({
+      where: { userId: user.id }
+    });
+
     // If there are no addresses, the new address should be default
-    const isDefault = user.addresses.length === 0;
+    const isDefault = addresses.length === 0;
 
     const newAddress = await prisma.address.create({
       data: {
@@ -64,13 +65,23 @@ export async function PUT(request) {
     }
 
     // Fetch default buyer user
-    const user = await prisma.user.findFirst({
-      where: { role: "BUYER" },
-    });
+    const user = await getScopedUser(request);
 
     if (!user) {
       return NextResponse.json(
         { error: "User profile not found." },
+        { status: 404 }
+      );
+    }
+
+    // Verify the address belongs to the scoped user
+    const address = await prisma.address.findFirst({
+      where: { id, userId: user.id }
+    });
+
+    if (!address) {
+      return NextResponse.json(
+        { error: "Address not found or unauthorized access." },
         { status: 404 }
       );
     }
@@ -113,10 +124,7 @@ export async function DELETE(request) {
     }
 
     // Fetch default buyer user
-    const user = await prisma.user.findFirst({
-      where: { role: "BUYER" },
-      include: { addresses: true }
-    });
+    const user = await getScopedUser(request);
 
     if (!user) {
       return NextResponse.json(
@@ -126,7 +134,10 @@ export async function DELETE(request) {
     }
 
     // Check if the address to delete is default
-    const targetAddress = user.addresses.find(addr => addr.id === id);
+    const targetAddress = await prisma.address.findFirst({
+      where: { id, userId: user.id }
+    });
+    
     if (!targetAddress) {
       return NextResponse.json(
         { error: "Address not found." },
@@ -143,7 +154,10 @@ export async function DELETE(request) {
 
     // If it was default, assign default to another address if any exist
     if (wasDefault) {
-      const remaining = user.addresses.filter(addr => addr.id !== id);
+      const remaining = await prisma.address.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "asc" }
+      });
       if (remaining.length > 0) {
         await prisma.address.update({
           where: { id: remaining[0].id },

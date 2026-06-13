@@ -2,27 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { formatPrice } from "@/lib/utils";
+import { 
+  formatPrice, 
+  getCurrentTier, 
+  getSavingsPercent, 
+  getSlotsToNextTier, 
+  calculateFillPercent 
+} from "@/lib/utils";
 
 export default function BatchCard({ batch, manufacturer, index = 0 }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Calculate current tier
-  const currentTier =
-    batch.tiers.find(
-      (t) => batch.currentSlots >= t.minSlots && batch.currentSlots <= t.maxSlots
-    ) || batch.tiers[0];
+  // Calculate tier metrics using central utility library
+  const currentTier = getCurrentTier(batch) || batch.tiers[0];
+  const slotsToNext = getSlotsToNextTier(batch) || 0;
+  const fillPercent = calculateFillPercent(batch.currentSlots, batch.maxSlots);
+  const savingsPercent = getSavingsPercent(batch);
   const nextTier = batch.tiers.find((t) => t.minSlots > batch.currentSlots);
-  const slotsToNext = nextTier
-    ? nextTier.minSlots - batch.currentSlots
-    : 0;
-  const fillPercent = Math.min(
-    (batch.currentSlots / batch.maxSlots) * 100,
-    100
-  );
-  const savingsPercent = Math.round(
-    ((batch.tiers[0].price - currentTier.price) / batch.tiers[0].price) * 100
-  );
 
   // Time remaining
   const endTime = new Date(batch.endTime);

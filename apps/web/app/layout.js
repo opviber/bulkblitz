@@ -16,6 +16,8 @@ const inter = Inter({
   display: "swap",
 });
 
+import JsonLd from "@/components/seo/JsonLd";
+
 export const metadata = {
   title: "BulkBlitz — Bulk Up. Price Down.",
   description:
@@ -28,6 +30,10 @@ export const metadata = {
     "dynamic pricing",
     "BulkBlitz",
   ],
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "BulkBlitz — Bulk Up. Price Down.",
     description:
@@ -35,12 +41,57 @@ export const metadata = {
     type: "website",
     locale: "en_IN",
     siteName: "BulkBlitz",
+    url: "https://bulkblitz.in",
+    images: [
+      {
+        url: "https://bulkblitz.in/images/og-default.png",
+        width: 1200,
+        height: 630,
+        alt: "BulkBlitz Marketplace",
+      },
+    ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "BulkBlitz — Bulk Up. Price Down.",
+    description:
+      "Join the crowd. Drop the price. India's first dynamic group-buy platform.",
+    site: "@bulkblitz",
+    images: ["https://bulkblitz.in/images/og-default.png"],
+  },
+};
+
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "BulkBlitz",
+  "url": "https://bulkblitz.in",
+  "logo": "https://bulkblitz.in/logo.png",
+  "sameAs": [
+    "https://twitter.com/bulkblitz",
+    "https://instagram.com/bulkblitz"
+  ]
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "BulkBlitz",
+  "url": "https://bulkblitz.in",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://bulkblitz.in/?search={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${plusJakarta.variable} ${inter.variable}`}>
+      <head>
+        <JsonLd data={orgSchema} />
+        <JsonLd data={websiteSchema} />
+      </head>
       <body>{children}</body>
     </html>
   );
