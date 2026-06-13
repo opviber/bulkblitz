@@ -1,11 +1,11 @@
-import { Plus_Jakarta_Sans, Inter } from "next/font/google";
+import { Kanit, Inter } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 
-const plusJakarta = Plus_Jakarta_Sans({
+const kanit = Kanit({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
   display: "swap",
 });
 
@@ -17,6 +17,7 @@ const inter = Inter({
 });
 
 import JsonLd from "@/components/seo/JsonLd";
+import CustomCursor from "@/components/ui/CustomCursor";
 
 export const metadata = {
   title: "BulkBlitz — Bulk Up. Price Down.",
@@ -87,12 +88,15 @@ const websiteSchema = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${plusJakarta.variable} ${inter.variable}`}>
+    <html lang="en" className={`${kanit.variable} ${inter.variable}`}>
       <head>
         <JsonLd data={orgSchema} />
         <JsonLd data={websiteSchema} />
       </head>
-      <body>{children}</body>
+      <body>
+        <CustomCursor />
+        {children}
+      </body>
     </html>
   );
 }

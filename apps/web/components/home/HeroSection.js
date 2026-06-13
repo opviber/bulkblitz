@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Magnet from "../ui/Magnet";
+import ScrollRevealText from "../ui/ScrollRevealText";
 
 function AnimatedNumber({ value, duration = 2000 }) {
   const [displayed, setDisplayed] = useState(0);
@@ -43,10 +45,11 @@ export default function HeroSection({ stats }) {
 
         {/* Headline */}
         <h1 className="hero__headline animate-fade-in-up">
-          <span className="hero__headline-line">The Crowd Buys.</span>
-          <span className="hero__headline-line">
-            The Price{" "}
-            <span className="hero__headline-accent">Drops.</span>
+          <span className="hero__headline-line hero-heading">
+            <ScrollRevealText text="The Crowd Buys." />
+          </span>
+          <span className="hero__headline-line hero-heading">
+            <ScrollRevealText text="The Price Drops." />
           </span>
         </h1>
 
@@ -58,15 +61,19 @@ export default function HeroSection({ stats }) {
 
         {/* CTAs */}
         <div className="hero__ctas animate-fade-in-up animate-delay-300">
-          <a href="#batches" className="btn btn--primary btn--lg hero__cta-primary">
-            Browse Live Batches
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </a>
-          <a href="#how-it-works" className="btn btn--secondary btn--lg hero__cta-secondary">
-            How It Works
-          </a>
+          <Magnet padding={20}>
+            <a href="#batches" className="btn btn--primary btn--lg hero__cta-primary">
+              Browse Live Batches
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+          </Magnet>
+          <Magnet padding={20}>
+            <a href="#how-it-works" className="btn btn--secondary btn--lg hero__cta-secondary">
+              How It Works
+            </a>
+          </Magnet>
         </div>
 
         {/* Stats */}
@@ -238,6 +245,14 @@ export default function HeroSection({ stats }) {
           background: var(--accent-success);
           border-radius: 50%;
           animation: pulseSoft 1.5s ease-in-out infinite;
+        }
+
+        .hero-heading {
+          background: linear-gradient(180deg, #646973 0%, #BBCCD7 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          display: inline-block;
         }
 
         .hero__headline {

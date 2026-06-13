@@ -12,6 +12,26 @@ import {
 
 export default function BatchCard({ batch, manufacturer, index = 0 }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [rotate, setRotate] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    if (!e.currentTarget) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateX = ((y - centerY) / centerY) * -10;
+    const rotateY = ((x - centerX) / centerX) * 10;
+    
+    setRotate({ x: rotateX, y: rotateY });
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setRotate({ x: 0, y: 0 });
+  };
 
   // Calculate tier metrics using central utility library
   const currentTier = getCurrentTier(batch) || batch.tiers[0];
@@ -46,8 +66,13 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
       className="batch-card"
       id={`batch-card-${batch.id}`}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{ animationDelay: `${index * 80}ms` }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ 
+        animationDelay: `${index * 80}ms`,
+        transform: isHovered ? `perspective(1000px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg) scale(1.02)` : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)',
+        transition: isHovered ? 'box-shadow 0.3s ease, border-color 0.3s ease' : 'all 0.5s ease',
+      }}
     >
       {/* Image Section */}
       <div className="batch-card__image">
@@ -184,10 +209,10 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           transition: all var(--transition-base);
           animation: fadeInUp 0.5s ease both;
           cursor: pointer;
+          transform-style: preserve-3d;
         }
 
         .batch-card:hover {
-          transform: translateY(-4px);
           box-shadow: var(--shadow-xl);
           border-color: var(--accent-primary);
         }
