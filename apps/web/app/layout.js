@@ -17,7 +17,6 @@ const inter = Inter({
 });
 
 import JsonLd from "@/components/seo/JsonLd";
-import CustomCursor from "@/components/ui/CustomCursor";
 
 export const metadata = {
   title: "BulkBlitz — Bulk Up. Price Down.",
@@ -94,7 +93,6 @@ export default function RootLayout({ children }) {
         <JsonLd data={websiteSchema} />
       </head>
       <body>
-        <CustomCursor />
         {children}
       </body>
     </html>
