@@ -1,10 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Magnet from "../ui/Magnet";
-import ScrollRevealText from "../ui/ScrollRevealText";
+import { useEffect, useState } from 'react';
+import Magnet from '../ui/Magnet';
+import ScrollRevealText from '../ui/ScrollRevealText';
 
-function AnimatedNumber({ value, duration = 2000 }) {
+/* ─────────────────────────────────────────────
+   Animated Number — counts up from 0 to value
+───────────────────────────────────────────── */
+function AnimatedNumber({ value, duration = 2200 }) {
   const [displayed, setDisplayed] = useState(0);
 
   useEffect(() => {
@@ -22,198 +25,264 @@ function AnimatedNumber({ value, duration = 2000 }) {
     return () => clearInterval(timer);
   }, [value, duration]);
 
-  return displayed.toLocaleString("en-IN");
+  return displayed.toLocaleString('en-IN');
 }
 
+/* ─────────────────────────────────────────────
+   Static data
+───────────────────────────────────────────── */
+const STATS_CONFIG = [
+  { icon: '👥', key: 'totalBuyers',        suffix: '+', prefix: '',  label: 'Happy Buyers',    color: '#3B82F6', fallback: 12400   },
+  { icon: '🏭', key: 'totalManufacturers', suffix: '+', prefix: '',  label: 'Manufacturers',   color: '#A78BFA', fallback: 340     },
+  { icon: '💰', key: 'totalSaved',          suffix: '',  prefix: '₹', label: 'Saved by Buyers', color: '#34D399', fallback: 2800000 },
+  { icon: '⚡', key: 'activeBatches',       suffix: '',  prefix: '',  label: 'Live Batches',    color: '#FBBF24', fallback: 86      },
+];
+
+const STEPS = [
+  {
+    num: '01',
+    color: '#3B82F6',
+    title: 'Manufacturer Lists',
+    desc: 'Verified manufacturers post products with tiered bulk pricing tiers.',
+  },
+  {
+    num: '02',
+    color: '#A78BFA',
+    title: 'Buyers Join Batch',
+    desc: 'Reserve your slot with a card hold — no upfront payment required.',
+  },
+  {
+    num: '03',
+    color: '#34D399',
+    title: 'Price Drops Live',
+    desc: 'Every new buyer lowers the price for the entire batch in real time.',
+  },
+  {
+    num: '04',
+    color: '#FBBF24',
+    title: 'Everyone Saves',
+    desc: 'Batch closes, you pay the final lowest price. Direct from factory.',
+  },
+];
+
+/* ─────────────────────────────────────────────
+   HeroSection
+───────────────────────────────────────────── */
 export default function HeroSection({ stats }) {
   return (
     <section className="hero" id="hero-section">
-      {/* Animated Background */}
-      <div className="hero__bg">
-        <div className="hero__gradient-orb hero__gradient-orb--1"></div>
-        <div className="hero__gradient-orb hero__gradient-orb--2"></div>
-        <div className="hero__gradient-orb hero__gradient-orb--3"></div>
-        <div className="hero__grid-pattern"></div>
+
+      {/* ── Animated Background ── */}
+      <div className="hero__bg" aria-hidden="true">
+        <div className="hero__orb hero__orb--blue" />
+        <div className="hero__orb hero__orb--purple" />
+        <div className="hero__orb hero__orb--emerald" />
+        <div className="hero__grid">
+          <div className="hero__grid-inner" />
+        </div>
       </div>
 
       <div className="container hero__container">
-        {/* Badge */}
+
+        {/* ── Badge ── */}
         <div className="hero__badge animate-fade-in">
-          <span className="hero__badge-dot"></span>
-          India&apos;s First Group-Buy Manufacturing Platform
+          <span className="hero__badge-live">
+            <span className="hero__badge-dot" />
+            LIVE
+          </span>
+          <span className="hero__badge-divider" />
+          <span className="hero__badge-text">🇮🇳 India&apos;s First Group-Buy Manufacturing Platform</span>
         </div>
 
-        {/* Headline */}
+        {/* ── Headline ── */}
         <h1 className="hero__headline animate-fade-in-up">
-          <span className="hero__headline-line hero-heading">
+          <span className="hero__line hero__line--1">
             <ScrollRevealText text="The Crowd Buys." />
           </span>
-          <span className="hero__headline-line hero-heading">
-            <ScrollRevealText text="The Price Drops." />
+          <span className="hero__line hero__line--2">
+            <ScrollRevealText text="The Price Drops." className="hero__gradient-text" />
           </span>
         </h1>
 
-        {/* Subheadline */}
-        <p className="hero__subheadline animate-fade-in-up animate-delay-200">
-          Join a batch. Pool with other buyers. Watch the price drop in real
-          time. Get manufacturer-direct pricing without buying in bulk alone.
+        {/* ── Subheadline ── */}
+        <p className="hero__sub animate-fade-in-up animate-delay-200">
+          Join a batch. Pool with other buyers. Watch the price drop in real time.
+          Get manufacturer-direct pricing — no middlemen, no minimum quantities.
         </p>
 
-        {/* CTAs */}
+        {/* ── CTA Buttons ── */}
         <div className="hero__ctas animate-fade-in-up animate-delay-300">
           <Magnet padding={20}>
-            <a href="#batches" className="btn btn--primary btn--lg hero__cta-primary">
+            <a href="#batches" className="hero__btn hero__btn--primary">
               Browse Live Batches
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                className="hero__btn-arrow"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </a>
           </Magnet>
           <Magnet padding={20}>
-            <a href="#how-it-works" className="btn btn--secondary btn--lg hero__cta-secondary">
+            <a href="#how-it-works" className="hero__btn hero__btn--secondary">
               How It Works
             </a>
           </Magnet>
         </div>
 
-        {/* Stats */}
+        {/* ── Stats Bar ── */}
         <div className="hero__stats animate-fade-in-up animate-delay-400">
-          <div className="hero__stat">
-            <span className="hero__stat-value">
-              <AnimatedNumber value={stats?.totalBuyers || 12400} />+
-            </span>
-            <span className="hero__stat-label">Happy Buyers</span>
-          </div>
-          <div className="hero__stat-divider"></div>
-          <div className="hero__stat">
-            <span className="hero__stat-value">
-              <AnimatedNumber value={stats?.totalManufacturers || 340} />+
-            </span>
-            <span className="hero__stat-label">Manufacturers</span>
-          </div>
-          <div className="hero__stat-divider"></div>
-          <div className="hero__stat">
-            <span className="hero__stat-value">
-              ₹<AnimatedNumber value={stats?.totalSaved || 2800000} />
-            </span>
-            <span className="hero__stat-label">Saved by Buyers</span>
-          </div>
-          <div className="hero__stat-divider"></div>
-          <div className="hero__stat">
-            <span className="hero__stat-value">
-              <AnimatedNumber value={stats?.activeBatches || 86} />
-            </span>
-            <span className="hero__stat-label">Live Batches</span>
+          {STATS_CONFIG.map((s, i) => (
+            <div key={s.key} className="hero__stats-row-item">
+              {i > 0 && <div className="hero__stats-sep" aria-hidden="true" />}
+              <div className="hero__stat">
+                <div
+                  className="hero__stat-icon"
+                  style={{ '--stat-color': s.color }}
+                  aria-hidden="true"
+                >
+                  {s.icon}
+                </div>
+                <div className="hero__stat-body">
+                  <span className="hero__stat-value">
+                    {s.prefix}
+                    <AnimatedNumber value={stats?.[s.key] ?? s.fallback} />
+                    {s.suffix}
+                  </span>
+                  <span className="hero__stat-label">{s.label}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── How It Works ── */}
+        <div
+          className="hero__hiw animate-fade-in-up animate-delay-500"
+          id="how-it-works"
+        >
+          <p className="hero__hiw-label">How it works</p>
+          <div className="hero__steps">
+            {STEPS.map((step, i) => (
+              <div key={step.num} className="hero__step-wrapper">
+                <div
+                  className="hero__step"
+                  style={{ '--step-color': step.color }}
+                >
+                  <div className="hero__step-num-box">
+                    {step.num}
+                  </div>
+                  <h3 className="hero__step-title">{step.title}</h3>
+                  <p className="hero__step-desc">{step.desc}</p>
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div className="hero__step-arrow" aria-hidden="true">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* How it Works Mini */}
-        <div className="hero__how-it-works animate-fade-in-up animate-delay-500" id="how-it-works">
-          <div className="hero__step">
-            <div className="hero__step-number">1</div>
-            <div className="hero__step-content">
-              <h3 className="hero__step-title">Manufacturer Lists</h3>
-              <p className="hero__step-desc">
-                Products with tiered bulk pricing
-              </p>
-            </div>
-          </div>
-          <div className="hero__step-arrow">→</div>
-          <div className="hero__step">
-            <div className="hero__step-number hero__step-number--2">2</div>
-            <div className="hero__step-content">
-              <h3 className="hero__step-title">Buyers Join</h3>
-              <p className="hero__step-desc">
-                Reserve a slot with card hold
-              </p>
-            </div>
-          </div>
-          <div className="hero__step-arrow">→</div>
-          <div className="hero__step">
-            <div className="hero__step-number hero__step-number--3">3</div>
-            <div className="hero__step-content">
-              <h3 className="hero__step-title">Price Drops</h3>
-              <p className="hero__step-desc">
-                More buyers = lower price for everyone
-              </p>
-            </div>
-          </div>
-          <div className="hero__step-arrow">→</div>
-          <div className="hero__step">
-            <div className="hero__step-number hero__step-number--4">4</div>
-            <div className="hero__step-content">
-              <h3 className="hero__step-title">Everyone Saves</h3>
-              <p className="hero__step-desc">
-                Pay the final lowest price reached
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
+      {/* ═══════════════════════════════════════════
+          Styles
+      ══════════════════════════════════════════ */}
       <style jsx>{`
+
+        /* ── Section shell ── */
         .hero {
           position: relative;
-          padding: calc(64px + var(--space-12)) 0 var(--space-12);
+          min-height: 100vh;
+          padding: calc(64px + var(--space-16)) 0 var(--space-16);
           overflow: hidden;
-          min-height: 90vh;
           display: flex;
           align-items: center;
         }
 
+        /* ── Background layer ── */
         .hero__bg {
           position: absolute;
           inset: 0;
           overflow: hidden;
           z-index: 0;
+          pointer-events: none;
         }
 
-        .hero__gradient-orb {
+        /* Gradient orbs */
+        .hero__orb {
           position: absolute;
           border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.15;
-          animation: float 8s ease-in-out infinite;
+          filter: blur(100px);
+          animation: float 10s ease-in-out infinite;
         }
 
-        .hero__gradient-orb--1 {
-          width: 500px;
-          height: 500px;
-          background: var(--accent-primary);
-          top: -100px;
-          right: -100px;
+        .hero__orb--blue {
+          width: 600px;
+          height: 600px;
+          background: rgba(59, 130, 246, 0.3);
+          top: -120px;
+          right: -120px;
           animation-delay: 0s;
         }
 
-        .hero__gradient-orb--2 {
-          width: 400px;
-          height: 400px;
-          background: var(--accent-premium);
-          bottom: -50px;
-          left: -100px;
-          animation-delay: -3s;
+        .hero__orb--purple {
+          width: 500px;
+          height: 500px;
+          background: rgba(167, 139, 250, 0.25);
+          bottom: -80px;
+          left: -120px;
+          animation-delay: -4s;
         }
 
-        .hero__gradient-orb--3 {
-          width: 300px;
-          height: 300px;
-          background: var(--accent-success);
+        .hero__orb--emerald {
+          width: 380px;
+          height: 380px;
+          background: rgba(52, 211, 153, 0.15);
           top: 50%;
           left: 50%;
-          animation-delay: -5s;
+          transform: translate(-50%, -50%);
+          animation-delay: -7s;
         }
 
-        .hero__grid-pattern {
+        /* Dot grid */
+        .hero__grid {
           position: absolute;
           inset: 0;
-          background-image: radial-gradient(
-            var(--border-default) 1px,
-            transparent 1px
-          );
-          background-size: 40px 40px;
-          opacity: 0.4;
         }
 
+        .hero__grid-inner {
+          position: absolute;
+          inset: 0;
+          background-image: radial-gradient(circle, var(--border-default) 1px, transparent 1px);
+          background-size: 36px 36px;
+          opacity: 0.35;
+          mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+          -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+        }
+
+        /* ── Container ── */
         .hero__container {
           position: relative;
           z-index: 1;
@@ -221,102 +290,231 @@ export default function HeroSection({ stats }) {
           flex-direction: column;
           align-items: center;
           text-align: center;
+          gap: 0;
+          width: 100%;
         }
 
+        /* ── Badge ── */
         .hero__badge {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
-          padding: 6px 16px;
+          gap: 10px;
+          padding: 6px 8px 6px 8px;
           background: var(--bg-glass);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border: 1px solid var(--border-default);
           border-radius: var(--radius-full);
+          margin-bottom: var(--space-6);
           font-size: 0.8rem;
           font-weight: 600;
           color: var(--text-secondary);
-          margin-bottom: var(--space-6);
+          transition: border-color var(--transition-base);
+        }
+
+        .hero__badge:hover {
+          border-color: var(--accent-primary);
+        }
+
+        .hero__badge-live {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          background: rgba(52, 211, 153, 0.12);
+          border: 1px solid rgba(52, 211, 153, 0.3);
+          border-radius: var(--radius-full);
+          padding: 2px 9px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          color: #34D399;
         }
 
         .hero__badge-dot {
-          width: 8px;
-          height: 8px;
-          background: var(--accent-success);
+          width: 6px;
+          height: 6px;
+          background: #34D399;
           border-radius: 50%;
-          animation: pulseSoft 1.5s ease-in-out infinite;
+          animation: pulseSoft 1.6s ease-in-out infinite;
+          flex-shrink: 0;
         }
 
-        .hero-heading {
-          background: linear-gradient(180deg, #646973 0%, #BBCCD7 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          display: inline-block;
+        .hero__badge-divider {
+          width: 1px;
+          height: 16px;
+          background: var(--border-default);
+          flex-shrink: 0;
         }
 
+        .hero__badge-text {
+          padding-right: 6px;
+        }
+
+        /* ── Headline ── */
         .hero__headline {
           font-family: var(--font-heading), sans-serif;
+          font-size: clamp(3rem, 7vw, 5.5rem);
           font-weight: 800;
-          font-size: clamp(2.5rem, 6vw, 4.5rem);
-          line-height: 1.1;
-          letter-spacing: -0.03em;
+          line-height: 1.05;
+          letter-spacing: -0.04em;
           margin: 0 0 var(--space-6);
           color: var(--text-primary);
         }
 
-        .hero__headline-line {
+        .hero__line {
           display: block;
         }
 
-        .hero__headline-accent {
-          background: linear-gradient(135deg, #10B981, #0D6EFD);
+        .hero__line--1 {
+          color: var(--text-primary);
+        }
+
+        /* Line 2 — gradient applied to the ScrollRevealText character spans */
+        .hero__line--2 :global(.scroll-word),
+        .hero__line--2 :global(.scroll-char) {
+          background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #34D399 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
         }
 
-        .hero__subheadline {
-          max-width: 600px;
-          font-size: clamp(1rem, 2vw, 1.2rem);
+        /* ── Subheadline ── */
+        .hero__sub {
+          max-width: 560px;
+          font-size: clamp(1rem, 1.8vw, 1.15rem);
           color: var(--text-secondary);
-          line-height: 1.7;
+          line-height: 1.75;
           margin: 0 0 var(--space-8);
+          font-family: var(--font-body), sans-serif;
         }
 
+        /* ── CTA Buttons ── */
         .hero__ctas {
           display: flex;
+          align-items: center;
           gap: var(--space-4);
           flex-wrap: wrap;
           justify-content: center;
           margin-bottom: var(--space-10);
         }
 
-        .hero__cta-primary {
+        .hero__btn {
           display: inline-flex;
           align-items: center;
           gap: 8px;
+          padding: 14px 32px;
+          border-radius: var(--radius-xl);
+          font-family: var(--font-body), sans-serif;
+          font-weight: 700;
+          font-size: 1rem;
+          text-decoration: none;
+          cursor: pointer;
+          transition: all var(--transition-base);
+          position: relative;
+          white-space: nowrap;
         }
 
-        .hero__stats {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: var(--space-6);
-          padding: var(--space-6) var(--space-8);
+        .hero__btn--primary {
+          background: linear-gradient(135deg, #0D6EFD, #7C3AED);
+          color: #ffffff;
+          border: none;
+          box-shadow: 0 4px 16px rgba(13, 110, 253, 0.25);
+        }
+
+        .hero__btn--primary:hover {
+          background: linear-gradient(135deg, #3B8BFF, #9333EA);
+          box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+          transform: translateY(-2px);
+          color: #ffffff;
+        }
+
+        .hero__btn-arrow {
+          transition: transform var(--transition-base);
+          flex-shrink: 0;
+        }
+
+        .hero__btn--primary:hover .hero__btn-arrow {
+          transform: translateX(3px);
+        }
+
+        .hero__btn--secondary {
           background: var(--bg-glass);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
+          color: var(--text-primary);
           border: 1px solid var(--border-default);
-          border-radius: var(--radius-xl);
-          margin-bottom: var(--space-12);
+        }
+
+        .hero__btn--secondary:hover {
+          border-color: var(--accent-primary);
+          color: var(--accent-primary);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+        }
+
+        /* ── Stats Bar ── */
+        .hero__stats {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+          max-width: 820px;
+          width: 100%;
+          background: var(--bg-glass);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-2xl);
+          padding: var(--space-5) var(--space-6);
+          margin-bottom: var(--space-14);
+          gap: 0;
+        }
+
+        .hero__stats-row-item {
+          display: contents;
+        }
+
+        .hero__stats-sep {
+          width: 1px;
+          height: 48px;
+          background: var(--border-default);
+          flex-shrink: 0;
+          align-self: center;
         }
 
         .hero__stat {
           display: flex;
-          flex-direction: column;
           align-items: center;
-          padding: 0 var(--space-4);
+          gap: var(--space-3);
+          padding: var(--space-3) var(--space-6);
+          flex: 1;
+          min-width: 160px;
+          justify-content: center;
+        }
+
+        .hero__stat-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: var(--radius-lg);
+          background: color-mix(in srgb, var(--stat-color) 14%, transparent);
+          border: 1px solid color-mix(in srgb, var(--stat-color) 30%, transparent);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          flex-shrink: 0;
+          transition: transform var(--transition-base);
+        }
+
+        .hero__stat:hover .hero__stat-icon {
+          transform: scale(1.12);
+        }
+
+        .hero__stat-body {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1px;
         }
 
         .hero__stat-value {
@@ -325,113 +523,218 @@ export default function HeroSection({ stats }) {
           font-weight: 800;
           color: var(--text-primary);
           font-variant-numeric: tabular-nums;
+          line-height: 1.1;
         }
 
         .hero__stat-label {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
           color: var(--text-tertiary);
-          font-weight: 500;
-          margin-top: 2px;
-        }
-
-        .hero__stat-divider {
-          width: 1px;
-          height: 40px;
-          background: var(--border-default);
+          white-space: nowrap;
         }
 
         @media (max-width: 640px) {
-          .hero__stat-divider {
+          .hero__stats {
+            gap: var(--space-1);
+            padding: var(--space-4) var(--space-3);
+            border-radius: var(--radius-xl);
+          }
+
+          .hero__stats-sep {
             display: none;
           }
-          .hero__stats {
-            gap: var(--space-4);
-            padding: var(--space-4) var(--space-5);
+
+          .hero__stat {
+            padding: var(--space-3) var(--space-3);
+            min-width: 140px;
+            flex: 0 0 calc(50% - var(--space-2));
+          }
+
+          .hero__stat-value {
+            font-size: 1.25rem;
           }
         }
 
-        /* How it Works Steps */
-        .hero__how-it-works {
+        /* ── How It Works ── */
+        .hero__hiw {
           display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          align-items: flex-start;
-          gap: var(--space-4);
+          flex-direction: column;
+          align-items: center;
+          gap: var(--space-5);
           width: 100%;
-          max-width: 900px;
+          max-width: 940px;
+        }
+
+        .hero__hiw-label {
+          font-size: 0.72rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: var(--text-tertiary);
+          margin: 0;
+        }
+
+        .hero__steps {
+          display: flex;
+          align-items: stretch;
+          justify-content: center;
+          gap: 0;
+          width: 100%;
+        }
+
+        .hero__step-wrapper {
+          display: flex;
+          align-items: center;
+          flex: 1;
+          min-width: 0;
         }
 
         .hero__step {
+          flex: 1;
           display: flex;
           flex-direction: column;
           align-items: center;
           gap: var(--space-3);
-          flex: 1;
-          min-width: 140px;
-          max-width: 180px;
+          padding: var(--space-5) var(--space-4);
+          background: var(--bg-glass);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-xl);
+          text-align: center;
+          transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+          cursor: default;
         }
 
-        .hero__step-number {
-          width: 40px;
-          height: 40px;
+        .hero__step:hover {
+          transform: translateY(-4px);
+          box-shadow: var(--shadow-lg);
+          border-color: var(--accent-primary);
+        }
+
+        .hero__step-num-box {
+          width: 48px;
+          height: 48px;
           border-radius: var(--radius-lg);
-          background: var(--accent-primary);
-          color: white;
+          border: 1px solid var(--step-color);
+          background: var(--bg-elevated);
+          color: var(--step-color);
           font-family: var(--font-heading), sans-serif;
           font-weight: 800;
-          font-size: 1rem;
+          font-size: 0.85rem;
           display: flex;
           align-items: center;
           justify-content: center;
+          letter-spacing: 0.02em;
+          flex-shrink: 0;
+          transition: background var(--transition-base), box-shadow var(--transition-base);
         }
 
-        .hero__step-number--2 {
-          background: var(--accent-premium);
-        }
-
-        .hero__step-number--3 {
-          background: var(--accent-success);
-        }
-
-        .hero__step-number--4 {
-          background: linear-gradient(135deg, #0D6EFD, #10B981);
+        .hero__step:hover .hero__step-num-box {
+          background: color-mix(in srgb, var(--step-color) 12%, var(--bg-elevated));
+          box-shadow: 0 0 0 4px color-mix(in srgb, var(--step-color) 12%, transparent);
         }
 
         .hero__step-title {
           font-family: var(--font-heading), sans-serif;
-          font-size: 0.85rem;
+          font-size: 0.9rem;
           font-weight: 700;
-          margin: 0;
           color: var(--text-primary);
+          margin: 0;
+          line-height: 1.3;
         }
 
         .hero__step-desc {
-          font-size: 0.75rem;
+          font-size: 0.78rem;
           color: var(--text-tertiary);
           margin: 0;
-          line-height: 1.5;
-          text-align: center;
+          line-height: 1.6;
         }
 
+        /* Arrow connectors between cards */
         .hero__step-arrow {
+          display: flex;
+          align-items: center;
+          justify-content: center;
           color: var(--text-tertiary);
-          font-size: 1.2rem;
-          margin-top: 8px;
+          padding: 0 var(--space-2);
+          flex-shrink: 0;
+          opacity: 0.5;
         }
 
+        /* ── Responsive ── */
         @media (max-width: 768px) {
+          .hero__steps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3);
+          }
+
+          .hero__step-wrapper {
+            flex: unset;
+          }
+
           .hero__step-arrow {
             display: none;
           }
-          .hero__how-it-works {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-5);
-          }
+
           .hero__step {
+            flex: unset;
+            width: 100%;
+          }
+
+          .hero__hiw {
             max-width: 100%;
           }
+
+          .hero__badge-text {
+            display: none;
+          }
         }
+
+        @media (max-width: 640px) {
+          .hero {
+            padding: calc(64px + var(--space-10)) 0 var(--space-10);
+          }
+
+          .hero__headline {
+            letter-spacing: -0.03em;
+          }
+
+          .hero__ctas {
+            flex-direction: column;
+            gap: var(--space-3);
+          }
+
+          .hero__btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+
+        /* ── Animation delay utilities ── */
+        .animate-delay-200 {
+          animation-delay: 200ms;
+          animation-fill-mode: both;
+        }
+
+        .animate-delay-300 {
+          animation-delay: 300ms;
+          animation-fill-mode: both;
+        }
+
+        .animate-delay-400 {
+          animation-delay: 400ms;
+          animation-fill-mode: both;
+        }
+
+        .animate-delay-500 {
+          animation-delay: 500ms;
+          animation-fill-mode: both;
+        }
+
       `}</style>
     </section>
   );

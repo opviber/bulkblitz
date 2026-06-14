@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { USER } from "@/lib/mock-data";
 
 export default function Header() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [portalSidebarOpen, setPortalSidebarOpen] = useState(false);
@@ -20,7 +23,7 @@ export default function Header() {
   }, [theme]);
 
   useEffect(() => {
-    if (portalSidebarOpen) {
+    if (portalSidebarOpen || mobileMenuOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -28,16 +31,17 @@ export default function Header() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [portalSidebarOpen]);
+  }, [portalSidebarOpen, mobileMenuOpen]);
 
   const toggleTheme = () =>
     setTheme((t) => (t === "light" ? "dark" : "light"));
 
   return (
-    <header
-      className={`header ${scrolled ? "header--scrolled" : ""}`}
-      id="main-header"
-    >
+    <>
+      <header
+        className={`header ${scrolled ? "header--scrolled" : ""}`}
+        id="main-header"
+      >
       <div className="header__inner container">
         {/* Logo */}
         <Link href="/" className="header__logo" id="logo-link">
@@ -188,49 +192,152 @@ export default function Header() {
           </button>
         </div>
       </div>
+    </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Sidebar */}
       {mobileMenuOpen && (
-        <div className="header__mobile-menu animate-fade-in" id="mobile-menu">
-          <nav className="header__mobile-nav">
+        <div 
+          className="sidebar-backdrop animate-fade-in" 
+          onClick={() => setMobileMenuOpen(false)}
+          id="mobile-menu-backdrop"
+        />
+      )}
+      
+      <div className={`sidebar-drawer sidebar-drawer--left ${mobileMenuOpen ? 'sidebar-drawer--open' : ''}`} id="mobile-menu">
+        <div className="sidebar-drawer__header">
+          <Link href="/" className="header__logo" onClick={() => setMobileMenuOpen(false)}>
+            <div className="header__logo-icon">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  width="32"
+                  height="32"
+                  rx="8"
+                  fill="url(#logo-gradient-mobile)"
+                />
+                <path
+                  d="M8 20L12 10H15L11 20H8Z"
+                  fill="white"
+                  fillOpacity="0.9"
+                />
+                <path
+                  d="M14 20L18 10H21L17 20H14Z"
+                  fill="white"
+                  fillOpacity="0.9"
+                />
+                <path
+                  d="M20 20L24 10H27L23 20H20Z"
+                  fill="white"
+                  fillOpacity="0.7"
+                />
+                <defs>
+                  <linearGradient
+                    id="logo-gradient-mobile"
+                    x1="0"
+                    y1="0"
+                    x2="32"
+                    y2="32"
+                  >
+                    <stop stopColor="#0D6EFD" />
+                    <stop offset="1" stopColor="#8B5CF6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <div className="header__logo-text">
+              <span className="header__logo-name">BulkBlitz</span>
+              <span className="header__logo-tagline">bulk up. price down.</span>
+            </div>
+          </Link>
+          <button 
+            className="sidebar-drawer__close" 
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="sidebar-drawer__content">
+          <nav className="mobile-menu-nav">
             <Link
               href="/"
-              className="header__mobile-link"
+              className={`mobile-menu-link ${pathname === "/" ? "mobile-menu-link--active" : ""}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              🏠 Discover Batches
+              <span className="mobile-menu-emoji">🏠</span>
+              <span>Discover Batches</span>
             </Link>
             <Link
               href="/orders"
-              className="header__mobile-link"
+              className={`mobile-menu-link ${pathname === "/orders" ? "mobile-menu-link--active" : ""}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              📦 My Orders
+              <span className="mobile-menu-emoji">📦</span>
+              <span>My Orders</span>
             </Link>
             <Link
               href="/wallet"
-              className="header__mobile-link"
+              className={`mobile-menu-link ${pathname === "/wallet" ? "mobile-menu-link--active" : ""}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              💰 BulkCash Wallet
+              <span className="mobile-menu-emoji">💰</span>
+              <span>BulkCash Wallet</span>
             </Link>
             <Link
               href="/manufacturer"
-              className="header__mobile-link"
+              className={`mobile-menu-link ${pathname === "/manufacturer" ? "mobile-menu-link--active" : ""}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              🏭 For Manufacturers
+              <span className="mobile-menu-emoji">🏭</span>
+              <span>For Manufacturers</span>
             </Link>
-            <Link
-              href="/auth"
-              className="header__mobile-link header__mobile-link--cta"
-              onClick={() => setMobileMenuOpen(false)}
+
+            <div className="sidebar-drawer__divider" style={{ margin: 'var(--space-3) 0' }} />
+
+            <button 
+              className="mobile-menu-link mobile-menu-portal-trigger"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setPortalSidebarOpen(true);
+              }}
             >
-              Get Started →
-            </Link>
+              <span className="mobile-menu-emoji">🌐</span>
+              <span>Roles & Portals</span>
+            </button>
           </nav>
+
+          <div style={{ marginTop: 'auto' }} />
+
+          <div className="mobile-menu-user">
+            <div className="avatar avatar--md">
+              <span className="avatar-initials">{USER.avatar}</span>
+            </div>
+            <div className="mobile-menu-user__info">
+              <span className="mobile-menu-user__name">{USER.name}</span>
+              <span className="mobile-menu-user__trust">Trust Score: {USER.trustScore}</span>
+            </div>
+          </div>
+
+          <Link
+            href="/auth"
+            className="btn btn--primary w-full"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ marginTop: 'var(--space-2)' }}
+          >
+            Get Started
+          </Link>
         </div>
-      )}
+
+        <div className="sidebar-drawer__footer">
+          <p className="sidebar-drawer__footer-tagline">BulkBlitz • Bulk Up. Price Down.</p>
+        </div>
+      </div>
 
       <style jsx>{`
         .header {
@@ -400,56 +507,109 @@ export default function Header() {
           transform: rotate(-45deg) translate(5px, -5px);
         }
 
-        .header__mobile-menu {
-          position: absolute;
-          top: 64px;
+        /* Left Sidebar Drawer subclasses */
+        .sidebar-drawer--left {
           left: 0;
-          right: 0;
-          background: var(--bg-surface);
-          border-bottom: 1px solid var(--border-default);
-          box-shadow: var(--shadow-lg);
-          padding: var(--space-4);
+          right: auto;
+          border-left: none;
+          border-right: 1px solid var(--border-default);
+          transform: translateX(-100%);
+        }
+
+        .sidebar-drawer--left.sidebar-drawer--open {
+          transform: translateX(0);
         }
 
         @media (min-width: 768px) {
-          .header__mobile-menu {
-            display: none;
+          .sidebar-drawer--left {
+            display: none !important;
           }
         }
 
-        .header__mobile-nav {
+        /* Mobile Menu Content Styles */
+        .mobile-menu-nav {
           display: flex;
           flex-direction: column;
-          gap: var(--space-1);
+          gap: var(--space-2);
         }
 
-        .header__mobile-link {
+        .mobile-menu-link {
           display: flex;
           align-items: center;
           gap: var(--space-3);
           padding: var(--space-3) var(--space-4);
           font-size: 0.95rem;
           font-weight: 500;
-          color: var(--text-primary);
+          color: var(--text-secondary);
           text-decoration: none;
           border-radius: var(--radius-md);
           transition: all var(--transition-fast);
+          background: transparent;
+          width: 100%;
+          text-align: left;
         }
 
-        .header__mobile-link:hover {
+        .mobile-menu-link:hover {
           background: var(--bg-elevated);
+          color: var(--text-primary);
+          transform: translateX(4px);
         }
 
-        .header__mobile-link--cta {
-          margin-top: var(--space-2);
-          background: var(--accent-primary);
-          color: white;
-          justify-content: center;
+        .mobile-menu-link--active {
+          color: var(--accent-primary);
+          background: var(--accent-primary-light);
           font-weight: 600;
         }
 
-        .header__mobile-link--cta:hover {
-          background: var(--accent-primary-hover);
+        .mobile-menu-emoji {
+          font-size: 1.2rem;
+          flex-shrink: 0;
+        }
+
+        .mobile-menu-portal-trigger {
+          color: var(--accent-premium);
+          font-weight: 600;
+          border: 1px solid transparent;
+        }
+        
+        .mobile-menu-portal-trigger:hover {
+          background: var(--accent-premium-light);
+          color: var(--accent-premium);
+        }
+
+        .mobile-menu-user {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          padding: var(--space-3) var(--space-4);
+          background: var(--bg-elevated);
+          border-radius: var(--radius-lg);
+          border: 1px solid var(--border-light);
+          margin-bottom: var(--space-3);
+        }
+
+        .mobile-menu-user__info {
+          display: flex;
+          flex-direction: column;
+          line-height: 1.2;
+        }
+
+        .mobile-menu-user__name {
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: var(--text-primary);
+        }
+
+        .mobile-menu-user__trust {
+          font-size: 0.75rem;
+          color: var(--accent-success);
+          font-weight: 500;
+        }
+
+        .avatar-initials {
+          font-weight: 700;
+          color: var(--accent-primary);
+          font-size: 0.9rem;
         }
 
         /* Portal Trigger Styles */
@@ -783,6 +943,6 @@ export default function Header() {
           <p className="sidebar-drawer__footer-tagline">BulkBlitz • Bulk Up. Price Down.</p>
         </div>
       </div>
-    </header>
+    </>
   );
 }

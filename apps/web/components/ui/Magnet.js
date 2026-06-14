@@ -38,16 +38,16 @@ export default function Magnet({ children, strength = 3, padding = 80 }) {
       }
     };
 
-    const handleMouseLeave = () => {
-      setActive(false);
-      setPosition({ x: 0, y: 0 });
-    };
-
     window.addEventListener("mousemove", handleMouseMove);
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, [strength, padding, active]);
+
+  const handleMouseLeave = () => {
+    setActive(false);
+    setPosition({ x: 0, y: 0 });
+  };
 
   return (
     <div
