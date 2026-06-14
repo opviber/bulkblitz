@@ -101,9 +101,9 @@ function HomePageContent() {
   ];
 
   const PROOF_CARDS = [
-    { k: 'Demand signal', v: 'Buyers reserve slots before production locks.', tone: 'blue' },
-    { k: 'Tier unlock', v: 'Every reservation pushes the whole batch closer to factory pricing.', tone: 'green' },
-    { k: 'Shared upside', v: 'When the batch closes, everyone pays the final lowest unlocked price.', tone: 'amber' },
+    { k: 'Demand signal', v: 'Buyers reserve slots before production locks.', tone: 'blue', img: '/demand_signal.png' },
+    { k: 'Tier unlock', v: 'Every reservation pushes the whole batch closer to factory pricing.', tone: 'green', img: '/tier_unlock.png' },
+    { k: 'Shared upside', v: 'When the batch closes, everyone pays the final lowest unlocked price.', tone: 'amber', img: '/shared_upside.png' },
   ];
 
   return (
@@ -289,6 +289,9 @@ function HomePageContent() {
               <div className="proof-cards">
                 {PROOF_CARDS.map((card, index) => (
                   <div key={card.k} className={`proof-card proof-card--${card.tone}`}>
+                    <div className="proof-card__img-container">
+                      <img src={card.img} alt={card.k} className="proof-card__img" />
+                    </div>
                     <span className="proof-card__num">{String(index + 1).padStart(2, '0')}</span>
                     <h3>{card.k}</h3>
                     <p>{card.v}</p>
@@ -367,11 +370,20 @@ function HomePageContent() {
         /* ── SECTIONS ────────────────────────────────────────────────────── */
         .section {
           padding: var(--space-20) 0;
+          position: relative;
+          background-image:
+            radial-gradient(circle at 10% 20%, rgba(255, 107, 0, 0.04), transparent 30%),
+            radial-gradient(circle at 90% 80%, rgba(255, 107, 0, 0.04), transparent 30%);
         }
 
         .section--alt {
+          padding: var(--space-20) 0;
+          position: relative;
           background:
-            linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 92%, #111827) 0%, var(--bg-primary) 100%);
+            radial-gradient(circle at 80% 20%, rgba(255, 107, 0, 0.06), transparent 35%),
+            linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-primary) 100%);
+          border-top: 1px solid var(--border-light);
+          border-bottom: 1px solid var(--border-light);
         }
 
         /* ── SECTION HEADER ──────────────────────────────────────────────── */
@@ -554,7 +566,11 @@ function HomePageContent() {
         /* ── PROOF SECTION ──────────────────────────────────────────────── */
         .proof-section {
           padding: var(--space-20) 0;
-          background: var(--bg-primary);
+          background:
+            radial-gradient(circle at 20% 50%, rgba(255, 107, 0, 0.05), transparent 30%),
+            var(--bg-primary);
+          border-bottom: 1px solid var(--border-light);
+          position: relative;
         }
 
         .proof-layout {
@@ -569,7 +585,7 @@ function HomePageContent() {
           border: 1px solid color-mix(in srgb, var(--accent-primary) 18%, var(--border-default));
           border-radius: var(--radius-2xl);
           background:
-            radial-gradient(circle at 90% 10%, rgba(239, 68, 68, 0.16), transparent 32%),
+            radial-gradient(circle at 90% 10%, rgba(255, 107, 0, 0.12), transparent 32%),
             linear-gradient(135deg, color-mix(in srgb, var(--bg-surface) 94%, #ffffff), var(--bg-surface));
           box-shadow: var(--shadow-premium);
         }
@@ -599,7 +615,7 @@ function HomePageContent() {
         }
 
         .proof-card {
-          min-height: 260px;
+          min-height: 320px;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
@@ -611,6 +627,29 @@ function HomePageContent() {
           box-shadow: var(--shadow-premium);
           position: relative;
           overflow: hidden;
+        }
+
+        .proof-card__img-container {
+          width: 100%;
+          height: 120px;
+          margin-bottom: var(--space-4);
+          border-radius: var(--radius-lg);
+          overflow: hidden;
+          position: relative;
+          z-index: 2;
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--border-light);
+        }
+
+        .proof-card__img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform var(--transition-base);
+        }
+
+        .proof-card:hover .proof-card__img {
+          transform: scale(1.05);
         }
 
         .proof-card::before {
@@ -739,8 +778,8 @@ function HomePageContent() {
           border-radius: var(--radius-2xl);
           padding: var(--space-12) var(--space-10);
           background:
-            radial-gradient(circle at 78% 20%, rgba(239, 68, 68, 0.26), transparent 28%),
-            linear-gradient(135deg, #090A0F 0%, #171017 50%, #080A10 100%);
+            radial-gradient(circle at 78% 20%, rgba(255, 107, 0, 0.18), transparent 28%),
+            linear-gradient(135deg, #050505 0%, #17110C 50%, #080808 100%);
           color: white;
           border: 1px solid rgba(255, 255, 255, 0.06);
         }
@@ -831,7 +870,7 @@ function HomePageContent() {
         }
 
         .cta-btn {
-          background: linear-gradient(135deg, #0D6EFD 0%, #7C3AED 100%);
+          background: linear-gradient(135deg, #FF6B00 0%, #B34B00 100%);
           border: none;
           color: white;
           transition: opacity var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -840,7 +879,7 @@ function HomePageContent() {
         .cta-btn:hover {
           opacity: 0.92;
           transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+          box-shadow: 0 8px 32px rgba(255, 107, 0, 0.4);
         }
 
         .cta-stats {
