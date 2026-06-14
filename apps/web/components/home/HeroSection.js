@@ -80,14 +80,17 @@ export default function HeroSection({ stats }) {
 
       <div className="container hero__container">
 
-        {/* ── Badge ── */}
-        <div className="hero__badge animate-fade-in">
-          <span className="hero__badge-live">
-            <span className="hero__badge-dot" />
-            {stats?.activeBatches ?? 142} LIVE POOLS
-          </span>
-          <span className="hero__badge-divider" />
-          <span className="hero__badge-text">Zero-MOQ Sourcing Direct From Indian Factories</span>
+        {/* ── Overlapping Futuristic Badge ── */}
+        <div className="hero__badge animate-fade-in" aria-label={`${stats?.activeBatches ?? 142} live pools sourcing zero-MOQ direct from factories`}>
+          <div className="hero__badge-beacon">
+            <span className="hero__badge-sonar" />
+            <span className="hero__badge-beacon-dot" />
+            <span className="hero__badge-count">{stats?.activeBatches ?? 142} LIVE POOLS</span>
+          </div>
+          <div className="hero__badge-tag">
+            <span className="hero__badge-tag-prefix">Zero-MOQ</span>
+            <span className="hero__badge-tag-text">Direct Sourcing From Indian Factories</span>
+          </div>
         </div>
 
         {/* ── Headline ── */}
@@ -272,61 +275,123 @@ export default function HeroSection({ stats }) {
           min-height: calc(100vh - 128px);
         }
 
-        /* ── Badge ── */
+        /* ── Overlapping Futuristic Badge ── */
         .hero__badge {
           display: inline-flex;
           align-items: center;
-          gap: 10px;
-          padding: 6px 8px 6px 8px;
-          background: rgba(15, 15, 15, 0.72);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: var(--radius-full);
           margin-bottom: var(--space-6);
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--text-secondary);
-          transition: border-color var(--transition-base);
-          box-shadow: var(--shadow-premium);
+          position: relative;
+          z-index: 10;
+          cursor: pointer;
         }
 
-        .hero__badge:hover {
-          border-color: var(--accent-primary);
-        }
-
-        .hero__badge-live {
+        /* Left capsule: Green beacon */
+        .hero__badge-beacon {
+          position: relative;
+          z-index: 2;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          background: rgba(52, 211, 153, 0.12);
-          border: 1px solid rgba(52, 211, 153, 0.3);
+          gap: var(--space-2);
+          padding: 8px 16px;
+          background: rgba(16, 185, 129, 0.08);
+          border: 1px solid rgba(16, 185, 129, 0.35);
           border-radius: var(--radius-full);
-          padding: 2px 9px;
-          font-size: 0.7rem;
-          font-weight: 700;
-          letter-spacing: 0.06em;
           color: #34D399;
+          font-family: var(--font-heading), sans-serif;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.06em;
+          box-shadow: 0 0 15px rgba(16, 185, 129, 0.12), inset 0 0 8px rgba(16, 185, 129, 0.05);
+          transition: all var(--transition-base);
         }
 
-        .hero__badge-dot {
-          width: 6px;
-          height: 6px;
+        .hero__badge:hover .hero__badge-beacon {
+          border-color: rgba(16, 185, 129, 0.6);
+          box-shadow: 0 0 20px rgba(16, 185, 129, 0.25), inset 0 0 10px rgba(16, 185, 129, 0.1);
+          transform: scale(1.02);
+        }
+
+        /* Pulsing green light dot */
+        .hero__badge-beacon-dot {
+          width: 7px;
+          height: 7px;
           background: #34D399;
           border-radius: 50%;
-          animation: pulseSoft 1.6s ease-in-out infinite;
-          flex-shrink: 0;
+          z-index: 2;
+          box-shadow: 0 0 8px #34D399;
         }
 
-        .hero__badge-divider {
-          width: 1px;
-          height: 16px;
-          background: var(--border-default);
-          flex-shrink: 0;
+        /* Sonar wave element */
+        .hero__badge-sonar {
+          position: absolute;
+          left: 16px; /* align with dot */
+          top: 50%;
+          transform: translateY(-50%);
+          width: 7px;
+          height: 7px;
+          background: #34D399;
+          border-radius: 50%;
+          z-index: 1;
+          opacity: 0.6;
+          animation: badgeSonar 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+          pointer-events: none;
         }
 
-        .hero__badge-text {
-          padding-right: 6px;
+        /* Right capsule: Grey/Orange glass tag sliding behind */
+        .hero__badge-tag {
+          position: relative;
+          z-index: 1;
+          margin-left: -14px; /* overlap */
+          padding: 6px 18px 6px 28px; /* extra left padding for overlap */
+          background: rgba(18, 18, 18, 0.6);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: var(--radius-full);
+          display: inline-flex;
+          align-items: center;
+          gap: var(--space-2);
+          color: var(--text-secondary);
+          font-size: 0.78rem;
+          font-weight: 500;
+          box-shadow: var(--shadow-md);
+          transition: all var(--transition-base);
+        }
+
+        .hero__badge:hover .hero__badge-tag {
+          border-color: rgba(255, 107, 0, 0.3);
+          background: rgba(24, 16, 12, 0.68); /* warm hover tint */
+          color: var(--text-primary);
+          box-shadow: 0 8px 25px rgba(255, 107, 0, 0.08);
+        }
+
+        /* Mini pill badge inside the tag for focus */
+        .hero__badge-tag-prefix {
+          font-size: 0.6rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          background: rgba(255, 107, 0, 0.12);
+          border: 1px solid rgba(255, 107, 0, 0.25);
+          color: #FF8533;
+          padding: 1px 6px;
+          border-radius: 4px;
+        }
+
+        .hero__badge-tag-text {
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        @keyframes badgeSonar {
+          0% {
+            transform: translateY(-50%) scale(1);
+            opacity: 0.8;
+          }
+          100% {
+            transform: translateY(-50%) scale(4);
+            opacity: 0;
+          }
         }
 
         /* ── Headline ── */
@@ -710,7 +775,7 @@ export default function HeroSection({ stats }) {
             max-width: 100%;
           }
 
-          .hero__badge-text {
+          .hero__badge-tag {
             display: none;
           }
         }
