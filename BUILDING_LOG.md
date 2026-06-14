@@ -55,8 +55,8 @@ apps/web/
 ### Theme
 - **Dark mode**: `data-theme="dark"` on `<html>`. Auto-applied based on OS preference in `layout.js`
 - **Fonts**: `--font-heading` = Plus Jakarta Sans (Kanit vibes, display), `--font-body` = Inter
-- **Primary color**: `#0D6EFD` (light) / `#3B82F6` (dark)
-- **Background dark**: `#0C0C0C`
+- **Primary color**: `#FF6B00` (Orange)
+- **Background dark**: `#050505` (Pitch Black)
 
 ### Key CSS Variables (all defined in globals.css :root)
 ```css
@@ -108,7 +108,7 @@ The header was redesigned as a GitHub-style left-sidebar mobile drawer in a prev
 
 **Completed**:
 - [x] Rebuilt `globals.css` — restored design variables and added custom radius & transition tokens, `.chip--active` alias
-- [x] Redesigned `HeroSection.js` — premium mesh bg, electric gradient headline, icon stats, connected step cards (removed blurry 3D visual orbit scene, simplified character animations, centered all layout elements, and resolved horizontal spacing/separator wrapping layout bugs)
+- [x] Redesigned `HeroSection.js` — premium mesh bg, electric gradient headline, icon stats, connected step cards (removed blurry 3D visual orbit scene, simplified character animations, centered all layout elements, resolved horizontal spacing/separator wrapping layout bugs, and implemented premium black-orange styling)
 - [x] Redesigned `BatchCard.js` — category-colored image areas, glassmorphic badges, larger tabular price, thick progress bar with markers & pulsing tip, Join button
 - [x] Redesigned `page.js` — segmented tab control, category icon tiles, split CTA card
 - [x] Expanded `Footer.js` — 4-column layout with trust badges and newsletter strip
