@@ -229,9 +229,9 @@ export default function HeroSection({ stats }) {
           align-items: center;
           isolation: isolate;
           background:
-            radial-gradient(circle at 82% 24%, rgba(239, 68, 68, 0.18), transparent 28%),
-            radial-gradient(circle at 22% 78%, rgba(248, 250, 252, 0.08), transparent 26%),
-            linear-gradient(135deg, #07080d 0%, #11131b 48%, #080a10 100%);
+            radial-gradient(circle at 82% 24%, rgba(255, 107, 0, 0.16), transparent 28%),
+            radial-gradient(circle at 22% 78%, rgba(255, 255, 255, 0.05), transparent 26%),
+            linear-gradient(135deg, #050505 0%, #121212 48%, #080808 100%);
         }
 
         /* ── Background layer ── */
@@ -278,7 +278,7 @@ export default function HeroSection({ stats }) {
           align-items: center;
           gap: 10px;
           padding: 6px 8px 6px 8px;
-          background: rgba(10, 12, 18, 0.72);
+          background: rgba(15, 15, 15, 0.72);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border: 1px solid rgba(255, 255, 255, 0.1);
@@ -351,7 +351,7 @@ export default function HeroSection({ stats }) {
         }
 
         .hero__gradient-text {
-          background: linear-gradient(135deg, #ffffff 0%, #fca5a5 38%, #ef4444 100%);
+          background: linear-gradient(135deg, #ffffff 0%, #fed7aa 38%, #ff6b00 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -376,7 +376,7 @@ export default function HeroSection({ stats }) {
           overflow: hidden;
           border: 1px solid rgba(255, 255, 255, 0.12);
           border-radius: var(--radius-xl);
-          background: rgba(14, 16, 23, 0.72);
+          background: rgba(18, 18, 18, 0.72);
           box-shadow: var(--shadow-premium);
           backdrop-filter: blur(22px);
           -webkit-backdrop-filter: blur(22px);
@@ -388,7 +388,7 @@ export default function HeroSection({ stats }) {
           align-items: center;
           text-align: center;
           padding: var(--space-4) var(--space-5);
-          background: rgba(255, 255, 255, 0.035);
+          background: rgba(255, 255, 255, 0.025);
           min-width: 0;
         }
 
@@ -442,15 +442,15 @@ export default function HeroSection({ stats }) {
         }
 
         .hero__btn--primary {
-          background: linear-gradient(135deg, #EF4444, #991B1B);
+          background: linear-gradient(135deg, #FF6B00, #B34B00);
           color: #ffffff;
           border: none;
-          box-shadow: 0 12px 34px rgba(239, 68, 68, 0.3);
+          box-shadow: 0 12px 34px rgba(255, 107, 0, 0.3);
         }
 
         .hero__btn--primary:hover {
-          background: linear-gradient(135deg, #F87171, #B91C1C);
-          box-shadow: 0 14px 38px rgba(239, 68, 68, 0.36);
+          background: linear-gradient(135deg, #FF8533, #CC5200);
+          box-shadow: 0 14px 38px rgba(255, 107, 0, 0.36);
           transform: translateY(-2px);
           color: #ffffff;
         }
@@ -476,7 +476,7 @@ export default function HeroSection({ stats }) {
           border-color: var(--accent-primary);
           color: var(--accent-primary);
           transform: translateY(-2px);
-          box-shadow: 0 12px 30px rgba(239, 68, 68, 0.16);
+          box-shadow: 0 12px 30px rgba(255, 107, 0, 0.16);
         }
 
         /* ── Stats Bar ── */
@@ -487,7 +487,7 @@ export default function HeroSection({ stats }) {
           flex-wrap: wrap;
           max-width: 820px;
           width: 100%;
-          background: rgba(14, 16, 23, 0.74);
+          background: rgba(18, 18, 18, 0.74);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border: 1px solid rgba(255, 255, 255, 0.1);
@@ -618,7 +618,7 @@ export default function HeroSection({ stats }) {
           align-items: center;
           gap: var(--space-3);
           padding: var(--space-5) var(--space-4);
-          background: rgba(14, 16, 23, 0.72);
+          background: rgba(18, 18, 18, 0.72);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
           border: 1px solid rgba(255, 255, 255, 0.1);
