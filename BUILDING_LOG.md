@@ -108,7 +108,7 @@ The header was redesigned as a GitHub-style left-sidebar mobile drawer in a prev
 
 **Completed**:
 - [x] Rebuilt `globals.css` — restored design variables and added custom radius & transition tokens, `.chip--active` alias
-- [x] Redesigned `HeroSection.js` — premium mesh bg, electric gradient headline, icon stats, connected step cards
+- [x] Redesigned `HeroSection.js` — premium mesh bg, electric gradient headline, icon stats, connected step cards (removed blurry 3D visual orbit scene to ensure background clarity and readability)
 - [x] Redesigned `BatchCard.js` — category-colored image areas, glassmorphic badges, larger tabular price, thick progress bar with markers & pulsing tip, Join button
 - [x] Redesigned `page.js` — segmented tab control, category icon tiles, split CTA card
 - [x] Expanded `Footer.js` — 4-column layout with trust badges and newsletter strip
