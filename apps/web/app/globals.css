@@ -633,3 +633,18 @@ code {
 ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: var(--radius-full); }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 * { scrollbar-width: thin; scrollbar-color: var(--border-default) transparent; }
+
+/* ─────────────────────────────────────────────
+   10. GMAIL-STYLE GLOBAL LAYOUT ADJUSTMENTS
+───────────────────────────────────────────── */
+@media (min-width: 992px) {
+  main {
+    margin-left: var(--current-sidebar-width, 280px);
+    transition: margin-left var(--transition-base);
+  }
+  .footer {
+    margin-left: var(--current-sidebar-width, 280px);
+    transition: margin-left var(--transition-base);
+  }
+}
+

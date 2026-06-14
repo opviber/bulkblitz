@@ -1,14 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
 import BatchCard from '@/components/batch/BatchCard';
 import { CATEGORIES, STATS } from '@/lib/mock-data';
 
-export default function HomePage() {
-  const [activeCategory, setActiveCategory] = useState('all');
+function HomePageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const activeCategory = searchParams.get('category') || 'all';
+  const searchQuery = searchParams.get('search') || '';
+
   const [activeTab, setActiveTab] = useState('trending');
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,12 +36,24 @@ export default function HomePage() {
     loadBatches();
   }, []);
 
-  const filteredBatches =
-    activeCategory === 'all'
-      ? batches.filter((b) => b.status !== 'CLOSED')
-      : batches.filter(
-          (b) => b.category === activeCategory && b.status !== 'CLOSED'
-        );
+  const handleCategoryChange = (catId) => {
+    const params = new URLSearchParams(window.location.search);
+    if (catId === 'all') {
+      params.delete('category');
+    } else {
+      params.set('category', catId);
+    }
+    router.push(`/?${params.toString()}`);
+  };
+
+  const filteredBatches = batches.filter((b) => {
+    const matchesCategory = activeCategory === 'all' || b.category === activeCategory;
+    const matchesSearch = searchQuery === '' || 
+      b.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      b.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch && b.status !== 'CLOSED';
+  });
+
 
   const getTrending = () => {
     return [...batches].sort((a, b) => (b.velocity || 0) - (a.velocity || 0));
@@ -181,7 +199,7 @@ export default function HomePage() {
             <div className="cat-tiles" id="category-filters">
               <button
                 className={`cat-tile${activeCategory === 'all' ? ' cat-tile--active' : ''}`}
-                onClick={() => setActiveCategory('all')}
+                onClick={() => handleCategoryChange('all')}
                 id="chip-all"
               >
                 <span className="cat-tile__icon">🌟</span>
@@ -194,7 +212,7 @@ export default function HomePage() {
                   key={cat.id}
                   id={`chip-${cat.id}`}
                   className={`cat-tile${activeCategory === cat.id ? ' cat-tile--active' : ''}`}
-                  onClick={() => setActiveCategory(cat.id)}
+                  onClick={() => handleCategoryChange(cat.id)}
                   style={{ '--cat-color': cat.color }}
                 >
                   <span className="cat-tile__icon">{cat.icon}</span>
@@ -225,11 +243,22 @@ export default function HomePage() {
                 ))
               ) : (
                 <div className="empty-state">
-                  <div className="empty-state__illus">📦</div>
-                  <h3 className="empty-state__title">No batches yet</h3>
+                  <div className="empty-state__illus">🔍</div>
+                  <h3 className="empty-state__title">No matches found</h3>
                   <p className="empty-state__text">
-                    No active batches in this category right now. Check back soon or browse other categories!
+                    {searchQuery 
+                      ? `We couldn't find any batches matching "${searchQuery}".`
+                      : "No active batches match this filter right now. Try checking other categories!"}
                   </p>
+                  {searchQuery && (
+                    <button 
+                      onClick={() => router.push('/')}
+                      className="btn btn--secondary btn--sm"
+                      style={{ marginTop: 'var(--space-4)' }}
+                    >
+                      Clear Search
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -767,3 +796,16 @@ export default function HomePage() {
     </>
   );
 }
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', color: 'var(--text-secondary)', background: 'var(--bg-primary)', fontFamily: 'var(--font-sans)' }}>
+        Loading BulkBlitz...
+      </div>
+    }>
+      <HomePageContent />
+    </Suspense>
+  );
+}
+

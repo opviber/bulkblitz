@@ -112,6 +112,13 @@ The header was redesigned as a GitHub-style left-sidebar mobile drawer in a prev
 - [x] Redesigned `BatchCard.js` — category-colored image areas, glassmorphic badges, larger tabular price, thick progress bar with markers & pulsing tip, Join button
 - [x] Redesigned `page.js` — segmented tab control, category icon tiles, split CTA card
 - [x] Expanded `Footer.js` — 4-column layout with trust badges and newsletter strip
+- [x] Redesigned global navigation layout to look like the Gmail app:
+  - Added a top header bar with centered functional Search Bar
+  - Added left App Rail (Buyer, Mfg, Help modes) and collapsible wide Navigation Pane
+  - Added collapsible labels category lists with colored dot indicators
+  - Fixed transparent text bleed-through via solid background backing overlays
+- [x] Integrated Suspense boundaries in `Header.js` and `page.js` to avoid static prerender bails
+- [x] Enabled global search and category URL query parameter filters on the HomePage
 - [x] Verified build compiles successfully using next build (`npm run build`)
 - [x] Verified local Next dev server runs active page without errors
 
@@ -120,7 +127,6 @@ The header was redesigned as a GitHub-style left-sidebar mobile drawer in a prev
 
 **Pending**:
 - [ ] Redesign the Batch Detail Page (`/batch/[id]`) to match the premium homepage aesthetic
-- [ ] Implement a theme toggle in the Header for dark/light modes
 - [ ] Set up interactive animations / transitions between pages
 - [ ] Connect/simulate real-time WebSocket updates for active slot counts
 
@@ -128,8 +134,8 @@ The header was redesigned as a GitHub-style left-sidebar mobile drawer in a prev
 
 ## 📋 If You're Continuing This Session
 
-1. **Verify git status**: Run `git status` to see all premium UI changes.
-2. **Commit changes**: Stage and commit the changes: `git add -A && git commit -m "feat: premium UI overhaul - world-class design, responsive components, and clean build"`
+1. **Verify git status**: Run `git status` to see all premium UI and navigation changes.
+2. **Commit changes**: Stage and commit the changes: `git add -A && git commit -m "feat: Gmail-style sidebar navigation overhaul and functional search"`
 3. **Check dev server**: Verify that local development server runs correctly on http://localhost:3000 (currently running in background as task-1094).
 4. **Redesign `/batch/[id]/page.js`**: Begin Session 4 by upgrading the product batch details layout with the same design system tokens and glassmorphism.
 
