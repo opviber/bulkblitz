@@ -14,7 +14,7 @@ function HeaderContent() {
   const [activeRail, setActiveRail] = useState("buyer");
   const [labelsExpanded, setLabelsExpanded] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("dark");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDesktop, setIsDesktop] = useState(false);
 

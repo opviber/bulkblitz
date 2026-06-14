@@ -151,25 +151,22 @@ export default function HeroSection({ stats }) {
 
         {/* ── Stats Bar ── */}
         <div className="hero__stats animate-fade-in-up animate-delay-500">
-          {STATS_CONFIG.map((s, i) => (
-            <div key={s.key} className="hero__stats-row-item">
-              {i > 0 && <div className="hero__stats-sep" aria-hidden="true" />}
-              <div className="hero__stat">
-                <div
-                  className="hero__stat-icon"
-                  style={{ '--stat-color': s.color }}
-                  aria-hidden="true"
-                >
-                  {s.icon}
-                </div>
-                <div className="hero__stat-body">
-                  <span className="hero__stat-value">
-                    {s.prefix}
-                    <AnimatedNumber value={stats?.[s.key] ?? s.fallback} />
-                    {s.suffix}
-                  </span>
-                  <span className="hero__stat-label">{s.label}</span>
-                </div>
+          {STATS_CONFIG.map((s) => (
+            <div key={s.key} className="hero__stat">
+              <div
+                className="hero__stat-icon"
+                style={{ '--stat-color': s.color }}
+                aria-hidden="true"
+              >
+                {s.icon}
+              </div>
+              <div className="hero__stat-body">
+                <span className="hero__stat-value">
+                  {s.prefix}
+                  <AnimatedNumber value={stats?.[s.key] ?? s.fallback} />
+                  {s.suffix}
+                </span>
+                <span className="hero__stat-label">{s.label}</span>
               </div>
             </div>
           ))}
@@ -232,7 +229,9 @@ export default function HeroSection({ stats }) {
           align-items: center;
           isolation: isolate;
           background:
-            linear-gradient(135deg, color-mix(in srgb, var(--bg-primary) 88%, #dbeafe) 0%, var(--bg-primary) 44%, color-mix(in srgb, var(--bg-primary) 90%, #dcfce7) 100%);
+            radial-gradient(circle at 82% 24%, rgba(239, 68, 68, 0.18), transparent 28%),
+            radial-gradient(circle at 22% 78%, rgba(248, 250, 252, 0.08), transparent 26%),
+            linear-gradient(135deg, #07080d 0%, #11131b 48%, #080a10 100%);
         }
 
         /* ── Background layer ── */
@@ -279,17 +278,17 @@ export default function HeroSection({ stats }) {
           align-items: center;
           gap: 10px;
           padding: 6px 8px 6px 8px;
-          background: var(--bg-glass);
+          background: rgba(10, 12, 18, 0.72);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: var(--radius-full);
           margin-bottom: var(--space-6);
           font-size: 0.8rem;
           font-weight: 600;
           color: var(--text-secondary);
           transition: border-color var(--transition-base);
-          box-shadow: var(--shadow-sm);
+          box-shadow: var(--shadow-premium);
         }
 
         .hero__badge:hover {
@@ -338,8 +337,8 @@ export default function HeroSection({ stats }) {
           font-weight: 900;
           line-height: 0.98;
           letter-spacing: -0.03em;
-          margin: 0 0 var(--space-6);
-          color: var(--text-primary);
+          margin: 0 auto var(--space-6);
+          color: #ffffff;
           text-wrap: balance;
         }
 
@@ -348,11 +347,11 @@ export default function HeroSection({ stats }) {
         }
 
         .hero__line--1 {
-          color: var(--text-primary);
+          color: #ffffff;
         }
 
         .hero__gradient-text {
-          background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #34D399 100%);
+          background: linear-gradient(135deg, #ffffff 0%, #fca5a5 38%, #ef4444 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -375,10 +374,10 @@ export default function HeroSection({ stats }) {
           width: min(680px, 100%);
           margin: 0 auto var(--space-8);
           overflow: hidden;
-          border: 1px solid color-mix(in srgb, var(--accent-primary) 18%, var(--border-default));
+          border: 1px solid rgba(255, 255, 255, 0.12);
           border-radius: var(--radius-xl);
-          background: color-mix(in srgb, var(--bg-surface) 78%, transparent);
-          box-shadow: var(--shadow-lg);
+          background: rgba(14, 16, 23, 0.72);
+          box-shadow: var(--shadow-premium);
           backdrop-filter: blur(22px);
           -webkit-backdrop-filter: blur(22px);
         }
@@ -389,7 +388,7 @@ export default function HeroSection({ stats }) {
           align-items: center;
           text-align: center;
           padding: var(--space-4) var(--space-5);
-          background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+          background: rgba(255, 255, 255, 0.035);
           min-width: 0;
         }
 
@@ -443,15 +442,15 @@ export default function HeroSection({ stats }) {
         }
 
         .hero__btn--primary {
-          background: linear-gradient(135deg, var(--accent-primary), var(--accent-premium));
+          background: linear-gradient(135deg, #EF4444, #991B1B);
           color: #ffffff;
           border: none;
-          box-shadow: 0 4px 16px rgba(13, 110, 253, 0.25);
+          box-shadow: 0 12px 34px rgba(239, 68, 68, 0.3);
         }
 
         .hero__btn--primary:hover {
-          background: linear-gradient(135deg, var(--accent-primary-hover), var(--accent-premium));
-          box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+          background: linear-gradient(135deg, #F87171, #B91C1C);
+          box-shadow: 0 14px 38px rgba(239, 68, 68, 0.36);
           transform: translateY(-2px);
           color: #ffffff;
         }
@@ -466,18 +465,18 @@ export default function HeroSection({ stats }) {
         }
 
         .hero__btn--secondary {
-          background: var(--bg-glass);
+          background: rgba(255, 255, 255, 0.04);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
           color: var(--text-primary);
-          border: 1px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .hero__btn--secondary:hover {
           border-color: var(--accent-primary);
           color: var(--accent-primary);
           transform: translateY(-2px);
-          box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+          box-shadow: 0 12px 30px rgba(239, 68, 68, 0.16);
         }
 
         /* ── Stats Bar ── */
@@ -488,26 +487,14 @@ export default function HeroSection({ stats }) {
           flex-wrap: wrap;
           max-width: 820px;
           width: 100%;
-          background: color-mix(in srgb, var(--bg-glass) 92%, transparent);
+          background: rgba(14, 16, 23, 0.74);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: var(--radius-2xl);
           padding: var(--space-5) var(--space-6);
           margin: 0 auto var(--space-14);
-          gap: 0;
-        }
-
-        .hero__stats-row-item {
-          display: contents;
-        }
-
-        .hero__stats-sep {
-          width: 1px;
-          height: 48px;
-          background: var(--border-default);
-          flex-shrink: 0;
-          align-self: center;
+          gap: var(--space-4) 0;
         }
 
         .hero__stat {
@@ -520,6 +507,11 @@ export default function HeroSection({ stats }) {
           flex: 1;
           min-width: 160px;
           justify-content: center;
+          border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero__stat:first-child {
+          border-left: none;
         }
 
         .hero__stat-icon {
@@ -572,14 +564,11 @@ export default function HeroSection({ stats }) {
             border-radius: var(--radius-xl);
           }
 
-          .hero__stats-sep {
-            display: none;
-          }
-
           .hero__stat {
             padding: var(--space-3) var(--space-3);
             min-width: 140px;
             flex: 0 0 calc(50% - var(--space-2));
+            border-left: none;
           }
 
           .hero__stat-value {
@@ -595,6 +584,7 @@ export default function HeroSection({ stats }) {
           gap: var(--space-5);
           width: 100%;
           max-width: 940px;
+          margin: 0 auto;
         }
 
         .hero__hiw-label {
@@ -628,10 +618,10 @@ export default function HeroSection({ stats }) {
           align-items: center;
           gap: var(--space-3);
           padding: var(--space-5) var(--space-4);
-          background: var(--bg-glass);
+          background: rgba(14, 16, 23, 0.72);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
-          border: 1px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: var(--radius-xl);
           text-align: center;
           transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
@@ -689,7 +679,7 @@ export default function HeroSection({ stats }) {
           align-items: center;
           justify-content: center;
           color: var(--text-tertiary);
-          padding: 0 var(--space-2);
+          padding: 0 var(--space-4);
           flex-shrink: 0;
           opacity: 0.5;
         }

@@ -371,7 +371,7 @@ function HomePageContent() {
 
         .section--alt {
           background:
-            linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 92%, #ffffff) 0%, var(--bg-primary) 100%);
+            linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 92%, #111827) 0%, var(--bg-primary) 100%);
         }
 
         /* ── SECTION HEADER ──────────────────────────────────────────────── */
@@ -569,7 +569,8 @@ function HomePageContent() {
           border: 1px solid color-mix(in srgb, var(--accent-primary) 18%, var(--border-default));
           border-radius: var(--radius-2xl);
           background:
-            linear-gradient(135deg, color-mix(in srgb, var(--bg-surface) 96%, #ffffff), var(--bg-surface));
+            radial-gradient(circle at 90% 10%, rgba(239, 68, 68, 0.16), transparent 32%),
+            linear-gradient(135deg, color-mix(in srgb, var(--bg-surface) 94%, #ffffff), var(--bg-surface));
           box-shadow: var(--shadow-premium);
         }
 
@@ -606,7 +607,7 @@ function HomePageContent() {
           border-radius: var(--radius-xl);
           border: 1px solid var(--border-default);
           background:
-            linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 94%, #ffffff), var(--bg-surface));
+            linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #ffffff), var(--bg-surface));
           box-shadow: var(--shadow-premium);
           position: relative;
           overflow: hidden;
@@ -738,8 +739,8 @@ function HomePageContent() {
           border-radius: var(--radius-2xl);
           padding: var(--space-12) var(--space-10);
           background:
-            radial-gradient(circle at 78% 20%, rgba(16, 185, 129, 0.22), transparent 28%),
-            linear-gradient(135deg, #0F1117 0%, #172033 50%, #0b111f 100%);
+            radial-gradient(circle at 78% 20%, rgba(239, 68, 68, 0.26), transparent 28%),
+            linear-gradient(135deg, #090A0F 0%, #171017 50%, #080A10 100%);
           color: white;
           border: 1px solid rgba(255, 255, 255, 0.06);
         }

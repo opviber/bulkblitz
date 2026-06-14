@@ -23,7 +23,7 @@ function FactoryCore() {
     <group ref={coreRef}>
       <mesh position={[0, 0.18, 0]}>
         <boxGeometry args={[1.38, 0.9, 1.08]} />
-        <meshStandardMaterial color="#1d4ed8" roughness={0.42} metalness={0.16} />
+        <meshStandardMaterial color="#b91c1c" roughness={0.42} metalness={0.2} />
       </mesh>
       <mesh position={[-0.36, 0.86, 0]}>
         <boxGeometry args={[0.2, 0.58, 0.2]} />
@@ -36,8 +36,8 @@ function FactoryCore() {
       <mesh position={[0.46, 0.12, 0.58]}>
         <boxGeometry args={[0.42, 0.42, 0.08]} />
         <meshStandardMaterial
-          color="#34d399"
-          emissive="#10b981"
+          color="#f8fafc"
+          emissive="#ef4444"
           emissiveIntensity={0.38}
           roughness={0.22}
         />
@@ -45,8 +45,8 @@ function FactoryCore() {
       <mesh position={[-0.44, 0.12, 0.58]}>
         <boxGeometry args={[0.42, 0.42, 0.08]} />
         <meshStandardMaterial
-          color="#93c5fd"
-          emissive="#3b82f6"
+          color="#fecaca"
+          emissive="#ef4444"
           emissiveIntensity={0.24}
           roughness={0.22}
         />
@@ -60,11 +60,11 @@ function PriceSteps() {
   const reduced = usePrefersReducedMotion();
   const steps = useMemo(
     () => [
-      { x: -2.55, y: -1.0, h: 0.34, color: "#60a5fa" },
-      { x: -1.45, y: -0.82, h: 0.58, color: "#818cf8" },
-      { x: -0.35, y: -0.6, h: 0.88, color: "#34d399" },
+      { x: -2.55, y: -1.0, h: 0.34, color: "#f8fafc" },
+      { x: -1.45, y: -0.82, h: 0.58, color: "#fca5a5" },
+      { x: -0.35, y: -0.6, h: 0.88, color: "#ef4444" },
       { x: 0.75, y: -0.36, h: 1.18, color: "#fbbf24" },
-      { x: 1.85, y: -0.1, h: 1.52, color: "#10b981" },
+      { x: 1.85, y: -0.1, h: 1.52, color: "#dc2626" },
     ],
     []
   );
@@ -105,7 +105,7 @@ function BuyerOrbit() {
           radius,
           y: -0.05 + Math.sin(index * 1.23) * 0.32,
           size: index % 7 === 0 ? 0.085 : 0.052,
-          color: index % 3 === 0 ? "#10b981" : index % 3 === 1 ? "#3b82f6" : "#f59e0b",
+          color: index % 4 === 0 ? "#ef4444" : index % 4 === 1 ? "#f8fafc" : index % 4 === 2 ? "#f59e0b" : "#22c55e",
         };
       }),
     []
@@ -157,8 +157,8 @@ function Scene() {
     <>
       <ambientLight intensity={1.15} />
       <directionalLight position={[4, 4, 5]} intensity={2.4} />
-      <pointLight position={[-3, 1.5, 2]} color="#60a5fa" intensity={1.8} />
-      <pointLight position={[2.4, -1.4, 2.2]} color="#34d399" intensity={1.7} />
+      <pointLight position={[-3, 1.5, 2]} color="#ef4444" intensity={1.8} />
+      <pointLight position={[2.4, -1.4, 2.2]} color="#ffffff" intensity={1.2} />
       <group ref={sceneRef} rotation={[-0.2, -0.34, 0]} position={[0.25, 0.04, 0]}>
         <BuyerOrbit />
         <FactoryCore />

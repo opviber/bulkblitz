@@ -17,51 +17,51 @@
 
 :root {
   /* ── Color: Backgrounds ── */
-  --bg-primary:   #F4F6F9;
-  --bg-surface:   #FFFFFF;
-  --bg-elevated:  #EDF2F7;
-  --bg-glass:     rgba(255, 255, 255, 0.7);
-  --bg-market-wash: linear-gradient(135deg, #f8fbff 0%, #eef5ff 42%, #f1fbf6 100%);
+  --bg-primary:   #07080D;
+  --bg-surface:   #101218;
+  --bg-elevated:  #181B23;
+  --bg-glass:     rgba(12, 14, 20, 0.78);
+  --bg-market-wash: radial-gradient(circle at 84% 16%, rgba(239, 68, 68, 0.16), transparent 28%), linear-gradient(135deg, #07080D 0%, #11131B 48%, #080A10 100%);
 
   /* ── Color: Accent — Primary (Deep Blue) ── */
-  --accent-primary:        #0D6EFD;
-  --accent-primary-hover:  #0B5ED7;
-  --accent-primary-light:  rgba(13, 110, 253, 0.1);
+  --accent-primary:        #EF4444;
+  --accent-primary-hover:  #DC2626;
+  --accent-primary-light:  rgba(239, 68, 68, 0.14);
 
   /* ── Color: Accent — Success (Emerald) ── */
-  --accent-success:        #10B981;
-  --accent-success-light:  rgba(16, 185, 129, 0.1);
+  --accent-success:        #22C55E;
+  --accent-success-light:  rgba(34, 197, 94, 0.13);
 
   /* ── Color: Accent — Premium (Deep Purple) ── */
-  --accent-premium:        #8B5CF6;
-  --accent-premium-light:  rgba(139, 92, 246, 0.1);
+  --accent-premium:        #F8FAFC;
+  --accent-premium-light:  rgba(248, 250, 252, 0.1);
 
   /* ── Color: Accent — Warning (Amber) ── */
   --accent-warning:        #F59E0B;
   --accent-warning-light:  rgba(245, 158, 11, 0.1);
 
   /* ── Color: Accent — Danger (Red) ── */
-  --accent-danger:         #E83A30;
-  --accent-danger-light:   rgba(232, 58, 48, 0.1);
+  --accent-danger:         #FB7185;
+  --accent-danger-light:   rgba(251, 113, 133, 0.12);
 
   /* ── Color: Typography ── */
-  --text-primary:    #1A202C;
-  --text-secondary:  #64748B;
-  --text-tertiary:   #94A3B8;
-  --text-inverse:    #FFFFFF;
+  --text-primary:    #F8FAFC;
+  --text-secondary:  #A7B0BF;
+  --text-tertiary:   #697384;
+  --text-inverse:    #080A10;
 
   /* ── Color: Borders ── */
-  --border-default:  #E2E8F0;
-  --border-light:    #F1F5F9;
+  --border-default:  #2A2F3A;
+  --border-light:    #1C2029;
 
   /* ── Shadows ── */
-  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-  --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  --shadow-premium: 0 24px 70px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-md:  0 8px 18px rgba(0, 0, 0, 0.28);
+  --shadow-lg:  0 18px 42px rgba(0, 0, 0, 0.34);
+  --shadow-xl:  0 28px 70px rgba(0, 0, 0, 0.42);
+  --shadow-premium: 0 28px 80px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.035);
 
-  --shadow-glow-primary:  0 0 20px rgba(13, 110, 253, 0.3);
+  --shadow-glow-primary:  0 0 28px rgba(239, 68, 68, 0.34);
   --shadow-glow-success:  0 0 20px rgba(16, 185, 129, 0.3);
   --shadow-glow-premium:  0 0 20px rgba(139, 92, 246, 0.3);
 
@@ -217,6 +217,21 @@ body {
   line-height: 1.6;
 }
 
+[data-theme='light'] {
+  --bg-primary:   #F7F8FA;
+  --bg-surface:   #FFFFFF;
+  --bg-elevated:  #EEF1F5;
+  --bg-glass:     rgba(255, 255, 255, 0.76);
+  --bg-market-wash: radial-gradient(circle at 84% 16%, rgba(239, 68, 68, 0.12), transparent 28%), linear-gradient(135deg, #fbfcff 0%, #f1f4f8 48%, #fff7f7 100%);
+  --text-primary:    #111827;
+  --text-secondary:  #5F6B7A;
+  --text-tertiary:   #8A94A5;
+  --text-inverse:    #FFFFFF;
+  --border-default:  #DCE2EA;
+  --border-light:    #EEF2F6;
+  --shadow-premium: 0 24px 70px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
 main {
   position: relative;
 }
@@ -333,13 +348,13 @@ code {
 .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
 .btn--primary {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-premium));
-  color: var(--text-inverse);
-  box-shadow: 0 10px 24px rgba(13, 110, 253, 0.22);
+  background: linear-gradient(135deg, #EF4444 0%, #991B1B 100%);
+  color: #FFFFFF;
+  box-shadow: 0 12px 30px rgba(239, 68, 68, 0.28);
 }
 .btn--primary:hover {
-  background: linear-gradient(135deg, var(--accent-primary-hover), var(--accent-premium));
-  box-shadow: var(--shadow-glow-primary), 0 14px 34px rgba(13, 110, 253, 0.24);
+  background: linear-gradient(135deg, #F87171 0%, #B91C1C 100%);
+  box-shadow: var(--shadow-glow-primary), 0 14px 34px rgba(239, 68, 68, 0.26);
   transform: translateY(-1px);
 }
 
@@ -436,7 +451,7 @@ code {
 
 /* Text Gradient */
 .text-gradient {
-  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-premium) 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #EF4444 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -452,7 +467,7 @@ code {
 .analytics-main,
 .batch-detail {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--bg-primary) 82%, #ffffff) 0%, var(--bg-primary) 46%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-primary) 82%, #111827) 0%, var(--bg-primary) 46%),
     var(--bg-market-wash) !important;
 }
 
@@ -485,7 +500,7 @@ code {
 .reviews-card,
 .cat-tile {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 96%, #ffffff) 0%, var(--bg-surface) 100%) !important;
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 94%, #ffffff) 0%, var(--bg-surface) 100%) !important;
   border-color: color-mix(in srgb, var(--border-default) 78%, var(--accent-primary)) !important;
 }
 
@@ -516,6 +531,18 @@ code {
 .time-filters,
 .seg-tabs {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-default) 72%, transparent);
+}
+
+.gmail-header__logo-name,
+.footer__brand-name {
+  background: linear-gradient(135deg, #FFFFFF, var(--accent-primary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+.gmail-header__logo-icon svg rect,
+.footer__logo-svg rect {
+  fill: var(--accent-primary);
 }
 
 .section--alt {
