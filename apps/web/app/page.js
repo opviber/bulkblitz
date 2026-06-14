@@ -630,15 +630,18 @@ function HomePageContent() {
         }
 
         .proof-card__img-container {
-          width: 100%;
-          height: 120px;
-          margin-bottom: var(--space-4);
-          border-radius: var(--radius-lg);
+          margin-top: calc(-1 * var(--space-6));
+          margin-left: calc(-1 * var(--space-6));
+          margin-right: calc(-1 * var(--space-6));
+          width: calc(100% + (2 * var(--space-6)));
+          height: 160px;
+          margin-bottom: var(--space-5);
+          border-radius: var(--radius-xl) var(--radius-xl) 0 0;
           overflow: hidden;
           position: relative;
           z-index: 2;
           background: rgba(0, 0, 0, 0.2);
-          border: 1px solid var(--border-light);
+          border-bottom: 1px solid var(--border-light);
         }
 
         .proof-card__img {
@@ -668,14 +671,16 @@ function HomePageContent() {
 
         .proof-card__num {
           position: absolute;
-          top: var(--space-5);
-          left: var(--space-5);
+          top: var(--space-4);
+          left: var(--space-4);
           font-family: var(--font-heading), sans-serif;
           font-size: 2.4rem;
           font-weight: 900;
           line-height: 1;
           color: currentColor;
-          opacity: 0.28;
+          opacity: 0.35;
+          z-index: 3;
+          pointer-events: none;
         }
 
         .proof-card h3 {
