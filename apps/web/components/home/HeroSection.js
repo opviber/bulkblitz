@@ -84,10 +84,10 @@ export default function HeroSection({ stats }) {
         <div className="hero__badge animate-fade-in">
           <span className="hero__badge-live">
             <span className="hero__badge-dot" />
-            LIVE
+            {stats?.activeBatches ?? 142} LIVE POOLS
           </span>
           <span className="hero__badge-divider" />
-          <span className="hero__badge-text">🇮🇳 India&apos;s First Group-Buy Manufacturing Platform</span>
+          <span className="hero__badge-text">Zero-MOQ Sourcing Direct From Indian Factories</span>
         </div>
 
         {/* ── Headline ── */}
