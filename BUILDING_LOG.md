@@ -110,7 +110,7 @@ The header was redesigned as a GitHub-style left-sidebar mobile drawer in a prev
 - [x] Rebuilt `globals.css` — restored design variables and added custom radius & transition tokens, `.chip--active` alias
 - [x] Redesigned `HeroSection.js` — premium mesh bg, electric gradient headline, icon stats, connected step cards (removed blurry 3D visual orbit scene, simplified character animations, centered all layout elements, resolved horizontal spacing/separator wrapping layout bugs, and implemented premium black-orange styling)
 - [x] Redesigned `BatchCard.js` — category-colored image areas, glassmorphic badges, larger tabular price, thick progress bar with markers & pulsing tip, Join button
-- [x] Redesigned `page.js` — segmented tab control, category icon tiles, split CTA card (integrated custom orange illustrations for Crowd Mechanics steps, added orange telemetry gradient backgrounds to all sections, and corrected manufacturer CTA button colors to fit black-orange branding)
+- [x] Redesigned `page.js` — segmented tab control, category icon tiles, split CTA card (integrated custom orange illustrations for Crowd Mechanics steps extending edge-to-edge in card frames, added orange telemetry gradient backgrounds to all sections, and corrected manufacturer CTA button colors to fit black-orange branding)
 - [x] Expanded `Footer.js` — 4-column layout with trust badges and newsletter strip
 - [x] Redesigned global navigation layout to look like the Gmail app:
   - Added a top header bar with centered functional Search Bar
