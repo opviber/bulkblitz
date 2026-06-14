@@ -113,7 +113,7 @@ export default function Footer() {
             </Link>
 
             <p className="footer__desc">
-              India's first crowd-powered manufacturing marketplace. Join batches, pool together,
+              India&apos;s first crowd-powered manufacturing marketplace. Join batches, pool together,
               and unlock bulk pricing — in real time.
             </p>
 

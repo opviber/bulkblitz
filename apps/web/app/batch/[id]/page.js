@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
@@ -29,7 +29,7 @@ export default function BatchDetailPage({ params }) {
   const [recentJoinAlert, setRecentJoinAlert] = useState(null);
   const [joiningBatch, setJoiningBatch] = useState(false);
 
-  async function loadBatch() {
+  const loadBatch = useCallback(async function loadBatch() {
     try {
       const res = await fetch(`/api/batches/${id}`);
       if (res.ok) {
@@ -44,7 +44,7 @@ export default function BatchDetailPage({ params }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -109,7 +109,7 @@ export default function BatchDetailPage({ params }) {
       supabase.removeChannel(batchChannel);
       supabase.removeChannel(reservationChannel);
     };
-  }, [id]);
+  }, [id, loadBatch]);
 
   const handleJoinBatch = async () => {
     setJoiningBatch(true);

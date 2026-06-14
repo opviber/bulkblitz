@@ -133,7 +133,7 @@ export default function ManufacturerDashboard() {
                 <div className="batch-list">
                   {activeBatches.length === 0 ? (
                     <div className="empty-batches">
-                      <p>You don't have any active batches at the moment.</p>
+                      <p>You don&apos;t have any active batches at the moment.</p>
                       <Link href="/manufacturer/batch/new" className="btn btn--secondary btn--sm mt-4">
                         Create Your First Batch
                       </Link>

@@ -107,9 +107,9 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)',
         borderColor: isHovered ? statusBorderColor[batch.status] : 'var(--border-default)',
         boxShadow: isHovered 
-          ? `0 16px 48px ${statusGlow[batch.status]}, var(--shadow-xl)` 
+          ? `0 24px 70px ${statusGlow[batch.status]}, var(--shadow-premium)` 
           : 'var(--shadow-sm)',
-        transition: isHovered ? 'box-shadow 0.3s ease, border-color 0.3s ease' : 'all 0.5s ease',
+        transition: isHovered ? 'box-shadow 0.3s var(--ease-out), border-color 0.3s var(--ease-out)' : 'all 0.5s var(--ease-out)',
       }}
     >
       {/* Image Area */}
@@ -265,7 +265,8 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
         .batch-card {
           display: flex;
           flex-direction: column;
-          background: var(--bg-surface);
+          background:
+            linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 96%, #ffffff) 0%, var(--bg-surface) 100%);
           border: 1px solid var(--border-default);
           border-radius: var(--radius-xl);
           overflow: hidden;
@@ -274,6 +275,32 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           animation: fadeInUp 0.5s ease both;
           cursor: pointer;
           transform-style: preserve-3d;
+          min-height: 100%;
+          position: relative;
+          isolation: isolate;
+        }
+
+        .batch-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background:
+            linear-gradient(135deg, color-mix(in srgb, var(--accent-primary) 16%, transparent), transparent 38%),
+            linear-gradient(315deg, color-mix(in srgb, var(--accent-success) 14%, transparent), transparent 44%);
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity var(--transition-base);
+          z-index: 1;
+        }
+
+        .batch-card:hover::before {
+          opacity: 1;
+        }
+
+        .batch-card > * {
+          position: relative;
+          z-index: 2;
         }
 
         .batch-card__image {
@@ -283,11 +310,22 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           align-items: center;
           justify-content: center;
           overflow: hidden;
+          border-bottom: 1px solid color-mix(in srgb, var(--border-default) 74%, transparent);
+        }
+
+        .batch-card__image::after {
+          content: "";
+          position: absolute;
+          inset: auto 0 0 0;
+          height: 46%;
+          background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--bg-surface) 58%, transparent));
+          pointer-events: none;
         }
 
         .batch-card__category-icon {
           font-size: 4rem;
           transition: transform var(--transition-base);
+          transform: translateZ(34px);
         }
 
         .batch-card:hover .batch-card__category-icon {
@@ -339,6 +377,8 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           flex-direction: column;
           gap: var(--space-3);
           flex: 1;
+          background:
+            linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 88%, transparent) 0%, var(--bg-surface) 100%);
         }
 
         .batch-card__mfg-row {
@@ -388,6 +428,7 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           -webkit-box-orient: vertical;
           overflow: hidden;
           min-height: 2.8em;
+          letter-spacing: 0;
         }
 
         .batch-card__price-section {
@@ -418,6 +459,7 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           color: var(--accent-success);
           font-variant-numeric: tabular-nums;
           line-height: 1;
+          text-shadow: 0 10px 30px color-mix(in srgb, var(--accent-success) 18%, transparent);
         }
 
         .batch-card__price-strike {
@@ -450,6 +492,7 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           background: linear-gradient(90deg, var(--accent-primary), var(--accent-success));
           border-radius: var(--radius-full);
           transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+          box-shadow: 0 0 22px color-mix(in srgb, var(--accent-success) 32%, transparent);
         }
 
         .batch-card__progress-glow {
@@ -496,6 +539,7 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           font-size: 0.72rem;
           color: var(--accent-warning);
           font-weight: 600;
+          white-space: nowrap;
         }
 
         .batch-card__footer {
@@ -526,6 +570,7 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           display: flex;
           align-items: center;
           gap: var(--space-3);
+          min-width: 0;
         }
 
         .batch-card__joiners {
@@ -572,6 +617,24 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           background: var(--accent-primary);
           color: var(--text-inverse);
           box-shadow: var(--shadow-glow-primary);
+        }
+
+        @media (max-width: 420px) {
+          .batch-card__content {
+            padding-inline: var(--space-4);
+          }
+
+          .batch-card__progress-info,
+          .batch-card__footer {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: var(--space-2);
+          }
+
+          .batch-card__right-footer {
+            width: 100%;
+            justify-content: space-between;
+          }
         }
       `}</style>
     </Link>

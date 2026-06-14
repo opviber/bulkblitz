@@ -231,7 +231,7 @@ export default function AuthPage() {
           {/* Form Footer */}
           <div className="auth-footer">
             <p className="terms-text">
-              By proceeding, you agree to BulkBlitz's{" "}
+              By proceeding, you agree to BulkBlitz&apos;s{" "}
               <Link href="#">Terms of Service</Link> and{" "}
               <Link href="#">Privacy Policy</Link>.
             </p>

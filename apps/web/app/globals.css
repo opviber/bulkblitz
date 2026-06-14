@@ -1,3 +1,4 @@
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 */
 /* ============================================================================
    BulkBlitz Design System — globals.css
    India's First Crowd-Powered Manufacturing Marketplace
@@ -20,6 +21,7 @@
   --bg-surface:   #FFFFFF;
   --bg-elevated:  #EDF2F7;
   --bg-glass:     rgba(255, 255, 255, 0.7);
+  --bg-market-wash: linear-gradient(135deg, #f8fbff 0%, #eef5ff 42%, #f1fbf6 100%);
 
   /* ── Color: Accent — Primary (Deep Blue) ── */
   --accent-primary:        #0D6EFD;
@@ -57,6 +59,7 @@
   --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-premium: 0 24px 70px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.04);
 
   --shadow-glow-primary:  0 0 20px rgba(13, 110, 253, 0.3);
   --shadow-glow-success:  0 0 20px rgba(16, 185, 129, 0.3);
@@ -75,6 +78,8 @@
   --transition-base:   250ms ease;
   --transition-slow:   350ms ease;
   --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* ── Spacing Scale (4px increments) ── */
   --space-1:   0.25rem;   /* 4px */
@@ -113,6 +118,7 @@
   --bg-surface:   #121217;
   --bg-elevated:  #1D1E2C;
   --bg-glass:     rgba(12, 12, 12, 0.85);
+  --bg-market-wash: linear-gradient(135deg, #070a12 0%, #0e1424 48%, #0b1713 100%);
 
   --accent-primary:        #3B82F6;
   --accent-primary-hover:  #2563EB;
@@ -142,6 +148,7 @@
   --shadow-md:  0 4px 8px -1px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
   --shadow-lg:  0 10px 20px -3px rgba(0, 0, 0, 0.6), 0 4px 8px -4px rgba(0, 0, 0, 0.5);
   --shadow-xl:  0 20px 30px -5px rgba(0, 0, 0, 0.65), 0 8px 12px -6px rgba(0, 0, 0, 0.55);
+  --shadow-premium: 0 28px 80px rgba(0, 0, 0, 0.58), 0 2px 8px rgba(0, 0, 0, 0.28);
 
   --shadow-glow-primary:  0 0 24px rgba(59, 130, 246, 0.25);
   --shadow-glow-success:  0 0 24px rgba(52, 211, 153, 0.25);
@@ -165,6 +172,7 @@ html {
   -moz-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -172,6 +180,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overflow-x: clip;
 }
 
 img, picture, video, canvas, svg {
@@ -200,7 +209,7 @@ p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
    --------------------------------------------------------------------------- */
 
 body {
-  background-color: var(--bg-primary);
+  background: var(--bg-market-wash);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-base);
@@ -208,13 +217,18 @@ body {
   line-height: 1.6;
 }
 
+main {
+  position: relative;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   line-height: 1.2;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
+  text-wrap: balance;
 }
-h1 { font-size: var(--text-5xl); font-weight: 800; letter-spacing: -0.03em; }
+h1 { font-size: var(--text-5xl); font-weight: 800; letter-spacing: 0; }
 h2 { font-size: var(--text-4xl); font-weight: 700; }
 h3 { font-size: var(--text-3xl); font-weight: 700; }
 h4 { font-size: var(--text-2xl); font-weight: 600; }
@@ -260,7 +274,7 @@ code {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-premium);
 }
 
 /* Card */
@@ -268,10 +282,10 @@ code {
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: box-shadow var(--transition-base), transform var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base), transform var(--transition-base), border-color var(--transition-base);
 }
-.card:hover { box-shadow: var(--shadow-xl); transform: translateY(-2px); }
+.card:hover { box-shadow: var(--shadow-premium); transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent-primary) 24%, var(--border-default)); }
 
 /* Badges */
 .badge {
@@ -318,8 +332,16 @@ code {
 .btn:active  { transform: scale(0.97); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
-.btn--primary { background: var(--accent-primary); color: var(--text-inverse); }
-.btn--primary:hover { background: var(--accent-primary-hover); box-shadow: var(--shadow-glow-primary); }
+.btn--primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-premium));
+  color: var(--text-inverse);
+  box-shadow: 0 10px 24px rgba(13, 110, 253, 0.22);
+}
+.btn--primary:hover {
+  background: linear-gradient(135deg, var(--accent-primary-hover), var(--accent-premium));
+  box-shadow: var(--shadow-glow-primary), 0 14px 34px rgba(13, 110, 253, 0.24);
+  transform: translateY(-1px);
+}
 
 .btn--secondary { background: transparent; color: var(--accent-primary); border-color: var(--accent-primary); }
 .btn--secondary:hover { background: var(--accent-primary-light); }
@@ -418,6 +440,96 @@ code {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   5B. PRODUCT-WIDE PREMIUM SHELL
+   --------------------------------------------------------------------------- */
+
+.orders-main,
+.wallet-main,
+.mfr-main,
+.analytics-main,
+.batch-detail {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-primary) 82%, #ffffff) 0%, var(--bg-primary) 46%),
+    var(--bg-market-wash) !important;
+}
+
+.order-card,
+.balance-card,
+.earn-card,
+.tx-section,
+.welcome-banner,
+.kpi-card,
+.card-section,
+.chart-card,
+.pricing-panel,
+.mfg-card,
+.specs-card,
+.reviews-card,
+.cat-tile,
+.cta-card {
+  box-shadow: var(--shadow-premium);
+}
+
+.order-card,
+.earn-card,
+.tx-section,
+.kpi-card,
+.card-section,
+.chart-card,
+.pricing-panel,
+.mfg-card,
+.specs-card,
+.reviews-card,
+.cat-tile {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 96%, #ffffff) 0%, var(--bg-surface) 100%) !important;
+  border-color: color-mix(in srgb, var(--border-default) 78%, var(--accent-primary)) !important;
+}
+
+.order-card:hover,
+.earn-card:hover,
+.kpi-card:hover,
+.card-section:hover,
+.chart-card:hover,
+.mfr-batch-card:hover,
+.action-item:hover,
+.cat-tile:hover {
+  box-shadow: var(--shadow-premium) !important;
+}
+
+.gmail-header {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-glass) 92%, #ffffff) 0%, var(--bg-glass) 100%) !important;
+  border-bottom-color: color-mix(in srgb, var(--border-light) 65%, var(--accent-primary)) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06) !important;
+}
+
+.gmail-sidebar {
+  box-shadow: 18px 0 45px rgba(15, 23, 42, 0.08) !important;
+}
+
+.gmail-header__search-form,
+.filter-tabs,
+.time-filters,
+.seg-tabs {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-default) 72%, transparent);
+}
+
+.section--alt {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 90%, #ffffff) 0%, var(--bg-primary) 100%) !important;
+}
+
+.section-hdr__title,
+.orders-title,
+.wallet-title,
+.analytics-title,
+.welcome-title {
+  letter-spacing: 0 !important;
+  overflow-wrap: anywhere;
 }
 
 /* ---------------------------------------------------------------------------
@@ -647,4 +759,3 @@ code {
     transition: margin-left var(--transition-base);
   }
 }
-

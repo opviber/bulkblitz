@@ -3,6 +3,40 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
+function RevealChar({ item, totalChars, scrollYProgress }) {
+  const start = item.idx / totalChars;
+  const end = (item.idx + 1) / totalChars;
+
+  const opacity = useTransform(
+    scrollYProgress,
+    [start, end],
+    [0.2, 1]
+  );
+
+  return (
+    <span
+      className="scroll-char"
+      style={{
+        position: "relative",
+        display: "inline-block"
+      }}
+    >
+      <span style={{ opacity: 0.15 }}>{item.char}</span>
+      <motion.span
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          opacity,
+          color: "inherit",
+        }}
+      >
+        {item.char}
+      </motion.span>
+    </span>
+  );
+}
+
 export default function ScrollRevealText({ text, className }) {
   const containerRef = useRef(null);
   
@@ -29,7 +63,7 @@ export default function ScrollRevealText({ text, className }) {
   const totalChars = charCounter;
 
   return (
-    <span ref={containerRef} className={className} style={{ display: "inline-wrap" }}>
+    <span ref={containerRef} className={className} style={{ display: "inline-block" }}>
       {splitWords.map((letters, wordIdx) => (
         <span 
           key={wordIdx} 
@@ -40,43 +74,14 @@ export default function ScrollRevealText({ text, className }) {
             whiteSpace: "nowrap" 
           }}
         >
-          {letters.map((item) => {
-            // Interpolate individual character opacity based on total text position
-            const start = item.idx / totalChars;
-            const end = (item.idx + 1) / totalChars;
-            
-            const opacity = useTransform(
-              scrollYProgress,
-              [start, end],
-              [0.2, 1]
-            );
-
-            return (
-              <span 
-                key={item.idx} 
-                className="scroll-char"
-                style={{ 
-                  position: "relative", 
-                  display: "inline-block"
-                }}
-              >
-                {/* Background placeholder to ensure text spacing */}
-                <span style={{ opacity: 0.15 }}>{item.char}</span>
-                {/* Scroll reveal active character layer */}
-                <motion.span
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    opacity,
-                    color: "inherit",
-                  }}
-                >
-                  {item.char}
-                </motion.span>
-              </span>
-            );
-          })}
+          {letters.map((item) => (
+            <RevealChar
+              key={item.idx}
+              item={item}
+              totalChars={totalChars}
+              scrollYProgress={scrollYProgress}
+            />
+          ))}
         </span>
       ))}
     </span>

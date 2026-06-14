@@ -74,9 +74,6 @@ export default function HeroSection({ stats }) {
 
       {/* ── Animated Background ── */}
       <div className="hero__bg" aria-hidden="true">
-        <div className="hero__orb hero__orb--blue" />
-        <div className="hero__orb hero__orb--purple" />
-        <div className="hero__orb hero__orb--emerald" />
         <div className="hero__grid">
           <div className="hero__grid-inner" />
         </div>
@@ -110,8 +107,23 @@ export default function HeroSection({ stats }) {
           Get manufacturer-direct pricing — no middlemen, no minimum quantities.
         </p>
 
+        <div className="hero__market-console animate-fade-in-up animate-delay-300" aria-label="Live marketplace snapshot">
+          <div className="hero__console-cell">
+            <span className="hero__console-label">Live drop</span>
+            <strong>₹84 → ₹69</strong>
+          </div>
+          <div className="hero__console-cell">
+            <span className="hero__console-label">Next unlock</span>
+            <strong>12 buyers</strong>
+          </div>
+          <div className="hero__console-cell hero__console-cell--accent">
+            <span className="hero__console-label">Batch pulse</span>
+            <strong>86 live</strong>
+          </div>
+        </div>
+
         {/* ── CTA Buttons ── */}
-        <div className="hero__ctas animate-fade-in-up animate-delay-300">
+        <div className="hero__ctas animate-fade-in-up animate-delay-400">
           <Magnet padding={20}>
             <a href="#batches" className="hero__btn hero__btn--primary">
               Browse Live Batches
@@ -139,7 +151,7 @@ export default function HeroSection({ stats }) {
         </div>
 
         {/* ── Stats Bar ── */}
-        <div className="hero__stats animate-fade-in-up animate-delay-400">
+        <div className="hero__stats animate-fade-in-up animate-delay-500">
           {STATS_CONFIG.map((s, i) => (
             <div key={s.key} className="hero__stats-row-item">
               {i > 0 && <div className="hero__stats-sep" aria-hidden="true" />}
@@ -166,7 +178,7 @@ export default function HeroSection({ stats }) {
 
         {/* ── How It Works ── */}
         <div
-          className="hero__hiw animate-fade-in-up animate-delay-500"
+          className="hero__hiw animate-fade-in-up animate-delay-600"
           id="how-it-works"
         >
           <p className="hero__hiw-label">How it works</p>
@@ -219,6 +231,9 @@ export default function HeroSection({ stats }) {
           overflow: hidden;
           display: flex;
           align-items: center;
+          isolation: isolate;
+          background:
+            linear-gradient(135deg, color-mix(in srgb, var(--bg-primary) 88%, #dbeafe) 0%, var(--bg-primary) 44%, color-mix(in srgb, var(--bg-primary) 90%, #dcfce7) 100%);
         }
 
         /* ── Background layer ── */
@@ -228,42 +243,6 @@ export default function HeroSection({ stats }) {
           overflow: hidden;
           z-index: 0;
           pointer-events: none;
-        }
-
-        /* Gradient orbs */
-        .hero__orb {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(100px);
-          animation: float 10s ease-in-out infinite;
-        }
-
-        .hero__orb--blue {
-          width: 600px;
-          height: 600px;
-          background: rgba(59, 130, 246, 0.3);
-          top: -120px;
-          right: -120px;
-          animation-delay: 0s;
-        }
-
-        .hero__orb--purple {
-          width: 500px;
-          height: 500px;
-          background: rgba(167, 139, 250, 0.25);
-          bottom: -80px;
-          left: -120px;
-          animation-delay: -4s;
-        }
-
-        .hero__orb--emerald {
-          width: 380px;
-          height: 380px;
-          background: rgba(52, 211, 153, 0.15);
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          animation-delay: -7s;
         }
 
         /* Dot grid */
@@ -276,10 +255,10 @@ export default function HeroSection({ stats }) {
           position: absolute;
           inset: 0;
           background-image: radial-gradient(circle, var(--border-default) 1px, transparent 1px);
-          background-size: 36px 36px;
-          opacity: 0.35;
-          mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-          -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+          background-size: 34px 34px;
+          opacity: 0.42;
+          mask-image: linear-gradient(90deg, black 0%, black 54%, transparent 100%);
+          -webkit-mask-image: linear-gradient(90deg, black 0%, black 54%, transparent 100%);
         }
 
         /* ── Container ── */
@@ -292,6 +271,7 @@ export default function HeroSection({ stats }) {
           text-align: center;
           gap: 0;
           width: 100%;
+          min-height: calc(100vh - 128px);
         }
 
         /* ── Badge ── */
@@ -310,6 +290,7 @@ export default function HeroSection({ stats }) {
           font-weight: 600;
           color: var(--text-secondary);
           transition: border-color var(--transition-base);
+          box-shadow: var(--shadow-sm);
         }
 
         .hero__badge:hover {
@@ -353,12 +334,14 @@ export default function HeroSection({ stats }) {
         /* ── Headline ── */
         .hero__headline {
           font-family: var(--font-heading), sans-serif;
-          font-size: clamp(3rem, 7vw, 5.5rem);
-          font-weight: 800;
-          line-height: 1.05;
-          letter-spacing: -0.04em;
+          max-width: 900px;
+          font-size: clamp(3rem, 7vw, 6.35rem);
+          font-weight: 900;
+          line-height: 0.98;
+          letter-spacing: -0.03em;
           margin: 0 0 var(--space-6);
           color: var(--text-primary);
+          text-wrap: balance;
         }
 
         .hero__line {
@@ -388,6 +371,53 @@ export default function HeroSection({ stats }) {
           font-family: var(--font-body), sans-serif;
         }
 
+        .hero__market-console {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 1px;
+          width: min(680px, 100%);
+          margin: 0 0 var(--space-8);
+          overflow: hidden;
+          border: 1px solid color-mix(in srgb, var(--accent-primary) 18%, var(--border-default));
+          border-radius: var(--radius-xl);
+          background: color-mix(in srgb, var(--bg-surface) 78%, transparent);
+          box-shadow: var(--shadow-lg);
+          backdrop-filter: blur(22px);
+          -webkit-backdrop-filter: blur(22px);
+        }
+
+        .hero__console-cell {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          padding: var(--space-4) var(--space-5);
+          background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+          min-width: 0;
+        }
+
+        .hero__console-label {
+          font-size: 0.68rem;
+          color: var(--text-tertiary);
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+
+        .hero__console-cell strong {
+          margin-top: 3px;
+          font-family: var(--font-heading), sans-serif;
+          color: var(--text-primary);
+          font-size: clamp(1rem, 2vw, 1.32rem);
+          font-weight: 900;
+          line-height: 1;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .hero__console-cell--accent strong {
+          color: var(--accent-success);
+        }
+
         /* ── CTA Buttons ── */
         .hero__ctas {
           display: flex;
@@ -415,14 +445,14 @@ export default function HeroSection({ stats }) {
         }
 
         .hero__btn--primary {
-          background: linear-gradient(135deg, #0D6EFD, #7C3AED);
+          background: linear-gradient(135deg, var(--accent-primary), var(--accent-premium));
           color: #ffffff;
           border: none;
           box-shadow: 0 4px 16px rgba(13, 110, 253, 0.25);
         }
 
         .hero__btn--primary:hover {
-          background: linear-gradient(135deg, #3B8BFF, #9333EA);
+          background: linear-gradient(135deg, var(--accent-primary-hover), var(--accent-premium));
           box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
           transform: translateY(-2px);
           color: #ffffff;
@@ -460,7 +490,7 @@ export default function HeroSection({ stats }) {
           flex-wrap: wrap;
           max-width: 820px;
           width: 100%;
-          background: var(--bg-glass);
+          background: color-mix(in srgb, var(--bg-glass) 92%, transparent);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border: 1px solid var(--border-default);
@@ -703,6 +733,16 @@ export default function HeroSection({ stats }) {
             letter-spacing: -0.03em;
           }
 
+          .hero__market-console {
+            grid-template-columns: 1fr;
+            width: 100%;
+          }
+
+          .hero__console-cell {
+            align-items: center;
+            text-align: center;
+          }
+
           .hero__ctas {
             flex-direction: column;
             gap: var(--space-3);
@@ -732,6 +772,11 @@ export default function HeroSection({ stats }) {
 
         .animate-delay-500 {
           animation-delay: 500ms;
+          animation-fill-mode: both;
+        }
+
+        .animate-delay-600 {
+          animation-delay: 600ms;
           animation-fill-mode: both;
         }
 
