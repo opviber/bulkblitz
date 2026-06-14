@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Magnet from '../ui/Magnet';
-import ScrollRevealText from '../ui/ScrollRevealText';
 
 /* ─────────────────────────────────────────────
    Animated Number — counts up from 0 to value
@@ -94,10 +93,10 @@ export default function HeroSection({ stats }) {
         {/* ── Headline ── */}
         <h1 className="hero__headline animate-fade-in-up">
           <span className="hero__line hero__line--1">
-            <ScrollRevealText text="The Crowd Buys." />
+            The Crowd Buys.
           </span>
           <span className="hero__line hero__line--2">
-            <ScrollRevealText text="The Price Drops." className="hero__gradient-text" />
+            <span className="hero__gradient-text">The Price Drops.</span>
           </span>
         </h1>
 
@@ -352,9 +351,7 @@ export default function HeroSection({ stats }) {
           color: var(--text-primary);
         }
 
-        /* Line 2 — gradient applied to the ScrollRevealText character spans */
-        .hero__line--2 :global(.scroll-word),
-        .hero__line--2 :global(.scroll-char) {
+        .hero__gradient-text {
           background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #34D399 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -367,7 +364,7 @@ export default function HeroSection({ stats }) {
           font-size: clamp(1rem, 1.8vw, 1.15rem);
           color: var(--text-secondary);
           line-height: 1.75;
-          margin: 0 0 var(--space-8);
+          margin: 0 auto var(--space-8);
           font-family: var(--font-body), sans-serif;
         }
 
@@ -376,7 +373,7 @@ export default function HeroSection({ stats }) {
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 1px;
           width: min(680px, 100%);
-          margin: 0 0 var(--space-8);
+          margin: 0 auto var(--space-8);
           overflow: hidden;
           border: 1px solid color-mix(in srgb, var(--accent-primary) 18%, var(--border-default));
           border-radius: var(--radius-xl);
@@ -389,7 +386,8 @@ export default function HeroSection({ stats }) {
         .hero__console-cell {
           display: flex;
           flex-direction: column;
-          align-items: flex-start;
+          align-items: center;
+          text-align: center;
           padding: var(--space-4) var(--space-5);
           background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
           min-width: 0;
@@ -496,7 +494,7 @@ export default function HeroSection({ stats }) {
           border: 1px solid var(--border-default);
           border-radius: var(--radius-2xl);
           padding: var(--space-5) var(--space-6);
-          margin-bottom: var(--space-14);
+          margin: 0 auto var(--space-14);
           gap: 0;
         }
 
@@ -514,8 +512,10 @@ export default function HeroSection({ stats }) {
 
         .hero__stat {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          gap: var(--space-3);
+          text-align: center;
+          gap: var(--space-2);
           padding: var(--space-3) var(--space-6);
           flex: 1;
           min-width: 160px;
@@ -543,7 +543,7 @@ export default function HeroSection({ stats }) {
         .hero__stat-body {
           display: flex;
           flex-direction: column;
-          align-items: flex-start;
+          align-items: center;
           gap: 1px;
         }
 
@@ -696,6 +696,7 @@ export default function HeroSection({ stats }) {
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
+
           .hero__steps {
             display: grid;
             grid-template-columns: 1fr 1fr;

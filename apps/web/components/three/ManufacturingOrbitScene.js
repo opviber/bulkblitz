@@ -1,96 +1,126 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, Float, Html, OrbitControls, Sparkles } from "@react-three/drei";
-import { Suspense, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
-function useReducedMotion() {
+function usePrefersReducedMotion() {
   if (typeof window === "undefined") return true;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function PriceRail({ y = 0, active = 1 }) {
-  const group = useRef(null);
-  const reducedMotion = useReducedMotion();
-  const tiers = useMemo(
+function FactoryCore() {
+  const coreRef = useRef(null);
+  const reduced = usePrefersReducedMotion();
+
+  useFrame(({ clock }) => {
+    if (!coreRef.current || reduced) return;
+    coreRef.current.rotation.y = Math.sin(clock.elapsedTime * 0.38) * 0.18;
+    coreRef.current.position.y = Math.sin(clock.elapsedTime * 0.7) * 0.04;
+  });
+
+  return (
+    <group ref={coreRef}>
+      <mesh position={[0, 0.18, 0]}>
+        <boxGeometry args={[1.38, 0.9, 1.08]} />
+        <meshStandardMaterial color="#1d4ed8" roughness={0.42} metalness={0.16} />
+      </mesh>
+      <mesh position={[-0.36, 0.86, 0]}>
+        <boxGeometry args={[0.2, 0.58, 0.2]} />
+        <meshStandardMaterial color="#0f172a" roughness={0.36} />
+      </mesh>
+      <mesh position={[0.08, 0.78, 0]}>
+        <boxGeometry args={[0.22, 0.42, 0.22]} />
+        <meshStandardMaterial color="#0f172a" roughness={0.36} />
+      </mesh>
+      <mesh position={[0.46, 0.12, 0.58]}>
+        <boxGeometry args={[0.42, 0.42, 0.08]} />
+        <meshStandardMaterial
+          color="#34d399"
+          emissive="#10b981"
+          emissiveIntensity={0.38}
+          roughness={0.22}
+        />
+      </mesh>
+      <mesh position={[-0.44, 0.12, 0.58]}>
+        <boxGeometry args={[0.42, 0.42, 0.08]} />
+        <meshStandardMaterial
+          color="#93c5fd"
+          emissive="#3b82f6"
+          emissiveIntensity={0.24}
+          roughness={0.22}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function PriceSteps() {
+  const groupRef = useRef(null);
+  const reduced = usePrefersReducedMotion();
+  const steps = useMemo(
     () => [
-      { x: -2.55, height: 0.48, color: "#3B82F6" },
-      { x: -1.25, height: 0.72, color: "#8B5CF6" },
-      { x: 0.05, height: 1.05, color: "#10B981" },
-      { x: 1.35, height: 1.36, color: "#F59E0B" },
-      { x: 2.65, height: 1.7, color: "#10B981" },
+      { x: -2.55, y: -1.0, h: 0.34, color: "#60a5fa" },
+      { x: -1.45, y: -0.82, h: 0.58, color: "#818cf8" },
+      { x: -0.35, y: -0.6, h: 0.88, color: "#34d399" },
+      { x: 0.75, y: -0.36, h: 1.18, color: "#fbbf24" },
+      { x: 1.85, y: -0.1, h: 1.52, color: "#10b981" },
     ],
     []
   );
 
   useFrame(({ clock }) => {
-    if (!group.current || reducedMotion) return;
-    group.current.rotation.y = Math.sin(clock.elapsedTime * 0.35) * 0.12;
+    if (!groupRef.current || reduced) return;
+    groupRef.current.rotation.y = Math.sin(clock.elapsedTime * 0.22) * 0.07;
   });
 
   return (
-    <group ref={group} position={[0, y, 0]}>
-      <mesh position={[0, -0.72, 0]} receiveShadow>
-        <boxGeometry args={[6.4, 0.08, 1.25]} />
-        <meshStandardMaterial color="#0f172a" roughness={0.55} metalness={0.2} />
-      </mesh>
-      {tiers.map((tier, index) => (
-        <Float
-          key={tier.x}
-          speed={reducedMotion ? 0 : 1 + index * 0.16}
-          rotationIntensity={0.05}
-          floatIntensity={0.08}
-        >
-          <mesh
-            castShadow
-            receiveShadow
-            position={[tier.x, -0.72 + tier.height / 2, 0]}
-            scale={[0.82, tier.height, 0.82]}
-          >
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial
-              color={tier.color}
-              emissive={tier.color}
-              emissiveIntensity={index <= active ? 0.18 : 0.04}
-              roughness={0.38}
-              metalness={0.22}
-            />
-          </mesh>
-        </Float>
+    <group ref={groupRef} position={[0, -0.22, -0.15]}>
+      {steps.map((step, index) => (
+        <mesh key={step.x} position={[step.x, step.y + step.h / 2, 0]} scale={[0.78, step.h, 0.42]}>
+          <boxGeometry args={[1, 1, 1]} />
+          <meshStandardMaterial
+            color={step.color}
+            emissive={step.color}
+            emissiveIntensity={0.14 + index * 0.035}
+            roughness={0.32}
+            metalness={0.18}
+          />
+        </mesh>
       ))}
     </group>
   );
 }
 
-function BuyerNodes() {
-  const group = useRef(null);
-  const reducedMotion = useReducedMotion();
+function BuyerOrbit() {
+  const groupRef = useRef(null);
+  const reduced = usePrefersReducedMotion();
   const nodes = useMemo(
     () =>
-      Array.from({ length: 22 }, (_, index) => {
-        const angle = (index / 22) * Math.PI * 2;
-        const radius = 2.35 + (index % 4) * 0.24;
+      Array.from({ length: 28 }, (_, index) => {
+        const angle = (index / 28) * Math.PI * 2;
+        const radius = 2.34 + (index % 4) * 0.11;
         return {
           angle,
           radius,
-          y: Math.sin(index * 1.7) * 0.42,
-          color: index % 3 === 0 ? "#10B981" : index % 3 === 1 ? "#3B82F6" : "#F59E0B",
+          y: -0.05 + Math.sin(index * 1.23) * 0.32,
+          size: index % 7 === 0 ? 0.085 : 0.052,
+          color: index % 3 === 0 ? "#10b981" : index % 3 === 1 ? "#3b82f6" : "#f59e0b",
         };
       }),
     []
   );
 
   useFrame(({ clock }) => {
-    if (!group.current || reducedMotion) return;
-    group.current.rotation.y = clock.elapsedTime * 0.16;
+    if (!groupRef.current || reduced) return;
+    groupRef.current.rotation.y = clock.elapsedTime * 0.2;
   });
 
   return (
-    <group ref={group} position={[0, 0.24, -0.1]}>
+    <group ref={groupRef}>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[2.82, 0.012, 12, 120]} />
-        <meshStandardMaterial color="#64748B" transparent opacity={0.28} />
+        <torusGeometry args={[2.46, 0.012, 10, 120]} />
+        <meshBasicMaterial color="#64748b" transparent opacity={0.28} />
       </mesh>
       {nodes.map((node, index) => (
         <mesh
@@ -101,12 +131,12 @@ function BuyerNodes() {
             Math.sin(node.angle) * node.radius,
           ]}
         >
-          <sphereGeometry args={[index % 5 === 0 ? 0.095 : 0.06, 18, 18]} />
+          <sphereGeometry args={[node.size, 16, 16]} />
           <meshStandardMaterial
             color={node.color}
             emissive={node.color}
-            emissiveIntensity={0.35}
-            roughness={0.28}
+            emissiveIntensity={0.34}
+            roughness={0.24}
           />
         </mesh>
       ))}
@@ -115,35 +145,25 @@ function BuyerNodes() {
 }
 
 function Scene() {
+  const sceneRef = useRef(null);
+  const reduced = usePrefersReducedMotion();
+
+  useFrame(({ clock }) => {
+    if (!sceneRef.current || reduced) return;
+    sceneRef.current.rotation.z = Math.sin(clock.elapsedTime * 0.18) * 0.02;
+  });
+
   return (
     <>
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[4, 5, 6]} intensity={1.8} castShadow />
-      <pointLight position={[-3, 2, 2]} color="#8B5CF6" intensity={2.2} />
-      <pointLight position={[3, -1, 2]} color="#10B981" intensity={1.6} />
-      <group rotation={[-0.18, -0.48, 0]} position={[0.15, 0.05, 0]}>
-        <BuyerNodes />
-        <PriceRail active={3} />
+      <ambientLight intensity={1.15} />
+      <directionalLight position={[4, 4, 5]} intensity={2.4} />
+      <pointLight position={[-3, 1.5, 2]} color="#60a5fa" intensity={1.8} />
+      <pointLight position={[2.4, -1.4, 2.2]} color="#34d399" intensity={1.7} />
+      <group ref={sceneRef} rotation={[-0.2, -0.34, 0]} position={[0.25, 0.04, 0]}>
+        <BuyerOrbit />
+        <FactoryCore />
+        <PriceSteps />
       </group>
-      <Sparkles count={38} scale={[6, 3, 3]} size={2.4} speed={0.35} color="#93C5FD" />
-      <Html
-        transform
-        position={[1.72, 1.28, 0.35]}
-        rotation={[0, -0.2, 0]}
-        distanceFactor={6}
-        className="manufacturing-scene__label"
-      >
-        <span>Price tier unlocked</span>
-        <strong>-18%</strong>
-      </Html>
-      <Environment preset="city" />
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        autoRotate={false}
-        maxPolarAngle={Math.PI / 1.8}
-        minPolarAngle={Math.PI / 3.5}
-      />
     </>
   );
 }
@@ -152,89 +172,121 @@ export default function ManufacturingOrbitScene() {
   return (
     <div className="manufacturing-scene" aria-hidden="true">
       <Canvas
-        dpr={[1, 1.5]}
-        shadows
-        camera={{ position: [0, 1.15, 6.25], fov: 42 }}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        dpr={[1.35, 2]}
+        camera={{ position: [0, 0.65, 5.8], fov: 38 }}
+        onCreated={({ gl }) => {
+          gl.setClearColor(0x000000, 0);
+          gl.setClearAlpha(0);
+        }}
+        gl={{
+          antialias: true,
+          alpha: true,
+          premultipliedAlpha: false,
+          powerPreference: "high-performance",
+          toneMapping: THREE.ACESFilmicToneMapping,
+        }}
       >
-        <Suspense fallback={null}>
-          <Scene />
-        </Suspense>
+        <Scene />
       </Canvas>
+      <div className="manufacturing-scene__tag manufacturing-scene__tag--top">
+        <span>Batch density</span>
+        <strong>+42%</strong>
+      </div>
+      <div className="manufacturing-scene__tag manufacturing-scene__tag--bottom">
+        <span>Factory price</span>
+        <strong>dropping live</strong>
+      </div>
       <style jsx global>{`
         .manufacturing-scene {
           position: absolute;
-          inset: -8% -4% -2% 40%;
-          z-index: 0;
-          opacity: 0.92;
-          pointer-events: auto;
-          touch-action: pan-y;
+          top: 132px;
+          right: max(22px, 3vw);
+          width: min(27vw, 350px);
+          height: min(48vh, 400px);
+          min-height: 320px;
+          z-index: 1;
+          pointer-events: none;
+          opacity: 1;
+          filter: none;
         }
 
         .manufacturing-scene canvas {
-          cursor: grab;
+          width: 100% !important;
+          height: 100% !important;
+          filter: none;
+          image-rendering: auto;
         }
 
-        .manufacturing-scene canvas:active {
-          cursor: grabbing;
-        }
-
-        .manufacturing-scene__label {
-          min-width: 118px;
-          padding: 8px 10px;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          border-radius: 12px;
-          background: rgba(15, 23, 42, 0.78);
-          color: white;
-          box-shadow: 0 16px 40px rgba(15, 23, 42, 0.28);
-          backdrop-filter: blur(16px);
+        .manufacturing-scene__tag {
+          position: absolute;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding: 10px 12px;
+          border: 1px solid color-mix(in srgb, var(--accent-primary) 22%, var(--border-default));
+          border-radius: var(--radius-lg);
+          background: color-mix(in srgb, var(--bg-surface) 78%, transparent);
+          color: var(--text-primary);
+          box-shadow: var(--shadow-premium);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
           font-family: var(--font-body), sans-serif;
-          line-height: 1.1;
-          text-align: left;
         }
 
-        .manufacturing-scene__label span,
-        .manufacturing-scene__label strong {
-          display: block;
+        .manufacturing-scene__tag--top {
+          top: 14%;
+          right: 2%;
         }
 
-        .manufacturing-scene__label span {
-          font-size: 0.56rem;
-          font-weight: 700;
-          letter-spacing: 0.06em;
+        .manufacturing-scene__tag--bottom {
+          left: 4%;
+          bottom: 12%;
+        }
+
+        .manufacturing-scene__tag span {
+          font-size: 0.62rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.64);
+          color: var(--text-tertiary);
           white-space: nowrap;
         }
 
-        .manufacturing-scene__label strong {
-          margin-top: 3px;
-          color: #34d399;
-          font-size: 1.18rem;
-          font-weight: 900;
+        .manufacturing-scene__tag strong {
           font-family: var(--font-heading), sans-serif;
+          font-size: 1rem;
+          line-height: 1;
+          color: var(--accent-success);
+          font-weight: 900;
+          white-space: nowrap;
         }
 
-        @media (max-width: 980px) {
+        @media (max-width: 1180px) {
           .manufacturing-scene {
-            inset: auto -18% 10% -18%;
-            height: 48%;
-            opacity: 0.36;
-            pointer-events: none;
+            width: min(42vw, 430px);
+            opacity: 0.28;
+            right: -10vw;
+          }
+
+          .manufacturing-scene__tag {
+            display: none;
           }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 760px) {
           .manufacturing-scene {
-            height: 38%;
-            bottom: 18%;
+            top: 120px;
+            right: -28vw;
+            width: 92vw;
+            height: 360px;
+            min-height: 320px;
             opacity: 0.24;
           }
         }
 
         @media (prefers-reduced-motion: reduce) {
           .manufacturing-scene {
-            pointer-events: none;
+            opacity: 0.24;
           }
         }
       `}</style>

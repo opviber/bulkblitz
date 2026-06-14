@@ -100,6 +100,12 @@ function HomePageContent() {
     { v: '320+',l: 'Active Sellers' },
   ];
 
+  const PROOF_CARDS = [
+    { k: 'Demand signal', v: 'Buyers reserve slots before production locks.', tone: 'blue' },
+    { k: 'Tier unlock', v: 'Every reservation pushes the whole batch closer to factory pricing.', tone: 'green' },
+    { k: 'Shared upside', v: 'When the batch closes, everyone pays the final lowest unlocked price.', tone: 'amber' },
+  ];
+
   return (
     <>
       <Header />
@@ -266,14 +272,39 @@ function HomePageContent() {
           </div>
         </section>
 
+        {/* ── SECTION 3: WHY IT DROPS ─────────────────────────────────────── */}
+        <section className="proof-section" id="price-drop-proof">
+          <div className="container">
+            <div className="proof-layout">
+              <div className="proof-copy">
+                <div className="section-hdr__eyebrow">
+                  <span className="section-hdr__dot" />
+                  Crowd Mechanics
+                </div>
+                <h2 className="proof-title">One more buyer can drop the price for everyone.</h2>
+                <p className="proof-sub">
+                  BulkBlitz turns scattered demand into a live manufacturing signal, so buyers see the batch move toward better tiers instead of waiting for opaque wholesale quotes.
+                </p>
+              </div>
+              <div className="proof-cards">
+                {PROOF_CARDS.map((card, index) => (
+                  <div key={card.k} className={`proof-card proof-card--${card.tone}`}>
+                    <span className="proof-card__num">{String(index + 1).padStart(2, '0')}</span>
+                    <h3>{card.k}</h3>
+                    <p>{card.v}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── SECTION 3: MANUFACTURER CTA ─────────────────────────────────── */}
         <section className="cta-section" id="cta-section">
           <div className="container">
             <div className="cta-card">
 
-              {/* Background orbs */}
-              <div className="cta-orb cta-orb--1" />
-              <div className="cta-orb cta-orb--2" />
+              <div className="cta-pattern" aria-hidden="true" />
 
               {/* Split layout */}
               <div className="cta-layout">
@@ -328,12 +359,6 @@ function HomePageContent() {
           50%       { opacity: 0.5; transform: scale(0.85); }
         }
 
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          33%       { transform: translateY(-18px) scale(1.03); }
-          66%       { transform: translateY(10px) scale(0.97); }
-        }
-
         @keyframes shimmer {
           0%   { transform: translateX(-100%); }
           100% { transform: translateX(100%); }
@@ -341,16 +366,21 @@ function HomePageContent() {
 
         /* ── SECTIONS ────────────────────────────────────────────────────── */
         .section {
-          padding: var(--space-16) 0;
+          padding: var(--space-20) 0;
         }
 
         .section--alt {
-          background: var(--bg-elevated);
+          background:
+            linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 92%, #ffffff) 0%, var(--bg-primary) 100%);
         }
 
         /* ── SECTION HEADER ──────────────────────────────────────────────── */
         .section-hdr {
           margin-bottom: var(--space-8);
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: var(--space-6);
         }
 
         .section-hdr__eyebrow {
@@ -390,6 +420,7 @@ function HomePageContent() {
           gap: var(--space-3);
           letter-spacing: -0.02em;
           line-height: 1.2;
+          text-wrap: balance;
         }
 
         .section-hdr__badge {
@@ -423,6 +454,7 @@ function HomePageContent() {
           border-radius: var(--radius-xl);
           width: fit-content;
           border: 1px solid var(--border-default);
+          box-shadow: var(--shadow-sm);
         }
 
         .seg-tab {
@@ -454,7 +486,7 @@ function HomePageContent() {
         .batch-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: var(--space-5);
+          gap: var(--space-6);
         }
 
         .batch-grid--featured {
@@ -481,11 +513,12 @@ function HomePageContent() {
           align-items: center;
           gap: var(--space-2);
           padding: var(--space-4) var(--space-3);
-          background: var(--bg-surface);
+          background:
+            linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 96%, #ffffff) 0%, var(--bg-surface) 100%);
           border: 1px solid var(--border-default);
           border-radius: var(--radius-xl);
           cursor: pointer;
-          transition: all var(--transition-base);
+          transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base), background var(--transition-base);
           position: relative;
           overflow: hidden;
         }
@@ -504,7 +537,7 @@ function HomePageContent() {
           border-color: var(--cat-color, var(--accent-primary));
           transform: translateY(-2px);
           box-shadow: var(--shadow-md);
-          background: var(--bg-elevated);
+          background: var(--bg-surface);
         }
 
         .cat-tile:hover::before {
@@ -515,6 +548,110 @@ function HomePageContent() {
           border-color: var(--cat-color, var(--accent-primary));
           background: var(--accent-primary-light);
           box-shadow: 0 0 0 1px var(--cat-color, var(--accent-primary));
+          transform: translateY(-2px);
+        }
+
+        /* ── PROOF SECTION ──────────────────────────────────────────────── */
+        .proof-section {
+          padding: var(--space-20) 0;
+          background: var(--bg-primary);
+        }
+
+        .proof-layout {
+          display: grid;
+          grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+          gap: var(--space-8);
+          align-items: stretch;
+        }
+
+        .proof-copy {
+          padding: var(--space-8);
+          border: 1px solid color-mix(in srgb, var(--accent-primary) 18%, var(--border-default));
+          border-radius: var(--radius-2xl);
+          background:
+            linear-gradient(135deg, color-mix(in srgb, var(--bg-surface) 96%, #ffffff), var(--bg-surface));
+          box-shadow: var(--shadow-premium);
+        }
+
+        .proof-title {
+          max-width: 560px;
+          font-family: var(--font-heading), sans-serif;
+          font-size: clamp(2rem, 4vw, 3.4rem);
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: 0;
+          margin: 0 0 var(--space-5);
+          color: var(--text-primary);
+        }
+
+        .proof-sub {
+          font-size: 1rem;
+          line-height: 1.75;
+          color: var(--text-secondary);
+          margin: 0;
+        }
+
+        .proof-cards {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: var(--space-4);
+        }
+
+        .proof-card {
+          min-height: 260px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          padding: var(--space-6);
+          border-radius: var(--radius-xl);
+          border: 1px solid var(--border-default);
+          background:
+            linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 94%, #ffffff), var(--bg-surface));
+          box-shadow: var(--shadow-premium);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .proof-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          opacity: 0.13;
+          background:
+            repeating-linear-gradient(135deg, currentColor 0 1px, transparent 1px 18px);
+          pointer-events: none;
+        }
+
+        .proof-card--blue { color: var(--accent-primary); }
+        .proof-card--green { color: var(--accent-success); }
+        .proof-card--amber { color: var(--accent-warning); }
+
+        .proof-card__num {
+          position: absolute;
+          top: var(--space-5);
+          left: var(--space-5);
+          font-family: var(--font-heading), sans-serif;
+          font-size: 2.4rem;
+          font-weight: 900;
+          line-height: 1;
+          color: currentColor;
+          opacity: 0.28;
+        }
+
+        .proof-card h3 {
+          font-family: var(--font-heading), sans-serif;
+          font-size: 1.2rem;
+          font-weight: 800;
+          color: var(--text-primary);
+          margin: 0 0 var(--space-2);
+          letter-spacing: 0;
+        }
+
+        .proof-card p {
+          margin: 0;
+          color: var(--text-secondary);
+          font-size: 0.9rem;
+          line-height: 1.6;
         }
 
         .cat-tile--active::before {
@@ -600,35 +737,22 @@ function HomePageContent() {
           overflow: hidden;
           border-radius: var(--radius-2xl);
           padding: var(--space-12) var(--space-10);
-          background: linear-gradient(135deg, #0F1117 0%, #1A1B2E 50%, #111827 100%);
+          background:
+            radial-gradient(circle at 78% 20%, rgba(16, 185, 129, 0.22), transparent 28%),
+            linear-gradient(135deg, #0F1117 0%, #172033 50%, #0b111f 100%);
           color: white;
           border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
-        .cta-orb {
+        .cta-pattern {
           position: absolute;
-          border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.4;
+          inset: 0;
+          opacity: 0.18;
+          background-image:
+            linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px);
+          background-size: 38px 38px;
           pointer-events: none;
-        }
-
-        .cta-orb--1 {
-          width: 350px;
-          height: 350px;
-          background: #0D6EFD;
-          top: -100px;
-          right: -50px;
-          animation: float 8s ease-in-out infinite;
-        }
-
-        .cta-orb--2 {
-          width: 280px;
-          height: 280px;
-          background: #8B5CF6;
-          bottom: -80px;
-          left: 30%;
-          animation: float 10s ease-in-out infinite reverse;
         }
 
         .cta-layout {
@@ -762,6 +886,10 @@ function HomePageContent() {
 
         /* ── RESPONSIVE TWEAKS ───────────────────────────────────────────── */
         @media (max-width: 640px) {
+          .section-hdr {
+            display: block;
+          }
+
           .seg-tabs {
             width: 100%;
             justify-content: stretch;
@@ -787,6 +915,17 @@ function HomePageContent() {
           }
         }
 
+        @media (max-width: 900px) {
+          .proof-layout,
+          .proof-cards {
+            grid-template-columns: 1fr;
+          }
+
+          .proof-card {
+            min-height: 180px;
+          }
+        }
+
         @media (max-width: 480px) {
           .section-hdr__title {
             flex-wrap: wrap;
@@ -808,4 +947,3 @@ export default function HomePage() {
     </Suspense>
   );
 }
-
