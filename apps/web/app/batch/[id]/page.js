@@ -15,6 +15,7 @@ import {
   getInitials,
 } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import { Star, MapPin, Check, Plus, Minus, Share2, Clock, Loader2, ShieldCheck, ChevronLeft, X, AlertCircle } from "lucide-react";
 
 export default function BatchDetailPage({ params }) {
   const resolvedParams = use(params);
@@ -149,9 +150,9 @@ export default function BatchDetailPage({ params }) {
     return (
       <>
         <Header />
-        <main className="batch-detail" style={{ paddingTop: "120px", minHeight: "80vh" }}>
-          <div className="container">
-            <div className="skeleton-card skeleton" style={{ height: "450px", borderRadius: "var(--radius-xl)" }}></div>
+        <main className="pt-24 min-h-screen bg-black text-white font-sans">
+          <div className="max-w-7xl mx-auto px-6 py-12">
+            <div className="w-full h-[450px] bg-neutral-900/50 border border-white/5 rounded-3xl animate-pulse" />
           </div>
         </main>
         <Footer />
@@ -163,14 +164,17 @@ export default function BatchDetailPage({ params }) {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: "120px", textAlign: "center", minHeight: "60vh" }}>
-          <h1>Batch listing not found</h1>
-          <p style={{ color: "var(--text-secondary)" }}>
-            This batch listing may have closed, been cancelled, or does not exist.
-          </p>
-          <Link href="/" className="btn btn--primary" style={{ marginTop: "20px" }}>
-            ← Back to Home
-          </Link>
+        <main className="pt-24 min-h-screen bg-black text-white font-sans flex items-center justify-center">
+          <div className="text-center space-y-6 p-6">
+            <AlertCircle className="w-16 h-16 text-primary mx-auto" />
+            <h1 className="text-3xl font-extrabold tracking-tight">Batch listing not found</h1>
+            <p className="text-neutral-400 max-w-sm mx-auto">
+              This batch listing may have closed, been cancelled, or does not exist.
+            </p>
+            <Link href="/" className="inline-flex bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 text-white font-bold py-3 px-6 rounded-xl transition-all cursor-pointer">
+              ← Back to Home
+            </Link>
+          </div>
         </main>
         <Footer />
       </>
@@ -191,421 +195,360 @@ export default function BatchDetailPage({ params }) {
   const fillPercent = Math.min((batch.currentSlots / batch.maxSlots) * 100, 100);
   const nextTier = batch.tiers.find((t) => t.minSlots > batch.currentSlots);
 
-
   return (
     <>
       <Header />
-      <main className="batch-detail" id="batch-detail-page">
-        <div className="container">
+      <main className="pt-24 min-h-screen bg-black text-white font-sans">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          
           {/* Breadcrumb */}
-          <nav className="breadcrumb animate-fade-in" id="breadcrumb">
-            <Link href="/" className="breadcrumb__link">Home</Link>
-            <span className="breadcrumb__sep">/</span>
-            <Link href="/" className="breadcrumb__link">Batches</Link>
-            <span className="breadcrumb__sep">/</span>
-            <span className="breadcrumb__current">{batch.title}</span>
+          <nav className="flex items-center gap-2 mb-6 text-xs text-neutral-500">
+            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+            <span>/</span>
+            <Link href="/" className="hover:text-primary transition-colors">Batches</Link>
+            <span>/</span>
+            <span className="text-neutral-300 font-medium truncate max-w-[200px]">{batch.title}</span>
           </nav>
 
-          <div className="batch-detail__grid">
-            {/* Left Column — Product */}
-            <div className="batch-detail__left animate-fade-in-up">
-              {/* Product Image */}
-              <div className="batch-detail__image" id="product-image">
-                <div className="batch-detail__image-placeholder">
-                  <span className="batch-detail__image-icon">{batch.categoryIcon || "📦"}</span>
-                </div>
-                <div className="batch-detail__image-badges">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            
+            {/* Left Column — Product (2/3 width on desktop) */}
+            <div className="lg:col-span-2 space-y-6">
+              
+              {/* Product Image Box */}
+              <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-gradient-to-tr from-neutral-950 to-neutral-900 flex items-center justify-center">
+                {/* Decorative mesh glow */}
+                <div className="absolute inset-0 bg-radial-gradient(circle_at_center,rgba(255,107,0,0.1),transparent_60%) pointer-events-none" />
+                
+                <span className="text-8xl opacity-80 filter drop-shadow-[0_0_24px_rgba(255,107,0,0.25)]">
+                  {batch.categoryIcon || "📦"}
+                </span>
+                
+                {/* Badges Overlay */}
+                <div className="absolute top-4 left-4 flex gap-2">
                   {batch.status === "LIVE" && (
-                    <span className="badge badge--success">
-                      LIVE
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 border border-green-500/20 text-green-400 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> LIVE
                     </span>
                   )}
                   {savingsPercent > 0 && (
-                    <span className="badge badge--premium">Save {savingsPercent}%</span>
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary">
+                      Save {savingsPercent}%
+                    </span>
                   )}
                 </div>
               </div>
 
-              {/* Manufacturer Info */}
-              <div className="mfg-card" id="manufacturer-info">
-                <div className="mfg-card__avatar">{manufacturer?.avatar || "MF"}</div>
-                <div className="mfg-card__info">
-                  <div className="mfg-card__name">
+              {/* Manufacturer Card */}
+              <div className="flex gap-4 p-5 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl shadow-xl">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-primary to-orange-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+                  {manufacturer?.avatar || "MF"}
+                </div>
+                <div className="space-y-1">
+                  <div className="font-bold text-base flex items-center gap-2 text-white">
                     {manufacturer?.name}
                     {manufacturer?.gstVerified && (
-                      <span className="mfg-card__badge" title="GST Verified">✓ GST Verified</span>
+                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 border border-primary/20 text-primary" title="GST Verified">
+                        <ShieldCheck className="w-3 h-3" /> GST Verified
+                      </span>
                     )}
                   </div>
-                  <div className="mfg-card__meta">
-                    📍 {manufacturer?.city}, {manufacturer?.state} · {manufacturer?.yearsInBusiness} yrs ·{" "}
-                    ⭐ {manufacturer?.rating}
+                  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-neutral-400">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-neutral-500" /> {manufacturer?.city}, {manufacturer?.state}
+                    </span>
+                    <span>•</span>
+                    <span>{manufacturer?.yearsInBusiness} yrs in business</span>
+                    <span>•</span>
+                    <span className="flex items-center gap-0.5 text-amber-400 font-bold">
+                      <Star className="w-3.5 h-3.5 fill-current" /> {manufacturer?.rating}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Product Specs */}
+              {/* Product Specifications Card */}
               {batch.specs && (
-                <div className="specs-card" id="product-specs">
-                  <h3 className="specs-card__title">Product Details</h3>
-                  <div className="specs-card__grid">
+                <div className="p-6 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl shadow-xl">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Product Specifications</h3>
+                  <div className="grid grid-cols-2 gap-4">
                     {Object.entries(batch.specs).map(([key, value]) => (
-                      <div key={key} className="specs-card__item">
-                        <span className="specs-card__key">{key}</span>
-                        <span className="specs-card__value">{value}</span>
+                      <div key={key} className="flex flex-col gap-0.5">
+                        <span className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">{key}</span>
+                        <span className="text-sm text-neutral-300 font-medium">{value}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Reviews */}
+              {/* Reviews Card */}
               {batch.reviews && batch.reviews.length > 0 && (
-                <div className="reviews-card" id="reviews-section">
-                  <h3 className="reviews-card__title">
-                    Reviews ({batch.reviews.length})
+                <div className="p-6 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl shadow-xl">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
+                    Customer Reviews ({batch.reviews.length})
                   </h3>
-                  {batch.reviews.map((review, i) => (
-                    <div key={i} className="review">
-                      <div className="review__header">
-                        <span className="review__user">{review.user}</span>
-                        <span className="review__stars">
-                          {"⭐".repeat(review.rating)}
-                        </span>
+                  <div className="divide-y divide-white/5">
+                    {batch.reviews.map((review, i) => (
+                      <div key={i} className="py-4 first:pt-0 last:pb-0">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="font-semibold text-sm text-white">{review.user}</span>
+                          <div className="flex items-center gap-0.5 text-amber-400 text-xs">
+                            {Array.from({ length: review.rating }).map((_, rIdx) => (
+                              <Star key={rIdx} className="w-3 h-3 fill-current" />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-neutral-400 leading-relaxed mb-1">{review.comment}</p>
+                        <span className="text-[10px] text-neutral-500">{review.date}</span>
                       </div>
-                      <p className="review__comment">{review.comment}</p>
-                      <span className="review__date">{review.date}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Right Column — Pricing & Actions */}
-            <div className="batch-detail__right">
-              <div className={`pricing-panel ${priceDropped ? "animate-price-drop price-drop-celebration" : ""} animate-fade-in-up animate-delay-100`} id="pricing-panel">
+            {/* Right Column — Actions & Tiers (1/3 width on desktop) */}
+            <div className="lg:col-span-1">
+              <div className={`p-6 bg-white/[0.02] border border-white/5 hover:border-primary/20 backdrop-blur-xl rounded-3xl shadow-2xl flex flex-col gap-6 sticky top-24 transition-all duration-300 ${priceDropped ? "ring-2 ring-green-500 shadow-green-500/5 scale-[1.02]" : ""}`}>
+                
                 {/* Title */}
-                <h1 className="pricing-panel__title">{batch.title}</h1>
-                <p className="pricing-panel__description">{batch.description}</p>
+                <div>
+                  <h1 className="text-2xl font-black tracking-tight text-white mb-2 leading-snug">{batch.title}</h1>
+                  <p className="text-xs text-neutral-400 leading-relaxed">{batch.description}</p>
+                </div>
 
-                {/* Timer */}
-                <div className="pricing-panel__timer-wrap">
-                  <span className="pricing-panel__timer-label">Batch closes in</span>
+                {/* Close Timer */}
+                <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col gap-1.5">
+                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-primary" /> Batch closes in
+                  </span>
                   <LiveTimer endTime={batch.endTime} />
                 </div>
 
                 {/* Current Price */}
-                <div className="pricing-panel__current">
-                  <div className="pricing-panel__price-row">
-                    <span className="pricing-panel__price">{formatPrice(currentTier.price)}</span>
+                <div className="p-5 bg-green-500/5 border border-green-500/10 rounded-2xl">
+                  <div className="flex items-baseline gap-2.5">
+                    <span className="text-3xl font-black text-green-400 tabular-nums">
+                      {formatPrice(currentTier?.price)}
+                    </span>
                     {savingsPercent > 0 && (
-                      <span className="pricing-panel__original">{formatPrice(batch.tiers[0].price)}</span>
+                      <span className="text-sm text-neutral-500 line-through">
+                        {formatPrice(batch.tiers[0].price)}
+                      </span>
                     )}
                     {savingsPercent > 0 && (
-                      <span className="pricing-panel__savings-badge">-{savingsPercent}%</span>
+                      <span className="px-1.5 py-0.5 rounded bg-green-500 text-[10px] font-black text-white">
+                        -{savingsPercent}%
+                      </span>
                     )}
                   </div>
-                  <span className="pricing-panel__price-note">per unit · Current batch price</span>
+                  <span className="block text-[10px] text-neutral-400 font-medium mt-1">
+                    per unit · Current pool buying price
+                  </span>
                 </div>
 
-                {/* Tier Ladder */}
-                <div className="tier-ladder" id="tier-ladder">
-                  <h4 className="tier-ladder__title">Price Tiers</h4>
-                  {batch.tiers.map((tier, i) => {
-                    const isActive = batch.currentSlots >= tier.minSlots && batch.currentSlots <= tier.maxSlots;
-                    const isReached = batch.currentSlots >= tier.minSlots;
-                    return (
-                      <div
-                        key={i}
-                        className={`tier-ladder__row ${isActive ? "tier-ladder__row--active" : ""} ${isReached ? "tier-ladder__row--reached" : ""}`}
-                      >
-                        <div className="tier-ladder__indicator">
-                          <div className={`tier-ladder__dot ${isReached ? "tier-ladder__dot--filled" : ""}`}>
-                            {isReached && "✓"}
+                {/* Pricing Tiers Ladder */}
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Price Tiers</h4>
+                  <div className="space-y-1.5">
+                    {batch.tiers.map((tier, i) => {
+                      const isActive = batch.currentSlots >= tier.minSlots && batch.currentSlots <= tier.maxSlots;
+                      const isReached = batch.currentSlots >= tier.minSlots;
+                      return (
+                        <div
+                          key={i}
+                          className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${isActive ? "bg-primary/5 border border-primary/20" : "bg-transparent border border-transparent"}`}
+                        >
+                          <div className="flex flex-col items-center shrink-0">
+                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[8px] font-black ${isReached ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/20" : "border-white/15 text-white/40 bg-white/5"}`}>
+                              {isReached && <Check className="w-2.5 h-2.5 stroke-[4]" />}
+                            </div>
                           </div>
-                          {i < batch.tiers.length - 1 && (
-                            <div className={`tier-ladder__line ${isReached ? "tier-ladder__line--filled" : ""}`}></div>
+                          <div className="flex justify-between items-center flex-1 text-xs">
+                            <span className={`font-semibold ${isReached ? "text-neutral-200" : "text-neutral-500"}`}>
+                              {tier.minSlots}–{tier.maxSlots} slots
+                            </span>
+                            <span className={`font-bold ${isReached ? "text-white" : "text-neutral-500"}`}>
+                              {formatPrice(tier.price)}
+                            </span>
+                          </div>
+                          {isActive && (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-primary/10 border border-primary/20 text-primary uppercase tracking-wide">
+                              Current
+                            </span>
                           )}
                         </div>
-                        <div className="tier-ladder__info">
-                          <span className="tier-ladder__range">{tier.minSlots}–{tier.maxSlots} buyers</span>
-                          <span className="tier-ladder__price">{formatPrice(tier.price)}</span>
-                        </div>
-                        {isActive && (
-                          <span className="tier-ladder__current-tag">Current</span>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="pricing-panel__progress" id="batch-progress">
-                  <div className="pricing-panel__progress-header">
+                {/* Progress Tracker */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs font-bold text-neutral-400">
                     <span>{batch.currentSlots} of {batch.maxSlots} slots filled</span>
-                    <span>{Math.round(fillPercent)}%</span>
+                    <span className="text-white">{Math.round(fillPercent)}%</span>
                   </div>
-                  <div className="pricing-panel__progress-bar">
+                  <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                     <div
-                      className="pricing-panel__progress-fill"
+                      className="h-full bg-gradient-to-r from-primary to-green-500 rounded-full transition-all duration-1000 shadow-md shadow-primary/50"
                       style={{ width: `${fillPercent}%` }}
-                    ></div>
+                    />
                   </div>
                   {nextTier && (
-                    <div className="pricing-panel__next-tier">
-                      🔥 <strong>{slotsToNext} more buyers</strong> needed to drop
-                      price to <strong>{formatPrice(nextTier.price)}</strong>
+                    <div className="p-3 bg-primary/5 border border-primary/10 rounded-xl text-xs text-primary flex items-center gap-1.5 leading-relaxed">
+                      <span>🔥 <strong>{slotsToNext} more slots</strong> needed to drop the price to <strong>{formatPrice(nextTier.price)}</strong></span>
                     </div>
                   )}
                 </div>
 
-                {/* Quantity Selector */}
-                <div className="pricing-panel__qty" id="qty-selector">
-                  <label className="pricing-panel__qty-label">Quantity (slots)</label>
-                  <div className="pricing-panel__qty-controls">
-                    <button
-                      className="pricing-panel__qty-btn"
-                      onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))}
-                      disabled={selectedQty <= 1}
-                    >
-                      −
-                    </button>
-                    <span className="pricing-panel__qty-value">{selectedQty}</span>
-                    <button
-                      className="pricing-panel__qty-btn"
-                      onClick={() => setSelectedQty(selectedQty + 1)}
-                    >
-                      +
-                    </button>
+                {/* Quantity Controls */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Quantity (slots)</label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center bg-white/5 border border-white/10 rounded-xl p-1 shrink-0">
+                      <button
+                        className="w-8 h-8 rounded-lg hover:bg-white/10 active:bg-white/5 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer text-white font-bold"
+                        onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))}
+                        disabled={selectedQty <= 1}
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="w-10 text-center font-bold text-base text-white">{selectedQty}</span>
+                      <button
+                        className="w-8 h-8 rounded-lg hover:bg-white/10 active:bg-white/5 flex items-center justify-center transition-colors cursor-pointer text-white font-bold"
+                        onClick={() => setSelectedQty(selectedQty + 1)}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <span className="text-xs text-neutral-400">
+                      Total: <strong className="text-white text-base ml-1">{formatPrice(currentTier?.price * selectedQty)}</strong>
+                    </span>
                   </div>
-                  <span className="pricing-panel__total">
-                    Total: <strong>{formatPrice(currentTier.price * selectedQty)}</strong>
-                  </span>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="pricing-panel__actions">
-                  <button 
-                    className="btn btn--primary btn--lg w-full" 
-                    id="join-batch-btn"
+                {/* Reserve & Share Actions */}
+                <div className="space-y-3">
+                  <button
+                    className="w-full bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 hover:shadow-lg hover:shadow-primary/10 cursor-pointer text-sm"
                     onClick={handleJoinBatch}
                     disabled={joiningBatch}
                   >
-                    {joiningBatch ? "Processing..." : `Join This Batch — ${formatPrice(currentTier.price * selectedQty)}`}
+                    {joiningBatch ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <span>Join This Batch — {formatPrice(currentTier?.price * selectedQty)}</span>
+                    )}
                   </button>
                   <button
-                    className="btn btn--secondary w-full"
+                    className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer text-sm"
                     onClick={() => setShowShareModal(true)}
-                    id="share-batch-btn"
                   >
-                    📤 Share to Drop the Price
+                    <Share2 className="w-4 h-4 text-neutral-400" />
+                    <span>Share to Drop the Price</span>
                   </button>
                 </div>
 
-                {/* Trust Signals */}
-                <div className="pricing-panel__trust">
-                  <div className="pricing-panel__trust-item">🔒 Card held, not charged until batch closes</div>
-                  <div className="pricing-panel__trust-item">🔄 Full refund if batch cancels</div>
-                  <div className="pricing-panel__trust-item">📦 Ships in {batch.shipping?.estimatedDays || 5}-{(batch.shipping?.estimatedDays || 5) + 2} days</div>
+                {/* Trust Features */}
+                <div className="p-3.5 bg-white/[0.02] border border-white/5 rounded-xl space-y-2 text-[11px] text-neutral-400 leading-relaxed">
+                  <div className="flex items-center gap-2">
+                    <span className="text-primary font-bold">🔒</span> Card held, not charged until batch closes
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-primary font-bold">🔄</span> Full refund if batch cancels
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-primary font-bold">📦</span> Ships in {batch.shipping?.estimatedDays || 5}-{(batch.shipping?.estimatedDays || 5) + 2} days
+                  </div>
                 </div>
 
                 {/* Recent Joiners */}
                 {batch.recentJoiners && batch.recentJoiners.length > 0 && (
-                  <div className="pricing-panel__joiners">
-                    <div className="pricing-panel__joiners-avatars">
+                  <div className="flex items-center gap-2.5 pt-2 border-t border-white/5">
+                    <div className="flex -space-x-2">
                       {batch.recentJoiners.slice(0, 5).map((j, i) => (
-                        <span key={i} className="pricing-panel__joiner-avatar">{j.avatar}</span>
+                        <div key={i} className="w-7 h-7 rounded-full bg-neutral-800 border-2 border-black flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                          {j.avatar}
+                        </div>
                       ))}
                     </div>
-                    <span className="pricing-panel__joiners-text">
+                    <span className="text-[10px] text-neutral-500 font-semibold">
                       {batch.recentJoiners[0]?.name} and {batch.currentSlots - 1} others joined
                     </span>
                   </div>
                 )}
               </div>
             </div>
+
           </div>
         </div>
       </main>
 
       <Footer />
 
-      {/* Real-time Join Alert Toast */}
+      {/* Real-time Join Notification Toast */}
       {recentJoinAlert && (
-        <div className="recent-join-toast animate-notification">
-          <span className="toast-icon">⚡</span>
-          <p>{recentJoinAlert}</p>
+        <div className="fixed bottom-6 right-6 p-4 bg-neutral-900 border border-green-500 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-bounce backdrop-blur-xl">
+          <span className="text-lg">⚡</span>
+          <p className="text-sm font-semibold text-white leading-none">{recentJoinAlert}</p>
         </div>
       )}
 
-      {/* Share Modal */}
+      {/* Share Modal Dialog */}
       {showShareModal && (
-        <div className="modal-overlay" onClick={() => setShowShareModal(false)} id="share-modal">
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal__close" onClick={() => setShowShareModal(false)}>✕</button>
-            <h3 className="modal__title">Share This Batch</h3>
-            <p className="modal__text">
-              Every person who joins through your link drops the price for
-              everyone — including you!
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-6 animate-fade-in"
+          onClick={() => setShowShareModal(false)}
+        >
+          <div 
+            className="bg-neutral-950 border border-white/10 p-6 rounded-2xl max-w-sm w-full relative shadow-2xl space-y-4 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors cursor-pointer"
+              onClick={() => setShowShareModal(false)}
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <h3 className="text-lg font-bold text-white pr-8">Share This Batch</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Every person who joins through your link drops the price for everyone — including you!
             </p>
-            <div className="modal__share-options">
-              <button className="modal__share-btn modal__share-btn--whatsapp">
-                💬 WhatsApp
+            <div className="flex flex-col gap-2.5 pt-2">
+              <button 
+                className="w-full bg-[#128c7e] hover:bg-[#075e54] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer"
+                onClick={() => {
+                  alert("WhatsApp share link copied to clipboard!");
+                  setShowShareModal(false);
+                }}
+              >
+                💬 Share on WhatsApp
               </button>
-              <button className="modal__share-btn modal__share-btn--copy">
-                📋 Copy Link
+              <button 
+                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer"
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert("Link copied to clipboard!");
+                  setShowShareModal(false);
+                }}
+              >
+                📋 Copy Batch Link
               </button>
-              <button className="modal__share-btn modal__share-btn--twitter">
-                𝕏 Twitter
+              <button 
+                className="w-full bg-neutral-900 hover:bg-neutral-850 border border-white/5 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer"
+                onClick={() => {
+                  alert("Twitter post template copied!");
+                  setShowShareModal(false);
+                }}
+              >
+                𝕏 Share on Twitter / X
               </button>
             </div>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .batch-detail { padding-top: calc(64px + var(--space-6)); min-height: 100vh; background: #050505; }
-        .breadcrumb { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-6); font-size: 0.8rem; }
-        .breadcrumb__link { color: var(--text-tertiary); text-decoration: none; transition: color var(--transition-fast); }
-        .breadcrumb__link:hover { color: var(--accent-primary); }
-        .breadcrumb__sep { color: var(--text-tertiary); }
-        .breadcrumb__current { color: var(--text-secondary); font-weight: 500; }
-
-        .batch-detail__grid { display: grid; grid-template-columns: 1fr; gap: var(--space-8); }
-        @media (min-width: 768px) { .batch-detail__grid { grid-template-columns: 1fr 1fr; } }
-        @media (min-width: 1024px) { .batch-detail__grid { grid-template-columns: 1.2fr 1fr; gap: var(--space-10); } }
-
-        .batch-detail__image { position: relative; border-radius: var(--radius-xl); overflow: hidden; margin-bottom: var(--space-5); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-        .batch-detail__image-placeholder { height: 320px; background: linear-gradient(135deg, rgba(255, 107, 0, 0.05), rgba(0, 0, 0, 0.8)); display: flex; align-items: center; justify-content: center; }
-        .batch-detail__image-icon { font-size: 5rem; opacity: 0.7; filter: drop-shadow(0 0 16px rgba(255, 107, 0, 0.25)); }
-        .batch-detail__image-badges { position: absolute; top: var(--space-4); left: var(--space-4); display: flex; gap: var(--space-2); }
-
-
-        /* Manufacturer Card */
-        .mfg-card { display: flex; gap: var(--space-4); padding: var(--space-4); background: rgba(12, 12, 12, 0.82); border: 1px solid rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: var(--radius-lg); margin-bottom: var(--space-5); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
-        .mfg-card__avatar { width: 44px; height: 44px; border-radius: var(--radius-md); background: linear-gradient(135deg, #FF6B00 0%, #C94E00 100%); color: #FFFFFF; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(255, 107, 0, 0.2); }
-        .mfg-card__name { font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: var(--space-2); color: var(--text-primary); }
-        .mfg-card__badge { font-size: 0.6rem; font-weight: 700; color: var(--accent-primary); background: rgba(255, 107, 0, 0.12); border: 1px solid rgba(255, 107, 0, 0.25); padding: 2px 8px; border-radius: var(--radius-full); }
-        .mfg-card__meta { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
-
-        /* Specs Card */
-        .specs-card { padding: var(--space-5); background: rgba(12, 12, 12, 0.82); border: 1px solid rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: var(--radius-lg); margin-bottom: var(--space-5); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
-        .specs-card__title { font-family: var(--font-heading), sans-serif; font-size: 1rem; font-weight: 700; margin: 0 0 var(--space-4); color: var(--text-primary); }
-        .specs-card__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-        .specs-card__item { display: flex; flex-direction: column; gap: 2px; }
-        .specs-card__key { font-size: 0.7rem; color: var(--text-tertiary); text-transform: capitalize; font-weight: 600; }
-        .specs-card__value { font-size: 0.85rem; color: var(--text-primary); font-weight: 500; }
-
-        /* Reviews */
-        .reviews-card { padding: var(--space-5); background: rgba(12, 12, 12, 0.82); border: 1px solid rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: var(--radius-lg); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
-        .reviews-card__title { font-family: var(--font-heading), sans-serif; font-size: 1rem; font-weight: 700; margin: 0 0 var(--space-4); color: var(--text-primary); }
-        .review { padding: var(--space-3) 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        .review:last-child { border-bottom: none; }
-        .review__header { display: flex; justify-content: space-between; margin-bottom: var(--space-1); }
-        .review__user { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); }
-        .review__stars { font-size: 0.75rem; }
-        .review__comment { font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 var(--space-1); line-height: 1.5; }
-        .review__date { font-size: 0.7rem; color: var(--text-tertiary); }
-
-        /* Pricing Panel - Sticky sidebar */
-        .pricing-panel { position: sticky; top: calc(64px + var(--space-4)); padding: var(--space-6); background: rgba(12, 12, 12, 0.88); border: 1px solid rgba(255, 255, 255, 0.07); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-radius: var(--radius-xl); box-shadow: var(--shadow-premium); display: flex; flex-direction: column; gap: var(--space-5); transition: all var(--transition-base); }
-        .pricing-panel:hover { border-color: rgba(255, 107, 0, 0.2); box-shadow: var(--shadow-premium), 0 0 32px rgba(255, 107, 0, 0.05); }
-        .pricing-panel__title { font-family: var(--font-heading), sans-serif; font-size: 1.4rem; font-weight: 800; margin: 0; line-height: 1.3; color: var(--text-primary); }
-        .pricing-panel__description { font-size: 0.875rem; color: var(--text-secondary); margin: 0; line-height: 1.6; }
-        .pricing-panel__timer-wrap { display: flex; flex-direction: column; gap: var(--space-2); }
-        .pricing-panel__timer-label { font-size: 0.7rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-
-        /* Current Price */
-        .pricing-panel__current { padding: var(--space-4); background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: var(--radius-lg); transition: all var(--transition-base); }
-        .pricing-panel__price-row { display: flex; align-items: center; gap: var(--space-3); }
-        .pricing-panel__price { font-family: var(--font-heading), sans-serif; font-size: 2rem; font-weight: 800; color: var(--accent-success); font-variant-numeric: tabular-nums; }
-        .pricing-panel__original { font-size: 1rem; color: var(--text-tertiary); text-decoration: line-through; }
-        .pricing-panel__savings-badge { padding: 2px 8px; background: var(--accent-success); color: white; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 700; }
-        .pricing-panel__price-note { font-size: 0.75rem; color: var(--text-secondary); margin-top: var(--space-1); display: block; }
-
-        /* Tier Ladder */
-        .tier-ladder__title { font-family: var(--font-heading), sans-serif; font-size: 0.85rem; font-weight: 700; margin: 0 0 var(--space-3); color: var(--text-primary); }
-        .tier-ladder__row { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); transition: background var(--transition-fast); }
-        .tier-ladder__row--active { background: rgba(255, 107, 0, 0.08); border-left: 3px solid var(--accent-primary); }
-        .tier-ladder__indicator { display: flex; flex-direction: column; align-items: center; min-width: 20px; }
-        .tier-ladder__dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: white; transition: all var(--transition-fast); }
-        .tier-ladder__dot--filled { background: var(--accent-success); border-color: var(--accent-success); box-shadow: 0 0 8px var(--accent-success); }
-        .tier-ladder__line { width: 2px; height: 16px; background: rgba(255, 255, 255, 0.1); }
-        .tier-ladder__line--filled { background: var(--accent-success); }
-        .tier-ladder__info { display: flex; justify-content: space-between; flex: 1; }
-        .tier-ladder__range { font-size: 0.8rem; color: var(--text-secondary); }
-        .tier-ladder__price { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
-        .tier-ladder__current-tag { font-size: 0.6rem; font-weight: 700; color: var(--accent-primary); background: rgba(255, 107, 0, 0.12); border: 1px solid rgba(255, 107, 0, 0.25); padding: 2px 8px; border-radius: var(--radius-full); white-space: nowrap; }
-
-        /* Progress */
-        .pricing-panel__progress-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-bottom: var(--space-2); }
-        .pricing-panel__progress-bar { height: 8px; background: rgba(255, 255, 255, 0.07); border-radius: var(--radius-full); overflow: hidden; }
-        .pricing-panel__progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-success)); border-radius: var(--radius-full); transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 12px rgba(255, 107, 0, 0.3); }
-        .pricing-panel__next-tier { margin-top: var(--space-2); font-size: 0.8rem; color: var(--accent-primary); padding: var(--space-2) var(--space-3); background: rgba(255, 107, 0, 0.08); border: 1px solid rgba(255, 107, 0, 0.15); border-radius: var(--radius-md); }
-
-        /* Quantity */
-        .pricing-panel__qty-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: var(--space-2); }
-        .pricing-panel__qty-controls { display: flex; align-items: center; gap: var(--space-3); }
-        .pricing-panel__qty-btn { width: 36px; height: 36px; border-radius: var(--radius-md); border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.04); font-size: 1.1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); color: var(--text-primary); }
-        .pricing-panel__qty-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); background: rgba(255, 107, 0, 0.06); }
-        .pricing-panel__qty-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .pricing-panel__qty-value { font-family: var(--font-heading), sans-serif; font-size: 1.2rem; font-weight: 700; min-width: 30px; text-align: center; color: var(--text-primary); }
-        .pricing-panel__total { font-size: 0.85rem; color: var(--text-secondary); margin-top: var(--space-2); display: block; }
-        .pricing-panel__total strong { color: var(--text-primary); }
-
-        /* Actions */
-        .pricing-panel__actions { display: flex; flex-direction: column; gap: var(--space-3); }
-        .w-full { width: 100%; }
-
-        /* Trust */
-        .pricing-panel__trust { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--radius-md); }
-        .pricing-panel__trust-item { font-size: 0.75rem; color: var(--text-secondary); }
-
-        /* Joiners */
-        .pricing-panel__joiners { display: flex; align-items: center; gap: var(--space-3); }
-        .pricing-panel__joiners-avatars { display: flex; }
-        .pricing-panel__joiner-avatar { width: 28px; height: 28px; border-radius: 50%; background: #2a2a2a; border: 2px solid #0f0f0f; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; margin-left: -6px; color: white; }
-        .pricing-panel__joiner-avatar:first-child { margin-left: 0; }
-        .pricing-panel__joiners-text { font-size: 0.75rem; color: var(--text-secondary); }
-
-        /* Modal */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: var(--space-4); animation: fadeIn 0.2s ease; }
-        .modal { background: rgba(12, 12, 12, 0.94); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: var(--radius-xl); padding: var(--space-6); max-width: 400px; width: 100%; position: relative; animation: fadeInScale 0.3s ease; box-shadow: var(--shadow-premium); }
-        .modal__close { position: absolute; top: var(--space-3); right: var(--space-3); width: 32px; height: 32px; border: none; background: rgba(255,255,255,0.06); border-radius: var(--radius-md); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all var(--transition-fast); }
-        .modal__close:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
-        .modal__title { font-family: var(--font-heading), sans-serif; font-size: 1.2rem; font-weight: 700; margin: 0 0 var(--space-2); color: var(--text-primary); }
-        .modal__text { font-size: 0.875rem; color: var(--text-secondary); margin: 0 0 var(--space-5); line-height: 1.6; }
-        .modal__share-options { display: flex; flex-direction: column; gap: var(--space-2); }
-        .modal__share-btn { padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); color: var(--text-primary); }
-        .modal__share-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
-        .modal__share-btn--whatsapp:hover { background: #128c7e; border-color: #25d366; color: white; }
-
-        /* Realtime alert toast styling */
-        .recent-join-toast {
-          position: fixed;
-          bottom: 24px;
-          right: 24px;
-          background: rgba(12, 12, 12, 0.9);
-          border: 1px solid var(--accent-success);
-          border-radius: var(--radius-lg);
-          padding: var(--space-3) var(--space-5);
-          box-shadow: var(--shadow-xl), 0 0 20px rgba(16, 185, 129, 0.2);
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          z-index: 1000;
-          color: var(--text-primary);
-          backdrop-filter: blur(10px);
-        }
-        .toast-icon {
-          font-size: 1.25rem;
-          animation: bounce 1s infinite;
-        }
-        .recent-join-toast p {
-          margin: 0;
-          font-weight: 600;
-          font-size: 0.9rem;
-        }
-      `}</style>
     </>
   );
 }

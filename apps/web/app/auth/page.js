@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Phone, ArrowRight, Loader2, RefreshCw, ChevronLeft } from "lucide-react";
+import Logo from "@/components/ui/Logo";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -48,7 +50,6 @@ export default function AuthPage() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      // On success, redirect to dashboard or home
       router.push("/");
     }, 1500);
   };
@@ -86,75 +87,91 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="auth-container">
+    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-black text-white font-sans">
+      
       {/* Left Column: Form */}
-      <div className="auth-form-side">
-        <div className="auth-form-wrapper">
-          {/* Logo */}
-          <Link href="/" className="auth-logo">
-            <div className="auth-logo__icon">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="8" fill="url(#auth-logo-grad)" />
-                <path d="M8 20L12 10H15L11 20H8Z" fill="white" fillOpacity="0.9" />
-                <path d="M14 20L18 10H21L17 20H14Z" fill="white" fillOpacity="0.9" />
-                <path d="M20 20L24 10H27L23 20H20Z" fill="white" fillOpacity="0.7" />
-                <defs>
-                  <linearGradient id="auth-logo-grad" x1="0" y1="0" x2="32" y2="32">
-                    <stop stopColor="#FF6B00" />
-                    <stop offset="1" stopColor="#C94E00" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-            <span className="auth-logo__text">BulkBlitz</span>
+      <div className="flex flex-col justify-between p-6 sm:p-12 md:p-16 lg:p-24 relative overflow-hidden bg-gradient-to-b from-neutral-950 to-neutral-900 border-r border-white/5">
+        
+        {/* Decorative Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
+        
+        {/* Top: Logo */}
+        <div className="relative z-10 flex justify-between items-center mb-12">
+          <Link href="/" className="flex items-center gap-3 group">
+            <Logo className="w-8 h-8 transition-transform group-hover:scale-110 duration-300" />
+            <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-white via-neutral-200 to-primary bg-clip-text text-transparent">
+              BulkBlitz
+            </span>
           </Link>
+          <Link href="/" className="text-xs text-neutral-400 hover:text-white transition-colors flex items-center gap-1">
+            <ChevronLeft className="w-3.5 h-3.5" /> Back to Home
+          </Link>
+        </div>
 
-          {/* Dynamic Forms */}
+        {/* Center: Dynamic Forms Container */}
+        <div className="relative z-10 my-auto max-w-md w-full mx-auto">
           {!otpSent ? (
-            <div className="form-content animate-fade-in-up">
-              <h2 className="form-title">Verify Phone Number</h2>
-              <p className="form-subtitle">Enter your details to create an account or sign in instantly.</p>
-              
-              <form onSubmit={handleSendOtp}>
-                <div className="phone-input-group">
-                  <span className="phone-prefix">+91</span>
-                  <input
-                    type="tel"
-                    placeholder="Enter 10-digit number"
-                    maxLength={10}
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
-                    className="phone-input"
-                    required
-                  />
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">
+                  Verify Phone Number
+                </h2>
+                <p className="text-sm text-neutral-400">
+                  Enter your phone number to sign in or create an account instantly.
+                </p>
+              </div>
+
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                    Phone Number
+                  </label>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-4 font-semibold text-neutral-400 select-none">
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      placeholder="Enter 10-digit number"
+                      maxLength={10}
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-14 pr-4 font-semibold text-lg text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all placeholder-neutral-600"
+                      required
+                    />
+                  </div>
                 </div>
-                
+
                 <button
                   type="submit"
-                  className="btn btn--primary w-full btn--lg"
                   disabled={loading || phoneNumber.length !== 10}
-                  id="send-otp-btn"
+                  className="w-full bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
                 >
                   {loading ? (
-                    <span className="spinner"></span>
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    "Send OTP Code"
+                    <>
+                      <span>Send OTP Code</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
                   )}
                 </button>
               </form>
 
-              <div className="divider-text">
-                <span>or continue with</span>
+              {/* Social Login Separator */}
+              <div className="flex items-center my-6 text-xs text-neutral-500 font-bold uppercase tracking-widest before:content-[''] before:flex-1 before:border-b before:border-white/5 before:mr-4 after:content-[''] after:flex-1 after:border-b after:border-white/5 after:ml-4">
+                or continue with
               </div>
 
-              <div className="social-actions">
+              {/* Social Login Buttons */}
+              <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
                   onClick={() => handleSocialLogin("Google")}
-                  className="btn btn--social w-full"
+                  className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl py-3 px-4 text-sm font-semibold text-white transition-all cursor-pointer"
                   disabled={loading}
                 >
-                  <svg className="social-icon" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
@@ -165,10 +182,10 @@ export default function AuthPage() {
                 <button
                   type="button"
                   onClick={() => handleSocialLogin("Facebook")}
-                  className="btn btn--social w-full"
+                  className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl py-3 px-4 text-sm font-semibold text-white transition-all cursor-pointer"
                   disabled={loading}
                 >
-                  <svg className="social-icon" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/>
                   </svg>
                   <span>Facebook</span>
@@ -176,12 +193,18 @@ export default function AuthPage() {
               </div>
             </div>
           ) : (
-            <div className="form-content animate-fade-in-up">
-              <h2 className="form-title">Enter Verification Code</h2>
-              <p className="form-subtitle">We sent a 4-digit code to +91 {phoneNumber.replace(/(\d{5})(\d{5})/, "$1-$2")}</p>
-              
-              <form onSubmit={handleVerifyOtp}>
-                <div className="otp-inputs">
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">
+                  Verify Code
+                </h2>
+                <p className="text-sm text-neutral-400">
+                  Enter the 4-digit code sent to +91 {phoneNumber.replace(/(\d{5})(\d{5})/, "$1-$2")}.
+                </p>
+              </div>
+
+              <form onSubmit={handleVerifyOtp} className="space-y-6">
+                <div className="grid grid-cols-4 gap-4">
                   {otp.map((digit, idx) => (
                     <input
                       key={idx}
@@ -193,7 +216,7 @@ export default function AuthPage() {
                       value={digit}
                       onChange={(e) => handleOtpChange(idx, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                      className="otp-box"
+                      className="h-16 w-full text-center text-2xl font-extrabold text-white bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all"
                       required
                     />
                   ))}
@@ -201,453 +224,101 @@ export default function AuthPage() {
 
                 <button
                   type="submit"
-                  className="btn btn--primary w-full btn--lg mb-4"
                   disabled={loading || otp.join("").length !== 4}
-                  id="verify-otp-btn"
+                  className="w-full bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
                 >
                   {loading ? (
-                    <span className="spinner"></span>
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    "Verify & Proceed"
+                    <span>Verify & Proceed</span>
                   )}
                 </button>
-                
-                <div className="otp-resend-row">
+
+                <div className="flex justify-between items-center text-xs">
                   {timer > 0 ? (
-                    <span className="resend-timer">Resend OTP in <strong>{timer}s</strong></span>
+                    <span className="text-neutral-400">
+                      Resend OTP in <strong className="text-white">{timer}s</strong>
+                    </span>
                   ) : (
-                    <button type="button" className="resend-btn" onClick={handleResend}>
-                      Resend Verification Code
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      className="text-primary hover:text-primary-hover font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Resend Code
                     </button>
                   )}
-                  <button type="button" className="change-phone-btn" onClick={() => setOtpSent(false)}>
-                    Edit Phone
+                  <button
+                    type="button"
+                    onClick={() => setOtpSent(false)}
+                    className="text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    Edit Phone Number
                   </button>
                 </div>
               </form>
             </div>
           )}
+        </div>
 
-          {/* Form Footer */}
-          <div className="auth-footer">
-            <p className="terms-text">
-              By proceeding, you agree to BulkBlitz&apos;s{" "}
-              <Link href="#">Terms of Service</Link> and{" "}
-              <Link href="#">Privacy Policy</Link>.
-            </p>
-          </div>
+        {/* Bottom: Terms */}
+        <div className="relative z-10 mt-12 text-center">
+          <p className="text-xs text-neutral-500 leading-relaxed max-w-sm mx-auto">
+            By proceeding, you agree to BulkBlitz&apos;s{" "}
+            <Link href="#" className="text-neutral-400 hover:text-white underline transition-colors">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="#" className="text-neutral-400 hover:text-white underline transition-colors">
+              Privacy Policy
+            </Link>
+            .
+          </p>
         </div>
       </div>
 
       {/* Right Column: Decorative Banner */}
-      <div className="auth-banner-side">
-        <div className="banner-orb banner-orb--1"></div>
-        <div className="banner-orb banner-orb--2"></div>
-        <div className="banner-orb banner-orb--3"></div>
+      <div className="hidden lg:flex flex-col justify-center p-16 relative overflow-hidden bg-gradient-to-tr from-black via-neutral-950 to-neutral-900 border-l border-white/5">
         
-        <div className="banner-content">
-          <span className="banner-badge">🚀 Bulk Price Revolution</span>
-          <h1 className="banner-title">
-            bulk up.<br />
-            price down.
-          </h1>
-          <p className="banner-text">
+        {/* Neon Orbs */}
+        <div className="absolute top-[-100px] right-[-50px] w-96 h-96 rounded-full bg-primary/10 blur-[100px] animate-pulse" />
+        <div className="absolute bottom-[10%] left-[-50px] w-72 h-72 rounded-full bg-orange-600/10 blur-[80px]" />
+        
+        <div className="relative z-10 max-w-md space-y-8">
+          <div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary tracking-wide uppercase mb-4">
+              🚀 Bulk Price Revolution
+            </span>
+            <h1 className="text-5xl font-black tracking-tight text-white leading-none">
+              bulk up.<br />
+              price down.
+            </h1>
+          </div>
+
+          <p className="text-lg text-neutral-400 leading-relaxed">
             Join the crowd. Drop the price. Unlock wholesale pricing directly from verified manufacturers.
           </p>
-          
-          <div className="banner-stats">
-            <div className="banner-stat-card glass-card">
-              <span className="stat-value">₹24.8L+</span>
-              <span className="stat-label">Total Saved</span>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-xl">
+              <span className="block text-2xl font-black text-white bg-gradient-to-r from-white to-primary bg-clip-text text-transparent mb-1">
+                ₹24.8L+
+              </span>
+              <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                Total Saved
+              </span>
             </div>
-            <div className="banner-stat-card glass-card">
-              <span className="stat-value">12.5k+</span>
-              <span className="stat-label">Active Buyers</span>
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-xl">
+              <span className="block text-2xl font-black text-white bg-gradient-to-r from-white to-orange-400 bg-clip-text text-transparent mb-1">
+                12.5k+
+              </span>
+              <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                Active Buyers
+              </span>
             </div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .auth-container {
-          display: grid;
-          grid-template-columns: 1fr;
-          min-height: 100vh;
-          background-color: #050505;
-        }
-
-        @media (min-width: 1024px) {
-          .auth-container {
-            grid-template-columns: 1.1fr 1fr;
-          }
-        }
-
-        /* Form Side styling */
-        .auth-form-side {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: var(--space-6) var(--space-8);
-          position: relative;
-          background-color: #050505;
-        }
-
-        .auth-form-wrapper {
-          width: 100%;
-          max-width: 420px;
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-8);
-        }
-
-        .auth-logo {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          text-decoration: none;
-          color: var(--text-primary);
-        }
-
-        .auth-logo__text {
-          font-family: var(--font-heading), sans-serif;
-          font-weight: 800;
-          font-size: 1.4rem;
-          letter-spacing: -0.02em;
-          background: linear-gradient(135deg, #FFFFFF 0%, #FF6B00 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .form-title {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 1.8rem;
-          font-weight: 800;
-          color: var(--text-primary);
-          margin: 0 0 var(--space-2);
-          letter-spacing: -0.02em;
-        }
-
-        .form-subtitle {
-          color: var(--text-secondary);
-          font-size: 0.95rem;
-          line-height: 1.5;
-          margin: 0 0 var(--space-6);
-        }
-
-        /* Inputs styling */
-        .phone-input-group {
-          position: relative;
-          display: flex;
-          align-items: center;
-          margin-bottom: var(--space-5);
-        }
-
-        .phone-prefix {
-          position: absolute;
-          left: var(--space-4);
-          font-size: 1.1rem;
-          font-weight: 600;
-          color: var(--text-secondary);
-        }
-
-        .phone-input {
-          width: 100%;
-          padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-12) + 8px);
-          border-radius: var(--radius-lg);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          font-size: 1.1rem;
-          font-weight: 600;
-          background: rgba(255, 255, 255, 0.05);
-          color: var(--text-primary);
-          outline: none;
-          transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-        }
-
-        .phone-input:focus {
-          border-color: var(--accent-primary);
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
-        }
-
-        /* OTP Inputs */
-        .otp-inputs {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: var(--space-4);
-          margin-bottom: var(--space-6);
-        }
-
-        .otp-box {
-          height: 64px;
-          border-radius: var(--radius-lg);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          text-align: center;
-          font-size: 1.6rem;
-          font-weight: 800;
-          background: rgba(255, 255, 255, 0.05);
-          color: var(--text-primary);
-          outline: none;
-          transition: all var(--transition-fast);
-        }
-
-        .otp-box:focus {
-          border-color: var(--accent-primary);
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
-        }
-
-        .otp-resend-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 0.85rem;
-        }
-
-        .resend-timer {
-          color: var(--text-secondary);
-        }
-
-        .resend-btn {
-          background: transparent;
-          border: none;
-          color: var(--accent-primary);
-          font-weight: 600;
-          cursor: pointer;
-          padding: 0;
-          text-decoration: underline;
-        }
-
-        .change-phone-btn {
-          background: transparent;
-          border: none;
-          color: var(--text-secondary);
-          font-weight: 500;
-          cursor: pointer;
-          padding: 0;
-        }
-
-        /* Banner styling */
-        .auth-banner-side {
-          display: none;
-          background: radial-gradient(circle at top right, rgba(255, 107, 0, 0.12), #050505);
-          position: relative;
-          overflow: hidden;
-          padding: var(--space-12) var(--space-16);
-          flex-direction: column;
-          justify-content: center;
-          border-left: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        @media (min-width: 1024px) {
-          .auth-banner-side {
-            display: flex;
-          }
-        }
-
-        .banner-orb {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.25;
-        }
-
-        .banner-orb--1 {
-          width: 350px;
-          height: 350px;
-          background: var(--accent-primary);
-          top: -100px;
-          right: -50px;
-          animation: float 8s ease-in-out infinite;
-        }
-
-        .banner-orb--2 {
-          width: 250px;
-          height: 250px;
-          background: #FF9A3C;
-          bottom: 10%;
-          left: -50px;
-          animation: float 6s ease-in-out infinite reverse;
-        }
-
-        .banner-orb--3 {
-          width: 180px;
-          height: 180px;
-          background: var(--accent-success);
-          top: 40%;
-          right: 15%;
-          animation: pulse 5s ease-in-out infinite;
-        }
-
-        .banner-content {
-          position: relative;
-          z-index: 2;
-          color: white;
-          max-width: 480px;
-        }
-
-        .banner-badge {
-          background: rgba(255, 107, 0, 0.15);
-          border: 1px solid rgba(255, 107, 0, 0.28);
-          color: var(--accent-primary);
-          font-size: 0.8rem;
-          font-weight: 700;
-          padding: 4px 12px;
-          border-radius: var(--radius-full);
-          display: inline-block;
-          margin-bottom: var(--space-4);
-          letter-spacing: 0.05em;
-        }
-
-        .banner-title {
-          font-family: var(--font-heading), sans-serif;
-          font-size: clamp(2.5rem, 4.5vw, 3.5rem);
-          font-weight: 800;
-          line-height: 1.1;
-          margin: 0 0 var(--space-4);
-          letter-spacing: -0.03em;
-        }
-
-        .banner-text {
-          font-size: 1.1rem;
-          color: rgba(255, 255, 255, 0.7);
-          line-height: 1.6;
-          margin: 0 0 var(--space-10);
-        }
-
-        .banner-stats {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: var(--space-4);
-        }
-
-        .banner-stat-card {
-          padding: var(--space-5) var(--space-6);
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: var(--radius-lg);
-          backdrop-filter: blur(16px);
-          color: white;
-        }
-
-        .stat-value {
-          display: block;
-          font-family: var(--font-heading), sans-serif;
-          font-size: 1.6rem;
-          font-weight: 800;
-          margin-bottom: 2px;
-          background: linear-gradient(135deg, #FFFFFF, #FF9A3C);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-
-        .stat-label {
-          font-size: 0.8rem;
-          color: rgba(255, 255, 255, 0.5);
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .auth-footer {
-          margin-top: auto;
-        }
-
-        .terms-text {
-          font-size: 0.75rem;
-          color: var(--text-tertiary);
-          line-height: 1.4;
-          text-align: center;
-          margin: 0;
-        }
-
-        .terms-text :global(a) {
-          color: var(--text-secondary);
-          text-decoration: underline;
-        }
-
-        /* Social Logins */
-        .divider-text {
-          display: flex;
-          align-items: center;
-          text-align: center;
-          margin: var(--space-6) 0;
-          color: var(--text-tertiary);
-          font-size: 0.75rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          font-weight: 700;
-        }
-
-        .divider-text::before,
-        .divider-text::after {
-          content: '';
-          flex: 1;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .divider-text:not(:empty)::before {
-          margin-right: var(--space-4);
-        }
-
-        .divider-text:not(:empty)::after {
-          margin-left: var(--space-4);
-        }
-
-        .social-actions {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--space-4);
-          margin-bottom: var(--space-2);
-        }
-
-        .btn--social {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: var(--space-2);
-          background: rgba(255, 255, 255, 0.05);
-          border: 1.5px solid rgba(255, 255, 255, 0.15);
-          color: var(--text-primary);
-          padding: var(--space-3) var(--space-4);
-          font-size: 0.95rem;
-          font-weight: 600;
-          border-radius: var(--radius-lg);
-          cursor: pointer;
-          transition: all var(--transition-fast);
-        }
-
-        .btn--social:hover:not(:disabled) {
-          border-color: rgba(255, 255, 255, 0.25);
-          background: rgba(255, 255, 255, 0.08);
-          transform: translateY(-1px);
-          box-shadow: var(--shadow-sm);
-        }
-
-        .btn--social:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .social-icon {
-          flex-shrink: 0;
-        }
-
-        /* Spinner for loading state */
-        .spinner {
-          display: inline-block;
-          width: 20px;
-          height: 20px;
-          border: 2.5px solid rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-          border-top-color: white;
-          animation: spin 0.8s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

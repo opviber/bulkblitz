@@ -7,6 +7,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { CATEGORIES } from "@/lib/mock-data";
 import { formatPrice } from "@/lib/utils";
+import { Loader2, ArrowRight, ArrowLeft, Plus, Trash2, Calendar, FileText } from "lucide-react";
 
 export default function CreateBatchWizard() {
   const router = useRouter();
@@ -48,35 +49,64 @@ export default function CreateBatchWizard() {
     setTiers(updated);
   };
 
-  const handleLaunch = () => {
+  const handleLaunch = async () => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/batches", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          title: batchData.title,
+          description: batchData.description,
+          category: batchData.category,
+          moq: parseInt(batchData.moq),
+          maxSlots: parseInt(batchData.maxSlots),
+          endTime: new Date(batchData.endTime).toISOString(),
+          tiers: tiers.map((t) => ({
+            minSlots: parseInt(t.minSlots),
+            maxSlots: parseInt(t.maxSlots),
+            price: parseFloat(t.price)
+          }))
+        })
+      });
+
+      if (res.ok) {
+        alert("Batch Launched successfully! Your listing is now LIVE.");
+        router.push("/manufacturer");
+      } else {
+        const errData = await res.json();
+        alert(errData.error || "Failed to launch batch listing");
+      }
+    } catch (err) {
+      console.error("Error launching batch:", err);
+      alert("An unexpected error occurred during launch. Please try again.");
+    } finally {
       setLoading(false);
-      alert("Batch Launched successfully! Your listing is now LIVE.");
-      router.push("/manufacturer");
-    }, 1500);
+    }
   };
 
   return (
     <>
       <Header />
 
-      <main className="wizard-main">
-        <div className="container">
+      <main className="pt-24 pb-16 min-h-screen bg-black text-white font-sans bg-[radial-gradient(circle_at_center_top,rgba(255,107,0,0.03),transparent_50%)]">
+        <div className="max-w-4xl mx-auto px-6">
           
           {/* Page Title & Progress */}
-          <div className="wizard-header animate-fade-in">
-            <h1 className="wizard-title">Launch a New Batch</h1>
-            <p className="wizard-subtitle">Create a dynamic, crowd-powered volume pricing batch in minutes.</p>
+          <div className="mb-8">
+            <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">Launch a New Batch</h1>
+            <p className="text-sm text-neutral-400 mb-8">Create a dynamic, crowd-powered volume pricing batch in minutes.</p>
             
             {/* Stepper Status Indicator */}
-            <div className="wizard-progress-bar">
-              <div className="wizard-steps-line">
-                <div 
-                  className="wizard-steps-fill" 
-                  style={{ width: `${((step - 1) / 2) * 100}%` }}
-                ></div>
-              </div>
+            <div className="flex justify-between items-center relative max-w-xl">
+              <div className="absolute top-[18px] left-[5%] right-[5%] h-[2px] bg-white/10 z-1" />
+              <div 
+                className="absolute top-[18px] left-[5%] h-[2px] bg-primary transition-all duration-300 z-1"
+                style={{ width: `${((step - 1) / 2) * 90}%` }}
+              />
+
               {[
                 { num: 1, label: "Product Info" },
                 { num: 2, label: "Price Tiers" },
@@ -84,128 +114,144 @@ export default function CreateBatchWizard() {
               ].map((s) => (
                 <div 
                   key={s.num} 
-                  className={`wizard-step ${step >= s.num ? "wizard-step--active" : ""} ${step === s.num ? "wizard-step--current" : ""}`}
+                  className="flex flex-col items-center gap-2 relative z-2"
                 >
-                  <div className="step-circle">{s.num}</div>
-                  <span className="step-label">{s.label}</span>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm transition-all border-2 ${step >= s.num ? (step === s.num ? "bg-primary border-primary text-white shadow-lg shadow-primary/45 scale-110" : "bg-primary/10 border-primary text-primary") : "bg-neutral-900 border-white/10 text-neutral-500"}`}>
+                    {s.num}
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${step === s.num ? "text-primary" : (step > s.num ? "text-neutral-300" : "text-neutral-500")}`}>
+                    {s.label}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Form Wizard Body */}
-          <div className="wizard-content card animate-fade-in-up">
+          <div className="p-6 sm:p-8 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-3xl shadow-2xl">
             
             {/* STEP 1: PRODUCT INFO */}
             {step === 1 && (
-              <div className="wizard-step-body">
-                <h3>Step 1: Catalog Details</h3>
-                <p className="step-desc">Enter your product information, metadata, and scheduled time window.</p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">Step 1: Catalog Details</h3>
+                  <p className="text-xs text-neutral-400">Enter your product information, metadata, and scheduled time window.</p>
+                </div>
                 
-                <div className="wizard-form-grid">
-                  <div className="form-group span-2">
-                    <label>Batch Listing Title</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Batch Listing Title</label>
                     <input
                       type="text"
                       placeholder="e.g. Premium Basmati Rice (100% Organic, 1kg)"
                       value={batchData.title}
                       onChange={(e) => setBatchData({ ...batchData, title: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all placeholder-neutral-600"
                       required
                     />
                   </div>
 
-                  <div className="form-group span-2">
-                    <label>Product Description</label>
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Product Description</label>
                     <textarea
                       rows={4}
                       placeholder="Describe raw materials, certifications, bulk shipping packaging info, etc..."
                       value={batchData.description}
                       onChange={(e) => setBatchData({ ...batchData, description: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all placeholder-neutral-600"
                       required
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Product Category</label>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Product Category</label>
                     <select
                       value={batchData.category}
                       onChange={(e) => setBatchData({ ...batchData, category: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all"
                     >
                       {CATEGORIES.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.icon} {cat.name}
+                        <option key={cat.id} value={cat.id} className="bg-neutral-900 text-white">
+                          {cat.name}
                         </option>
                       ))}
                     </select>
                   </div>
 
-                  <div className="form-group">
-                    <label>Batch Close Date</label>
-                    <input
-                      type="date"
-                      value={batchData.endTime}
-                      onChange={(e) => setBatchData({ ...batchData, endTime: e.target.value })}
-                      required
-                    />
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Batch Close Date</label>
+                    <div className="relative flex items-center">
+                      <input
+                        type="date"
+                        value={batchData.endTime}
+                        onChange={(e) => setBatchData({ ...batchData, endTime: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all"
+                        required
+                      />
+                    </div>
                   </div>
 
-                  <div className="form-group">
-                    <label>Min Order Quantity (MOQ)</label>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Min Order Quantity (MOQ)</label>
                     <input
                       type="number"
                       value={batchData.moq}
                       onChange={(e) => setBatchData({ ...batchData, moq: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all placeholder-neutral-600"
                       required
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Max Target Slots Available</label>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Max Target Slots Available</label>
                     <input
                       type="number"
                       value={batchData.maxSlots}
                       onChange={(e) => setBatchData({ ...batchData, maxSlots: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all placeholder-neutral-600"
                       required
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Material / Composition</label>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Material / Composition</label>
                     <input
                       type="text"
                       placeholder="e.g. 100% Cotton, Stainless Steel"
                       value={batchData.material}
                       onChange={(e) => setBatchData({ ...batchData, material: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all placeholder-neutral-600"
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Weight / Packaging Size</label>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Weight / Packaging Size</label>
                     <input
                       type="text"
                       placeholder="e.g. 1 kg, 500 ml"
                       value={batchData.weight}
                       onChange={(e) => setBatchData({ ...batchData, weight: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all placeholder-neutral-600"
                     />
                   </div>
 
-                  <div className="form-group span-2">
-                    <label>Product Images</label>
-                    <div className="upload-dropzone">
-                      <div className="upload-icon">📁</div>
-                      <p>Drag and drop product images here, or <span>browse files</span></p>
-                      <span className="upload-help">Supports PNG, JPG (Max 5MB each)</span>
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Product Images</label>
+                    <div className="border border-dashed border-white/15 rounded-2xl p-8 text-center bg-white/[0.01] hover:bg-white/[0.02] hover:border-primary/30 transition-all cursor-pointer">
+                      <div className="text-3xl mb-2">📁</div>
+                      <p className="text-sm font-semibold text-neutral-200">Drag and drop product images here, or <span className="text-primary hover:underline">browse files</span></p>
+                      <span className="block text-[10px] text-neutral-500 font-bold uppercase tracking-wider mt-1">Supports PNG, JPG (Max 5MB each)</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="wizard-actions">
+                <div className="flex justify-end pt-4 border-t border-white/5">
                   <button 
-                    className="btn btn--primary" 
+                    className="bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer text-sm"
                     onClick={() => setStep(2)}
-                    disabled={!batchData.title || !batchData.description}
+                    disabled={!batchData.title || !batchData.description || !batchData.endTime}
                   >
-                    Next Step: Pricing Tiers →
+                    Next Step: Pricing Tiers <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -213,68 +259,81 @@ export default function CreateBatchWizard() {
 
             {/* STEP 2: PRICING TIERS */}
             {step === 2 && (
-              <div className="wizard-step-body">
-                <h3>Step 2: Dynamic Pricing ladder</h3>
-                <p className="step-desc">Establish different price points. As more buyers reserve slots, the final price drops for everyone.</p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">Step 2: Dynamic Pricing Ladder</h3>
+                  <p className="text-xs text-neutral-400">Establish different price points. As more buyers reserve slots, the final price drops for everyone.</p>
+                </div>
 
-                <div className="tier-builder-list">
+                <div className="space-y-4">
                   {tiers.map((tier, idx) => (
-                    <div key={idx} className="tier-builder-row">
-                      <div className="tier-index-badge">Tier {idx + 1}</div>
+                    <div key={idx} className="flex flex-col sm:flex-row items-end sm:items-center gap-4 p-4 bg-white/[0.01] border border-white/5 rounded-2xl relative group">
+                      <div className="absolute top-4 left-4 sm:relative sm:top-0 sm:left-0 px-2.5 py-1 rounded bg-neutral-900 border border-white/10 text-[10px] font-bold text-neutral-300">
+                        Tier {idx + 1}
+                      </div>
                       
-                      <div className="form-group">
-                        <label>Min Slots</label>
+                      <div className="w-full sm:flex-1 space-y-1.5">
+                        <label className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Min Slots</label>
                         <input
                           type="number"
                           value={tier.minSlots}
                           onChange={(e) => handleTierChange(idx, "minSlots", e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-3 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 transition-all"
                         />
                       </div>
                       
-                      <div className="form-group">
-                        <label>Max Slots</label>
+                      <div className="w-full sm:flex-1 space-y-1.5">
+                        <label className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Max Slots</label>
                         <input
                           type="number"
                           value={tier.maxSlots}
                           onChange={(e) => handleTierChange(idx, "maxSlots", e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-3 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 transition-all"
                         />
                       </div>
 
-                      <div className="form-group">
-                        <label>Price Per Unit (₹)</label>
+                      <div className="w-full sm:flex-1 space-y-1.5">
+                        <label className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Price Per Unit (₹)</label>
                         <input
                           type="number"
                           placeholder="e.g. 250"
                           value={tier.price}
                           onChange={(e) => handleTierChange(idx, "price", e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-3 font-semibold text-sm text-white focus:outline-none focus:border-primary focus:bg-white/10 transition-all placeholder-neutral-600"
                         />
                       </div>
 
                       <button 
-                        className="tier-remove-btn" 
+                        className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed shrink-0 mt-6"
                         onClick={() => handleRemoveField(idx)}
                         disabled={tiers.length === 1}
                       >
-                        ✕
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
                 </div>
 
-                <button className="btn btn--secondary btn--sm mb-6" onClick={handleAddField}>
-                  + Add Price Drop Tier
+                <button 
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer text-xs mb-6" 
+                  onClick={handleAddField}
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Price Drop Tier
                 </button>
 
-                <div className="wizard-actions">
-                  <button className="btn btn--ghost" onClick={() => setStep(1)}>
-                    ← Back
+                <div className="flex justify-between pt-4 border-t border-white/5">
+                  <button 
+                    className="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 px-6 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer text-sm" 
+                    onClick={() => setStep(1)}
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
                   </button>
                   <button 
-                    className="btn btn--primary" 
+                    className="bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer text-sm"
                     onClick={() => setStep(3)}
-                    disabled={tiers.some((t) => !t.price)}
+                    disabled={tiers.some((t) => !t.price || !t.minSlots || !t.maxSlots)}
                   >
-                    Next Step: Preview & Launch →
+                    Next Step: Preview & Launch <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -282,46 +341,60 @@ export default function CreateBatchWizard() {
 
             {/* STEP 3: PREVIEW & LAUNCH */}
             {step === 3 && (
-              <div className="wizard-step-body">
-                <h3>Step 3: Confirm and Launch</h3>
-                <p className="step-desc">Verify your details. Launching will immediately list this batch on the homepage discover feed.</p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">Step 3: Confirm and Launch</h3>
+                  <p className="text-xs text-neutral-400">Verify your details. Launching will immediately list this batch on the homepage discover feed.</p>
+                </div>
 
-                <div className="preview-summary">
-                  <div className="preview-item">
-                    <span className="preview-label">Product Name</span>
-                    <span className="preview-value">{batchData.title}</span>
+                <div className="p-5 bg-white/[0.01] border border-white/5 rounded-2xl space-y-4">
+                  <div className="flex justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-neutral-500 font-bold uppercase tracking-wider">Product Name</span>
+                    <span className="text-sm font-semibold text-white">{batchData.title}</span>
                   </div>
-                  <div className="preview-item">
-                    <span className="preview-label">Category</span>
-                    <span className="preview-value">{batchData.category.toUpperCase()}</span>
+                  <div className="flex justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-neutral-500 font-bold uppercase tracking-wider">Category</span>
+                    <span className="text-sm font-semibold text-white uppercase">{batchData.category}</span>
                   </div>
-                  <div className="preview-item">
-                    <span className="preview-label">MOQ Target</span>
-                    <span className="preview-value">{batchData.moq} slots</span>
+                  <div className="flex justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-neutral-500 font-bold uppercase tracking-wider">MOQ Target</span>
+                    <span className="text-sm font-semibold text-white">{batchData.moq} slots</span>
                   </div>
-                  <div className="preview-item">
-                    <span className="preview-label">Dynamic Pricing Tiers</span>
-                    <div className="preview-tiers-list">
+                  <div className="flex justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-neutral-500 font-bold uppercase tracking-wider">Closing Date</span>
+                    <span className="text-sm font-semibold text-white">{batchData.endTime}</span>
+                  </div>
+                  <div className="flex flex-col gap-2 py-2">
+                    <span className="text-xs text-neutral-500 font-bold uppercase tracking-wider">Dynamic Pricing Tiers</span>
+                    <div className="flex flex-wrap gap-2">
                       {tiers.map((t, idx) => (
-                        <div key={idx} className="preview-tier-pill">
-                          <strong>{t.minSlots}-{t.maxSlots} slots:</strong> ₹{t.price}/unit
+                        <div key={idx} className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-semibold">
+                          {t.minSlots}-{t.maxSlots} slots: {formatPrice(t.price)}/unit
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="wizard-actions">
-                  <button className="btn btn--ghost" onClick={() => setStep(2)}>
-                    ← Back
+                <div className="flex justify-between pt-4 border-t border-white/5">
+                  <button 
+                    className="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 px-6 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer text-sm" 
+                    onClick={() => setStep(2)}
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
                   </button>
                   <button 
-                    className="btn btn--success btn--lg" 
+                    className="bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer text-sm"
                     onClick={handleLaunch}
                     disabled={loading}
-                    id="launch-batch-btn"
                   >
-                    {loading ? <span className="spinner"></span> : "🚀 Launch Batch Now"}
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <span>🚀 Launch Batch Now</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -332,360 +405,6 @@ export default function CreateBatchWizard() {
       </main>
 
       <Footer />
-
-      <style jsx>{`
-        .wizard-main {
-          padding-top: calc(64px + var(--space-8));
-          padding-bottom: var(--space-16);
-          min-height: calc(100vh - 150px);
-          background-color: #050505;
-          background-image: radial-gradient(circle at 50% 0%, rgba(255, 107, 0, 0.05) 0%, transparent 50%);
-        }
-
-        .wizard-header {
-          margin-bottom: var(--space-8);
-        }
-
-        .wizard-title {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 2.2rem;
-          font-weight: 800;
-          color: var(--text-primary);
-          margin: 0 0 var(--space-2);
-          letter-spacing: -0.02em;
-        }
-
-        .wizard-subtitle {
-          color: var(--text-secondary);
-          font-size: 1.05rem;
-          margin: 0 0 var(--space-8);
-        }
-
-        /* Stepper progress bar */
-        .wizard-progress-bar {
-          display: flex;
-          justify-content: space-between;
-          position: relative;
-          max-width: 600px;
-          margin-top: var(--space-6);
-        }
-
-        .wizard-steps-line {
-          position: absolute;
-          top: 18px;
-          left: 5%;
-          right: 5%;
-          height: 2px;
-          background: rgba(255, 255, 255, 0.08);
-          z-index: 1;
-        }
-
-        .wizard-steps-fill {
-          height: 100%;
-          background: var(--accent-primary);
-          box-shadow: 0 0 8px var(--accent-primary);
-          transition: width var(--transition-base);
-        }
-
-        .wizard-step {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          position: relative;
-          z-index: 2;
-          gap: 6px;
-        }
-
-        .step-circle {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background: #111111;
-          border: 2.5px solid rgba(255, 255, 255, 0.1);
-          color: var(--text-secondary);
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all var(--transition-base);
-        }
-
-        .step-label {
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--text-tertiary);
-          transition: color var(--transition-base);
-        }
-
-        .wizard-step--active .step-circle {
-          border-color: var(--accent-primary);
-          background-color: rgba(255, 107, 0, 0.1);
-          color: var(--accent-primary);
-        }
-
-        .wizard-step--active .step-label {
-          color: var(--text-primary);
-        }
-
-        .wizard-step--current .step-circle {
-          background-color: var(--accent-primary);
-          color: white;
-          border-color: var(--accent-primary);
-          box-shadow: 0 0 16px rgba(255, 107, 0, 0.4);
-        }
-
-        .wizard-step--current .step-label {
-          font-weight: 700;
-          color: var(--accent-primary);
-        }
-
-        /* Form styling */
-        .wizard-content {
-          background: var(--bg-card-glass);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid rgba(255, 255, 255, 0.07);
-          border-radius: var(--radius-xl);
-          padding: var(--space-8);
-          max-width: 800px;
-          margin: 0 auto;
-          box-shadow: var(--shadow-premium);
-        }
-
-        .wizard-step-body h3 {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 1.5rem;
-          font-weight: 800;
-          margin: 0 0 var(--space-1);
-          color: var(--text-primary);
-        }
-
-        .step-desc {
-          font-size: 0.95rem;
-          color: var(--text-secondary);
-          margin: 0 0 var(--space-6);
-        }
-
-        .wizard-form-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: var(--space-5);
-        }
-
-        @media (min-width: 640px) {
-          .wizard-form-grid {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-
-        .span-2 {
-          grid-column: span 1;
-        }
-
-        @media (min-width: 640px) {
-          .span-2 {
-            grid-column: span 2;
-          }
-        }
-
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .form-group label {
-          font-size: 0.8rem;
-          font-weight: 700;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-          padding: var(--space-3) var(--space-4);
-          border-radius: var(--radius-md);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: rgba(255, 255, 255, 0.04);
-          color: var(--text-primary);
-          font-size: 0.95rem;
-          outline: none;
-          transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-          border-color: var(--accent-primary);
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
-        }
-
-        /* Drag-and-drop Upload */
-        .upload-dropzone {
-          border: 2px dashed rgba(255, 255, 255, 0.12);
-          border-radius: var(--radius-lg);
-          padding: var(--space-6) var(--space-4);
-          text-align: center;
-          cursor: pointer;
-          background: rgba(255, 255, 255, 0.02);
-          transition: border-color var(--transition-fast), background-color var(--transition-fast);
-        }
-
-        .upload-dropzone:hover {
-          border-color: var(--accent-primary);
-          background: rgba(255, 107, 0, 0.03);
-        }
-
-        .upload-icon {
-          font-size: 2.2rem;
-          margin-bottom: var(--space-2);
-        }
-
-        .upload-dropzone p {
-          font-size: 0.9rem;
-          color: var(--text-secondary);
-          margin: 0 0 var(--space-1);
-        }
-
-        .upload-dropzone p span {
-          color: var(--accent-primary);
-          font-weight: 600;
-          text-decoration: underline;
-        }
-
-        .upload-help {
-          font-size: 0.75rem;
-          color: var(--text-tertiary);
-        }
-
-        /* Tier builder row */
-        .tier-builder-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-          margin-bottom: var(--space-6);
-        }
-
-        .tier-builder-row {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr) auto;
-          gap: var(--space-4);
-          align-items: flex-end;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: var(--radius-lg);
-          padding: var(--space-5) var(--space-6);
-          position: relative;
-          transition: border-color var(--transition-fast);
-        }
-
-        .tier-builder-row:hover {
-          border-color: rgba(255, 107, 0, 0.18);
-        }
-
-        .tier-index-badge {
-          position: absolute;
-          top: -10px;
-          left: 16px;
-          background: rgba(255, 107, 0, 0.15);
-          border: 1px solid rgba(255, 107, 0, 0.3);
-          color: var(--accent-primary);
-          font-size: 0.7rem;
-          font-weight: 800;
-          padding: 2px 8px;
-          border-radius: var(--radius-sm);
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-        }
-
-        .tier-remove-btn {
-          border: none;
-          background: transparent;
-          color: var(--text-tertiary);
-          font-size: 1.2rem;
-          cursor: pointer;
-          padding: 0 var(--space-2) var(--space-2);
-          transition: color var(--transition-fast);
-        }
-
-        .tier-remove-btn:hover {
-          color: var(--accent-danger);
-        }
-
-        /* Preview card styling */
-        .preview-summary {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-          background-color: rgba(255, 255, 255, 0.02);
-          border-radius: var(--radius-lg);
-          padding: var(--space-6);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          margin-bottom: var(--space-8);
-        }
-
-        .preview-item {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .preview-label {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--text-tertiary);
-          text-transform: uppercase;
-        }
-
-        .preview-value {
-          font-size: 1.1rem;
-          font-weight: 600;
-          color: var(--text-primary);
-        }
-
-        .preview-tiers-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: var(--space-2);
-          margin-top: 4px;
-        }
-
-        .preview-tier-pill {
-          background-color: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 6px 12px;
-          border-radius: var(--radius-full);
-          font-size: 0.85rem;
-          color: var(--text-secondary);
-        }
-
-        .wizard-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: var(--space-4);
-          border-top: 1px solid rgba(255, 255, 255, 0.08);
-          padding-top: var(--space-6);
-          margin-top: var(--space-6);
-        }
-
-        /* Spinner for loading state */
-        .spinner {
-          display: inline-block;
-          width: 20px;
-          height: 20px;
-          border: 2.5px solid rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-          border-top-color: white;
-          animation: spin 0.8s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </>
   );
 }
