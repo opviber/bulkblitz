@@ -4,17 +4,26 @@ import { sendWhatsAppNotification, sendPushNotification, sendEmailNotification }
 
 export async function GET(request) {
   try {
-    const user = await getScopedUser(request);
+    const { searchParams } = new URL(request.url);
+    const mfrId = searchParams.get("manufacturerId");
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "No buyer profile found. Please seed the database." },
-        { status: 404 }
-      );
+    const where = {};
+    if (mfrId) {
+      where.batch = { manufacturerId: mfrId };
+    } else {
+      const user = await getScopedUser(request);
+
+      if (!user) {
+        return NextResponse.json(
+          { error: "No buyer profile found. Please seed the database." },
+          { status: 404 }
+        );
+      }
+      where.userId = user.id;
     }
 
     const orders = await prisma.order.findMany({
-      where: { userId: user.id },
+      where,
       include: {
         batch: {
           include: {
@@ -237,6 +246,72 @@ export async function POST(request) {
     console.error("Error creating reservation order:", error);
     return NextResponse.json(
       { error: error.message || "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request) {
+  try {
+    const body = await request.json();
+    const { orderId, status, trackingNumber } = body;
+
+    if (!orderId) {
+      return NextResponse.json(
+        { error: "Missing orderId parameter" },
+        { status: 400 }
+      );
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order) {
+      return NextResponse.json(
+        { error: "Order not found" },
+        { status: 404 }
+      );
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: status || order.status,
+        trackingNumber: trackingNumber !== undefined ? trackingNumber : order.trackingNumber,
+      },
+      include: {
+        batch: {
+          include: {
+            manufacturer: true
+          }
+        }
+      }
+    });
+
+    // Format response to match frontend expects
+    const formatted = {
+      id: updated.id,
+      batchId: updated.batchId,
+      batchTitle: updated.batch.title,
+      quantity: updated.quantity,
+      pricePerUnit: updated.pricePerUnit,
+      totalAmount: updated.totalAmount,
+      status: updated.status,
+      orderedAt: updated.orderedAt.toISOString(),
+      trackingNumber: updated.trackingNumber,
+      manufacturer: {
+        name: updated.batch.manufacturer.businessName,
+        city: updated.batch.manufacturer.city,
+        state: updated.batch.manufacturer.state,
+      },
+    };
+
+    return NextResponse.json(formatted);
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
