@@ -1,12 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Users, Factory, IndianRupee, Zap, ArrowRight } from 'lucide-react';
 import Magnet from '../ui/Magnet';
 
+// Dynamically import Three.js scene to prevent SSR issues
+const HeroCubeScene = dynamic(() => import('../three/HeroCubeScene'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-neutral-950/20 rounded-2xl border border-white/5 animate-pulse">
+      <div className="text-neutral-500 font-display font-semibold text-sm">Initializing 3D Environment...</div>
+    </div>
+  ),
+});
+
 /* ─────────────────────────────────────────────
-   Animated Number — counts up from 0 to value
-───────────────────────────────────────────── */
-function AnimatedNumber({ value, duration = 2200 }) {
+   Animated Number component
+   ───────────────────────────────────────────── */
+function AnimatedNumber({ value, duration = 2000 }) {
   const [displayed, setDisplayed] = useState(0);
 
   useEffect(() => {
@@ -27,683 +39,152 @@ function AnimatedNumber({ value, duration = 2200 }) {
   return displayed.toLocaleString('en-IN');
 }
 
-/* ─────────────────────────────────────────────
-   Static data
-───────────────────────────────────────────── */
 const STATS_CONFIG = [
-  { icon: '👥', key: 'totalBuyers',        suffix: '+', prefix: '',  label: 'Happy Buyers',    color: '#3B82F6', fallback: 12400   },
-  { icon: '🏭', key: 'totalManufacturers', suffix: '+', prefix: '',  label: 'Manufacturers',   color: '#A78BFA', fallback: 340     },
-  { icon: '💰', key: 'totalSaved',          suffix: '',  prefix: '₹', label: 'Saved by Buyers', color: '#34D399', fallback: 2800000 },
-  { icon: '⚡', key: 'activeBatches',       suffix: '',  prefix: '',  label: 'Live Batches',    color: '#FBBF24', fallback: 86      },
+  { icon: Users, key: 'totalBuyers', suffix: '+', prefix: '', label: 'Happy Buyers', color: '#FF6A00', fallback: 12400 },
+  { icon: Factory, key: 'totalManufacturers', suffix: '+', prefix: '', label: 'Manufacturers', color: '#FF8C24', fallback: 340 },
+  { icon: IndianRupee, key: 'totalSaved', suffix: '', prefix: '₹', label: 'Saved by Buyers', color: '#1DB954', fallback: 2800000 },
+  { icon: Zap, key: 'activeBatches', suffix: '', prefix: '', label: 'Live Batches', color: '#FFB85C', fallback: 86 },
 ];
 
 const STEPS = [
   {
     num: '01',
-    color: '#3B82F6',
+    color: '#FF6A00',
     title: 'Manufacturer Lists',
     desc: 'Verified manufacturers post products with tiered bulk pricing tiers.',
   },
   {
     num: '02',
-    color: '#A78BFA',
+    color: '#FF8C24',
     title: 'Buyers Join Batch',
     desc: 'Reserve your slot with a card hold — no upfront payment required.',
   },
   {
     num: '03',
-    color: '#34D399',
+    color: '#1DB954',
     title: 'Price Drops Live',
     desc: 'Every new buyer lowers the price for the entire batch in real time.',
   },
   {
     num: '04',
-    color: '#FBBF24',
+    color: '#FFB85C',
     title: 'Everyone Saves',
     desc: 'Batch closes, you pay the final lowest price. Direct from factory.',
   },
 ];
 
-/* ─────────────────────────────────────────────
-   HeroSection
-───────────────────────────────────────────── */
 export default function HeroSection({ stats }) {
   return (
-    <section className="hero" id="hero-section">
+    <section className="relative min-h-screen pt-24 pb-16 overflow-hidden flex flex-col justify-center bg-neutral-950 industrial-grid" id="hero-section">
+      {/* Noise background overlay */}
+      <div className="noise-overlay" aria-hidden="true" />
 
-      {/* ── Animated Background ── */}
-      <div className="hero__bg" aria-hidden="true">
-        <div className="hero__grid">
-          <div className="hero__grid-inner" />
+      {/* Main Hero Container */}
+      <div className="container mx-auto px-4 z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        {/* Left Column (Content) */}
+        <div className="lg:col-span-7 flex flex-col gap-6 text-left max-w-2xl">
+          {/* Badge Pill */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 self-start rounded-full border border-white/5 bg-white/5 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-[11px] font-bold tracking-wider text-neutral-300 uppercase">Buy Together. Pay Less.</span>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-black leading-none tracking-tight text-white animate-fade-in-up">
+            The Crowd Buys. <br />
+            <span className="text-primary">The Price Drops.</span>
+          </h1>
+
+          {/* Description */}
+          <p className="text-base sm:text-lg text-neutral-400 font-normal leading-relaxed animate-fade-in-up animate-delay-100">
+            Join a batch. Pool with other buyers. Watch the price drop in real time.
+            Get manufacturer-direct pricing — no middlemen, no minimum quantities.
+          </p>
+
+          {/* Live Console/Status Snapshot */}
+          <div className="grid grid-cols-3 gap-px overflow-hidden border border-white/5 rounded-xl bg-neutral-900/40 backdrop-blur-md shadow-2xl animate-fade-in-up animate-delay-200">
+            <div className="flex flex-col items-center justify-center p-4 bg-neutral-950/20 text-center">
+              <span className="text-[9px] font-bold tracking-wider text-neutral-500 uppercase">Live Drop</span>
+              <strong className="mt-1 font-mono text-sm sm:text-base text-white">₹84 → ₹69</strong>
+            </div>
+            <div className="flex flex-col items-center justify-center p-4 bg-neutral-950/20 text-center">
+              <span className="text-[9px] font-bold tracking-wider text-neutral-500 uppercase">Next Unlock</span>
+              <strong className="mt-1 font-mono text-sm sm:text-base text-white">12 buyers</strong>
+            </div>
+            <div className="flex flex-col items-center justify-center p-4 bg-neutral-950/20 text-center">
+              <span className="text-[9px] font-bold tracking-wider text-neutral-500 uppercase">Batch Pulse</span>
+              <strong className="mt-1 font-mono text-sm sm:text-base text-primary">86 live</strong>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap items-center gap-4 animate-fade-in-up animate-delay-300">
+            <Magnet padding={15}>
+              <a href="#batches" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl btn-primary-new font-bold text-sm">
+                Browse Live Batches
+                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </a>
+            </Magnet>
+            <Magnet padding={15}>
+              <a href="#how-it-works" className="inline-flex items-center justify-center px-6 py-3.5 rounded-xl btn-secondary-new font-bold text-sm">
+                How It Works
+              </a>
+            </Magnet>
+          </div>
+        </div>
+
+        {/* Right Column (Three.js 3D Scene) */}
+        <div className="lg:col-span-5 h-[350px] sm:h-[450px] w-full relative flex items-center justify-center animate-fade-in-up animate-delay-200">
+          <div className="absolute inset-0 bg-radial-gradient from-primary/10 to-transparent blur-3xl pointer-events-none" />
+          <HeroCubeScene />
+        </div>
+
+      </div>
+
+      {/* Stats Bar Container */}
+      <div className="container mx-auto px-4 z-10 mt-16 animate-fade-in-up animate-delay-400">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 md:p-8 rounded-2xl border border-white/5 bg-neutral-900/30 backdrop-blur-lg shadow-2xl">
+          {STATS_CONFIG.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div key={stat.key} className="flex flex-col items-center md:items-start text-center md:text-left gap-2 p-3">
+                <div className="p-3 rounded-xl bg-neutral-950/40 border border-white/5" style={{ color: stat.color }}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col gap-0.5 mt-1">
+                  <span className="text-xl sm:text-2xl font-mono font-bold text-white tracking-tight">
+                    {stat.prefix}
+                    <AnimatedNumber value={stats?.[stat.key] ?? stat.fallback} />
+                    {stat.suffix}
+                  </span>
+                  <span className="text-xs text-neutral-400 font-medium">{stat.label}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      <div className="container hero__container">
-
-
-        {/* ── Headline ── */}
-        <h1 className="hero__headline animate-fade-in-up">
-          <span className="hero__line hero__line--1">
-            The Crowd Buys.
-          </span>
-          <span className="hero__line hero__line--2">
-            <span className="hero__gradient-text">The Price Drops.</span>
-          </span>
-        </h1>
-
-        {/* ── Subheadline ── */}
-        <p className="hero__sub animate-fade-in-up animate-delay-200">
-          Join a batch. Pool with other buyers. Watch the price drop in real time.
-          Get manufacturer-direct pricing — no middlemen, no minimum quantities.
-        </p>
-
-        <div className="hero__market-console animate-fade-in-up animate-delay-300" aria-label="Live marketplace snapshot">
-          <div className="hero__console-cell">
-            <span className="hero__console-label">Live drop</span>
-            <strong>₹84 → ₹69</strong>
-          </div>
-          <div className="hero__console-cell">
-            <span className="hero__console-label">Next unlock</span>
-            <strong>12 buyers</strong>
-          </div>
-          <div className="hero__console-cell hero__console-cell--accent">
-            <span className="hero__console-label">Batch pulse</span>
-            <strong>86 live</strong>
-          </div>
+      {/* Timeline Section (How It Works) */}
+      <div className="container mx-auto px-4 z-10 mt-28 animate-fade-in-up animate-delay-500" id="how-it-works">
+        <div className="flex flex-col items-center text-center max-w-xl mx-auto mb-12">
+          <span className="text-[10px] font-bold tracking-widest text-primary uppercase mb-2">Workflow</span>
+          <h2 className="text-3xl font-display font-black text-white">How BulkBlitz Works</h2>
+          <p className="text-sm text-neutral-400 mt-2">Four simple steps to unlock factory wholesale pricing directly.</p>
         </div>
 
-        {/* ── CTA Buttons ── */}
-        <div className="hero__ctas animate-fade-in-up animate-delay-400">
-          <Magnet padding={20}>
-            <a href="#batches" className="hero__btn hero__btn--primary">
-              Browse Live Batches
-              <svg
-                className="hero__btn-arrow"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </a>
-          </Magnet>
-          <Magnet padding={20}>
-            <a href="#how-it-works" className="hero__btn hero__btn--secondary">
-              How It Works
-            </a>
-          </Magnet>
-        </div>
-
-        {/* ── Stats Bar ── */}
-        <div className="hero__stats animate-fade-in-up animate-delay-500">
-          {STATS_CONFIG.map((s) => (
-            <div key={s.key} className="hero__stat">
-              <div
-                className="hero__stat-icon"
-                style={{ '--stat-color': s.color }}
-                aria-hidden="true"
-              >
-                {s.icon}
-              </div>
-              <div className="hero__stat-body">
-                <span className="hero__stat-value">
-                  {s.prefix}
-                  <AnimatedNumber value={stats?.[s.key] ?? s.fallback} />
-                  {s.suffix}
-                </span>
-                <span className="hero__stat-label">{s.label}</span>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+          {STEPS.map((step, idx) => (
+            <div key={step.num} className="relative group p-6 rounded-2xl border border-white/5 bg-neutral-900/20 backdrop-blur-md transition-all duration-300 hover:border-primary/25">
+              <div className="absolute top-4 right-4 text-4xl font-mono font-black text-white/5 select-none">{step.num}</div>
+              <div className="w-1.5 h-10 rounded-full mb-6" style={{ backgroundColor: step.color }} />
+              <h3 className="text-lg font-bold text-white mb-2 font-display">{step.title}</h3>
+              <p className="text-xs text-neutral-400 leading-relaxed">{step.desc}</p>
             </div>
           ))}
         </div>
-
-        {/* ── How It Works ── */}
-        <div
-          className="hero__hiw animate-fade-in-up animate-delay-600"
-          id="how-it-works"
-        >
-          <p className="hero__hiw-label">How it works</p>
-          <div className="hero__steps">
-            {STEPS.map((step, i) => (
-              <div key={step.num} className="hero__step-wrapper">
-                <div
-                  className="hero__step"
-                  style={{ '--step-color': step.color }}
-                >
-                  <div className="hero__step-num-box">
-                    {step.num}
-                  </div>
-                  <h3 className="hero__step-title">{step.title}</h3>
-                  <p className="hero__step-desc">{step.desc}</p>
-                </div>
-                {i < STEPS.length - 1 && (
-                  <div className="hero__step-arrow" aria-hidden="true">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
       </div>
-
-      {/* ═══════════════════════════════════════════
-          Styles
-      ══════════════════════════════════════════ */}
-      <style jsx>{`
-
-        /* ── Section shell ── */
-        .hero {
-          position: relative;
-          min-height: 100vh;
-          padding: calc(64px + var(--space-16)) 0 var(--space-16);
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          isolation: isolate;
-          background:
-            radial-gradient(circle at 82% 24%, rgba(255, 107, 0, 0.16), transparent 28%),
-            radial-gradient(circle at 22% 78%, rgba(255, 255, 255, 0.05), transparent 26%),
-            linear-gradient(135deg, #050505 0%, #121212 48%, #080808 100%);
-        }
-
-        /* ── Background layer ── */
-        .hero__bg {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-          z-index: 0;
-          pointer-events: none;
-        }
-
-        /* Dot grid */
-        .hero__grid {
-          position: absolute;
-          inset: 0;
-        }
-
-        .hero__grid-inner {
-          position: absolute;
-          inset: 0;
-          background-image: radial-gradient(circle, var(--border-default) 1px, transparent 1px);
-          background-size: 34px 34px;
-          opacity: 0.42;
-          mask-image: linear-gradient(90deg, black 0%, black 54%, transparent 100%);
-          -webkit-mask-image: linear-gradient(90deg, black 0%, black 54%, transparent 100%);
-        }
-
-        /* ── Container ── */
-        .hero__container {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          gap: 0;
-          width: 100%;
-          min-height: calc(100vh - 128px);
-        }
-
-
-        /* ── Headline ── */
-        .hero__headline {
-          font-family: var(--font-heading), sans-serif;
-          max-width: 900px;
-          font-size: clamp(3rem, 7vw, 6.35rem);
-          font-weight: 900;
-          line-height: 0.98;
-          letter-spacing: -0.03em;
-          margin: 0 auto var(--space-6);
-          color: #ffffff;
-          text-wrap: balance;
-        }
-
-        .hero__line {
-          display: block;
-        }
-
-        .hero__line--1 {
-          color: #ffffff;
-        }
-
-        .hero__gradient-text {
-          background: linear-gradient(135deg, #ffffff 0%, #fed7aa 38%, #ff6b00 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        /* ── Subheadline ── */
-        .hero__sub {
-          max-width: 560px;
-          font-size: clamp(1rem, 1.8vw, 1.15rem);
-          color: var(--text-secondary);
-          line-height: 1.75;
-          margin: 0 auto var(--space-8);
-          font-family: var(--font-body), sans-serif;
-        }
-
-        .hero__market-console {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 1px;
-          width: min(680px, 100%);
-          margin: 0 auto var(--space-8);
-          overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: var(--radius-xl);
-          background: rgba(18, 18, 18, 0.72);
-          box-shadow: var(--shadow-premium);
-          backdrop-filter: blur(22px);
-          -webkit-backdrop-filter: blur(22px);
-        }
-
-        .hero__console-cell {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          padding: var(--space-4) var(--space-5);
-          background: rgba(255, 255, 255, 0.025);
-          min-width: 0;
-        }
-
-        .hero__console-label {
-          font-size: 0.68rem;
-          color: var(--text-tertiary);
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          white-space: nowrap;
-        }
-
-        .hero__console-cell strong {
-          margin-top: 3px;
-          font-family: var(--font-heading), sans-serif;
-          color: var(--text-primary);
-          font-size: clamp(1rem, 2vw, 1.32rem);
-          font-weight: 900;
-          line-height: 1;
-          font-variant-numeric: tabular-nums;
-        }
-
-        .hero__console-cell--accent strong {
-          color: var(--accent-success);
-        }
-
-        /* ── CTA Buttons ── */
-        .hero__ctas {
-          display: flex;
-          align-items: center;
-          gap: var(--space-4);
-          flex-wrap: wrap;
-          justify-content: center;
-          margin-bottom: var(--space-10);
-        }
-
-        .hero__btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 14px 32px;
-          border-radius: var(--radius-xl);
-          font-family: var(--font-body), sans-serif;
-          font-weight: 700;
-          font-size: 1rem;
-          text-decoration: none;
-          cursor: pointer;
-          transition: all var(--transition-base);
-          position: relative;
-          white-space: nowrap;
-        }
-
-        .hero__btn--primary {
-          background: linear-gradient(135deg, #FF6B00, #B34B00);
-          color: #ffffff;
-          border: none;
-          box-shadow: 0 12px 34px rgba(255, 107, 0, 0.3);
-        }
-
-        .hero__btn--primary:hover {
-          background: linear-gradient(135deg, #FF8533, #CC5200);
-          box-shadow: 0 14px 38px rgba(255, 107, 0, 0.36);
-          transform: translateY(-2px);
-          color: #ffffff;
-        }
-
-        .hero__btn-arrow {
-          transition: transform var(--transition-base);
-          flex-shrink: 0;
-        }
-
-        .hero__btn--primary:hover .hero__btn-arrow {
-          transform: translateX(3px);
-        }
-
-        .hero__btn--secondary {
-          background: rgba(255, 255, 255, 0.04);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          color: var(--text-primary);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-        }
-
-        .hero__btn--secondary:hover {
-          border-color: var(--accent-primary);
-          color: var(--accent-primary);
-          transform: translateY(-2px);
-          box-shadow: 0 12px 30px rgba(255, 107, 0, 0.16);
-        }
-
-        /* ── Stats Bar ── */
-        .hero__stats {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-          max-width: 820px;
-          width: 100%;
-          background: rgba(18, 18, 18, 0.74);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: var(--radius-2xl);
-          padding: var(--space-5) var(--space-6);
-          margin: 0 auto var(--space-14);
-          gap: var(--space-4) 0;
-        }
-
-        .hero__stat {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          gap: var(--space-2);
-          padding: var(--space-3) var(--space-6);
-          flex: 1;
-          min-width: 160px;
-          justify-content: center;
-          border-left: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .hero__stat:first-child {
-          border-left: none;
-        }
-
-        .hero__stat-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: var(--radius-lg);
-          background: color-mix(in srgb, var(--stat-color) 14%, transparent);
-          border: 1px solid color-mix(in srgb, var(--stat-color) 30%, transparent);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1rem;
-          flex-shrink: 0;
-          transition: transform var(--transition-base);
-        }
-
-        .hero__stat:hover .hero__stat-icon {
-          transform: scale(1.12);
-        }
-
-        .hero__stat-body {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1px;
-        }
-
-        .hero__stat-value {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 1.5rem;
-          font-weight: 800;
-          color: var(--text-primary);
-          font-variant-numeric: tabular-nums;
-          line-height: 1.1;
-        }
-
-        .hero__stat-label {
-          font-size: 0.7rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--text-tertiary);
-          white-space: nowrap;
-        }
-
-        @media (max-width: 640px) {
-          .hero__stats {
-            gap: var(--space-1);
-            padding: var(--space-4) var(--space-3);
-            border-radius: var(--radius-xl);
-          }
-
-          .hero__stat {
-            padding: var(--space-3) var(--space-3);
-            min-width: 140px;
-            flex: 0 0 calc(50% - var(--space-2));
-            border-left: none;
-          }
-
-          .hero__stat-value {
-            font-size: 1.25rem;
-          }
-        }
-
-        /* ── How It Works ── */
-        .hero__hiw {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--space-5);
-          width: 100%;
-          max-width: 940px;
-          margin: 0 auto;
-        }
-
-        .hero__hiw-label {
-          font-size: 0.72rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: var(--text-tertiary);
-          margin: 0;
-        }
-
-        .hero__steps {
-          display: flex;
-          align-items: stretch;
-          justify-content: center;
-          gap: 0;
-          width: 100%;
-        }
-
-        .hero__step-wrapper {
-          display: flex;
-          align-items: center;
-          flex: 1;
-          min-width: 0;
-        }
-
-        .hero__step {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--space-3);
-          padding: var(--space-5) var(--space-4);
-          background: rgba(18, 18, 18, 0.72);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: var(--radius-xl);
-          text-align: center;
-          transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
-          cursor: default;
-        }
-
-        .hero__step:hover {
-          transform: translateY(-4px);
-          box-shadow: var(--shadow-lg);
-          border-color: var(--accent-primary);
-        }
-
-        .hero__step-num-box {
-          width: 48px;
-          height: 48px;
-          border-radius: var(--radius-lg);
-          border: 1px solid var(--step-color);
-          background: var(--bg-elevated);
-          color: var(--step-color);
-          font-family: var(--font-heading), sans-serif;
-          font-weight: 800;
-          font-size: 0.85rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          letter-spacing: 0.02em;
-          flex-shrink: 0;
-          transition: background var(--transition-base), box-shadow var(--transition-base);
-        }
-
-        .hero__step:hover .hero__step-num-box {
-          background: color-mix(in srgb, var(--step-color) 12%, var(--bg-elevated));
-          box-shadow: 0 0 0 4px color-mix(in srgb, var(--step-color) 12%, transparent);
-        }
-
-        .hero__step-title {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0;
-          line-height: 1.3;
-        }
-
-        .hero__step-desc {
-          font-size: 0.78rem;
-          color: var(--text-tertiary);
-          margin: 0;
-          line-height: 1.6;
-        }
-
-        /* Arrow connectors between cards */
-        .hero__step-arrow {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--text-tertiary);
-          padding: 0 var(--space-4);
-          flex-shrink: 0;
-          opacity: 0.5;
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 768px) {
-
-          .hero__steps {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-3);
-          }
-
-          .hero__step-wrapper {
-            flex: unset;
-          }
-
-          .hero__step-arrow {
-            display: none;
-          }
-
-          .hero__step {
-            flex: unset;
-            width: 100%;
-          }
-
-          .hero__hiw {
-            max-width: 100%;
-          }
-
-        }
-
-        @media (max-width: 640px) {
-          .hero {
-            padding: calc(64px + var(--space-10)) 0 var(--space-10);
-          }
-
-          .hero__headline {
-            letter-spacing: -0.03em;
-          }
-
-          .hero__market-console {
-            grid-template-columns: 1fr;
-            width: 100%;
-          }
-
-          .hero__console-cell {
-            align-items: center;
-            text-align: center;
-          }
-
-          .hero__ctas {
-            flex-direction: column;
-            gap: var(--space-3);
-          }
-
-          .hero__btn {
-            width: 100%;
-            justify-content: center;
-          }
-        }
-
-        /* ── Animation delay utilities ── */
-        .animate-delay-200 {
-          animation-delay: 200ms;
-          animation-fill-mode: both;
-        }
-
-        .animate-delay-300 {
-          animation-delay: 300ms;
-          animation-fill-mode: both;
-        }
-
-        .animate-delay-400 {
-          animation-delay: 400ms;
-          animation-fill-mode: both;
-        }
-
-        .animate-delay-500 {
-          animation-delay: 500ms;
-          animation-fill-mode: both;
-        }
-
-        .animate-delay-600 {
-          animation-delay: 600ms;
-          animation-fill-mode: both;
-        }
-
-      `}</style>
     </section>
   );
 }

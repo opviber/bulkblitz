@@ -131,7 +131,7 @@ export default function WalletPage() {
           contact: "+919999999999"
         },
         theme: {
-          color: "#0D6EFD"
+          color: "#FF6A00"
         },
         modal: {
           ondismiss: function () {
@@ -369,7 +369,7 @@ export default function WalletPage() {
           padding-top: calc(64px + var(--space-8));
           padding-bottom: var(--space-16);
           min-height: calc(100vh - 150px);
-          background-color: var(--bg-primary);
+          background-color: #050505;
         }
 
         .wallet-header {
@@ -392,27 +392,30 @@ export default function WalletPage() {
 
         /* Balance Card Styling */
         .balance-card {
-          background: linear-gradient(135deg, #8B5CF6, #0D6EFD);
+          background: linear-gradient(135deg, rgba(255, 107, 0, 0.12) 0%, rgba(12, 12, 12, 0.88) 100%);
           border-radius: var(--radius-xl);
           padding: var(--space-8);
           position: relative;
           overflow: hidden;
           color: white;
-          box-shadow: var(--shadow-xl), 0 10px 30px rgba(139, 92, 246, 0.2);
+          border: 1px solid rgba(255, 107, 0, 0.28);
+          box-shadow: 0 8px 32px rgba(255, 107, 0, 0.14), var(--shadow-premium);
           margin-bottom: var(--space-10);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
         }
 
         .balance-card__orb {
           position: absolute;
           border-radius: 50%;
           filter: blur(40px);
-          opacity: 0.4;
+          opacity: 0.25;
         }
 
         .balance-card__orb--1 {
           width: 200px;
           height: 200px;
-          background: #34D399;
+          background: var(--accent-primary);
           top: -50px;
           right: -50px;
         }
@@ -420,7 +423,7 @@ export default function WalletPage() {
         .balance-card__orb--2 {
           width: 150px;
           height: 150px;
-          background: #EC4899;
+          background: #FF9A3C;
           bottom: -50px;
           left: 10%;
         }
@@ -438,6 +441,7 @@ export default function WalletPage() {
           opacity: 0.8;
           display: block;
           margin-bottom: var(--space-2);
+          color: var(--accent-primary);
         }
 
         .balance-amount {
@@ -446,6 +450,7 @@ export default function WalletPage() {
           font-weight: 800;
           margin: 0 0 var(--space-1);
           letter-spacing: -0.03em;
+          color: #ffffff;
         }
 
         .balance-currency-label {
@@ -462,13 +467,13 @@ export default function WalletPage() {
         }
 
         .btn--glass {
-          background: rgba(255, 255, 255, 0.15);
-          border: 1px solid rgba(255, 255, 255, 0.25);
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.12);
           color: white;
         }
 
         .btn--glass:hover {
-          background: rgba(255, 255, 255, 0.25);
+          background: rgba(255, 255, 255, 0.12);
           transform: translateY(-2px);
         }
 
@@ -483,6 +488,18 @@ export default function WalletPage() {
           font-weight: 700;
           color: var(--text-primary);
           margin: 0 0 var(--space-5);
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .section-title::before {
+          content: '';
+          display: block;
+          width: 3px;
+          height: 16px;
+          background: var(--accent-primary);
+          border-radius: 2px;
         }
 
         .earn-section {
@@ -502,18 +519,20 @@ export default function WalletPage() {
         }
 
         .earn-card {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: rgba(12, 12, 12, 0.82);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: var(--radius-lg);
           padding: var(--space-6);
-          box-shadow: var(--shadow-sm);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
           transition: all var(--transition-base);
         }
 
         .earn-card:hover {
           transform: translateY(-4px);
-          box-shadow: var(--shadow-lg);
-          border-color: var(--border-default);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+          border-color: rgba(255, 255, 255, 0.12);
         }
 
         .earn-card__icon {
@@ -538,11 +557,13 @@ export default function WalletPage() {
 
         /* Transactions Section Styling */
         .tx-section {
-          background: var(--bg-surface);
+          background: rgba(12, 12, 12, 0.82);
           border-radius: var(--radius-xl);
           padding: var(--space-6);
-          border: 1px solid var(--border-default);
-          box-shadow: var(--shadow-sm);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
         }
 
         .tx-header {
@@ -560,9 +581,10 @@ export default function WalletPage() {
 
         .filter-tabs {
           display: flex;
-          background: var(--bg-elevated);
+          background: rgba(255, 255, 255, 0.05);
           padding: 3px;
           border-radius: var(--radius-md);
+          border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .filter-tab {
@@ -577,10 +599,15 @@ export default function WalletPage() {
           transition: all var(--transition-fast);
         }
 
-        .filter-tab--active {
-          background: var(--bg-surface);
+        .filter-tab:hover:not(.filter-tab--active) {
           color: var(--text-primary);
-          box-shadow: var(--shadow-sm);
+          background: rgba(255, 255, 255, 0.04);
+        }
+
+        .filter-tab--active {
+          background: rgba(255, 107, 0, 0.15);
+          color: var(--accent-primary);
+          box-shadow: inset 0 0 0 1px rgba(255, 107, 0, 0.25);
         }
 
         .tx-list {
@@ -593,7 +620,7 @@ export default function WalletPage() {
           justify-content: space-between;
           align-items: center;
           padding: var(--space-4) 0;
-          border-bottom: 1px solid var(--border-light);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
           transition: background var(--transition-fast);
         }
 
@@ -607,7 +634,7 @@ export default function WalletPage() {
         }
 
         .tx-row:nth-child(even) {
-          background-color: var(--bg-elevated) 30; /* very light alternate styling */
+          background-color: rgba(255, 255, 255, 0.02);
         }
 
         .tx-row__left {
@@ -628,13 +655,15 @@ export default function WalletPage() {
         }
 
         .tx-icon--credit {
-          background: var(--accent-success-light);
-          color: var(--accent-success);
+          background: rgba(34, 197, 94, 0.12);
+          color: #22C55E;
+          border: 1px solid rgba(34, 197, 94, 0.25);
         }
 
         .tx-icon--debit {
-          background: var(--accent-danger-light);
-          color: var(--accent-danger);
+          background: rgba(255, 107, 0, 0.12);
+          color: var(--accent-primary);
+          border: 1px solid rgba(255, 107, 0, 0.25);
         }
 
         .tx-desc {
@@ -656,7 +685,7 @@ export default function WalletPage() {
         }
 
         .tx-amount--credit {
-          color: var(--accent-success);
+          color: #22C55E;
         }
 
         .tx-amount--debit {
@@ -676,8 +705,8 @@ export default function WalletPage() {
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(15, 17, 23, 0.7);
-          backdrop-filter: blur(8px);
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(12px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -685,14 +714,16 @@ export default function WalletPage() {
         }
 
         .modal-content {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: rgba(12, 12, 12, 0.94);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: var(--radius-xl);
           width: 90%;
           max-width: 450px;
           padding: var(--space-8);
           position: relative;
-          box-shadow: var(--shadow-xl);
+          box-shadow: var(--shadow-premium);
         }
 
         .modal-close {
@@ -740,17 +771,18 @@ export default function WalletPage() {
           width: 100%;
           padding: var(--space-3) var(--space-4) var(--space-3) var(--space-8);
           border-radius: var(--radius-md);
-          border: 2px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.15);
           font-size: 1.5rem;
           font-weight: 700;
-          background: var(--bg-primary);
+          background: rgba(255, 255, 255, 0.05);
           color: var(--text-primary);
           outline: none;
-          transition: border var(--transition-fast);
+          transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
         }
 
         .modal-input:focus {
           border-color: var(--accent-primary);
+          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
         }
 
         .modal-quick-amounts {
@@ -761,8 +793,8 @@ export default function WalletPage() {
         }
 
         .quick-amount-btn {
-          border: 1px solid var(--border-default);
-          background: var(--bg-surface);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.04);
           border-radius: var(--radius-sm);
           padding: 6px 0;
           font-size: 0.85rem;
@@ -775,15 +807,15 @@ export default function WalletPage() {
         .quick-amount-btn:hover {
           border-color: var(--accent-primary);
           color: var(--accent-primary);
-          background: var(--accent-primary-light);
+          background: rgba(255, 107, 0, 0.06);
         }
 
         /* Referral Modal Styling */
         .referral-box {
-          background: var(--bg-primary);
+          background: rgba(255, 255, 255, 0.04);
           border-radius: var(--radius-lg);
           padding: var(--space-4);
-          border: 1px dashed var(--border-default);
+          border: 1px dashed rgba(255, 255, 255, 0.15);
           margin-bottom: var(--space-6);
         }
 
@@ -806,13 +838,13 @@ export default function WalletPage() {
           font-family: monospace;
           font-size: 1.35rem;
           font-weight: 700;
-          color: var(--accent-premium);
+          color: var(--accent-primary);
         }
 
         .copy-btn {
           border: none;
-          background: var(--accent-premium-light);
-          color: var(--accent-premium);
+          background: rgba(255, 107, 0, 0.15);
+          color: var(--accent-primary);
           padding: 6px 12px;
           border-radius: var(--radius-sm);
           font-weight: 600;
@@ -822,8 +854,9 @@ export default function WalletPage() {
         }
 
         .copy-btn:hover {
-          background: var(--accent-premium);
+          background: var(--accent-primary);
           color: white;
+          box-shadow: 0 0 12px rgba(255, 107, 0, 0.3);
         }
       `}</style>
     </>

@@ -248,7 +248,7 @@ export default function OrdersPage() {
           padding-top: calc(64px + var(--space-8));
           padding-bottom: var(--space-16);
           min-height: calc(100vh - 150px);
-          background-color: var(--bg-primary);
+          background-color: #050505;
         }
 
         .orders-header {
@@ -274,11 +274,11 @@ export default function OrdersPage() {
         .orders-count-badge {
           font-size: 1rem;
           font-weight: 700;
-          background: var(--accent-primary-light);
+          background: rgba(255, 107, 0, 0.12);
           color: var(--accent-primary);
           padding: 2px 10px;
           border-radius: var(--radius-full);
-          border: 1px solid var(--accent-primary);
+          border: 1px solid rgba(255, 107, 0, 0.3);
         }
 
         .orders-subtitle {
@@ -300,24 +300,26 @@ export default function OrdersPage() {
         }
 
         .order-card {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: rgba(12, 12, 12, 0.82);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: var(--radius-lg);
           padding: var(--space-6);
-          box-shadow: var(--shadow-sm);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
           transition: all var(--transition-base);
           cursor: pointer;
         }
 
         .order-card:hover {
           transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
-          border-color: var(--border-default);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+          border-color: rgba(255, 255, 255, 0.12);
         }
 
         .order-card--active {
           border-color: var(--accent-primary);
-          box-shadow: var(--shadow-lg), 0 0 0 1px var(--accent-primary);
+          box-shadow: 0 8px 32px rgba(255, 107, 0, 0.15), 0 0 0 1px var(--accent-primary);
         }
 
         .order-card__header {
@@ -408,13 +410,13 @@ export default function OrdersPage() {
           left: 12.5%;
           right: 12.5%;
           height: 3px;
-          background-color: var(--border-default);
+          background-color: rgba(255, 255, 255, 0.1);
           z-index: 1;
         }
 
         .stepper__line-fill {
           height: 100%;
-          background-color: var(--accent-success);
+          background: linear-gradient(90deg, #FF6B00, #FF9A3C);
           transition: width var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -431,8 +433,8 @@ export default function OrdersPage() {
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background-color: var(--bg-surface);
-          border: 3px solid var(--border-default);
+          background-color: rgba(12, 12, 12, 0.9);
+          border: 3px solid rgba(255, 255, 255, 0.15);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -464,8 +466,9 @@ export default function OrdersPage() {
 
         /* Completed Step */
         .stepper__step--completed .stepper__dot {
-          background-color: var(--accent-success);
-          border-color: var(--accent-success);
+          background-color: var(--accent-primary);
+          border-color: var(--accent-primary);
+          box-shadow: 0 0 10px rgba(255, 107, 0, 0.3);
         }
 
         .stepper__step--completed .stepper__label {
@@ -474,17 +477,17 @@ export default function OrdersPage() {
 
         /* Current Step */
         .stepper__step--current .stepper__dot {
-          border-color: var(--accent-success);
-          background-color: var(--bg-surface);
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+          border-color: var(--accent-primary);
+          background-color: rgba(12, 12, 12, 0.9);
+          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.2);
         }
 
         .stepper__step--current .stepper__dot-inner {
-          background-color: var(--accent-success);
+          background-color: var(--accent-primary);
         }
 
         .stepper__step--current .stepper__label {
-          color: var(--accent-success);
+          color: var(--accent-primary);
           font-weight: 700;
         }
 
@@ -495,7 +498,7 @@ export default function OrdersPage() {
 
         .divider {
           border: none;
-          border-top: 1px solid var(--border-light);
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
           margin: var(--space-4) 0;
         }
 
@@ -548,11 +551,14 @@ export default function OrdersPage() {
         .empty-state {
           text-align: center;
           padding: var(--space-16) var(--space-6);
-          background: var(--bg-surface);
+          background: rgba(12, 12, 12, 0.82);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: var(--radius-xl);
-          border: 1px dashed var(--border-default);
           max-width: 500px;
           margin: var(--space-8) auto;
+          box-shadow: var(--shadow-premium);
         }
 
         .empty-state__icon {
@@ -565,6 +571,7 @@ export default function OrdersPage() {
           font-size: 1.5rem;
           font-weight: 700;
           margin: 0 0 var(--space-2);
+          color: var(--text-primary);
         }
 
         .empty-state p {

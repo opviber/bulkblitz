@@ -73,15 +73,22 @@ export default function ManufacturerAnalytics() {
                 <svg viewBox="0 0 500 200" width="100%" height="100%">
                   <defs>
                     <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity="0.4" />
+                      <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity="0.45" />
                       <stop offset="100%" stopColor="var(--accent-primary)" stopOpacity="0" />
                     </linearGradient>
+                    <filter id="glow-line" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="5" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
                   </defs>
                   
                   {/* Grid Lines */}
-                  <line x1="0" y1="50" x2="500" y2="50" stroke="var(--border-default)" strokeWidth="0.5" strokeDasharray="4" />
-                  <line x1="0" y1="100" x2="500" y2="100" stroke="var(--border-default)" strokeWidth="0.5" strokeDasharray="4" />
-                  <line x1="0" y1="150" x2="500" y2="150" stroke="var(--border-default)" strokeWidth="0.5" strokeDasharray="4" />
+                  <line x1="0" y1="50" x2="500" y2="50" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="0.5" strokeDasharray="4" />
+                  <line x1="0" y1="100" x2="500" y2="100" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="0.5" strokeDasharray="4" />
+                  <line x1="0" y1="150" x2="500" y2="150" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="0.5" strokeDasharray="4" />
                   
                   {/* Area Fill */}
                   <path
@@ -96,11 +103,12 @@ export default function ManufacturerAnalytics() {
                     stroke="var(--accent-primary)"
                     strokeWidth="3.5"
                     strokeLinecap="round"
+                    filter="url(#glow-line)"
                   />
                   
                   {/* Markers */}
-                  <circle cx="300" cy="80" r="5" fill="var(--bg-surface)" stroke="var(--accent-primary)" strokeWidth="2.5" />
-                  <circle cx="500" cy="40" r="5" fill="var(--bg-surface)" stroke="var(--accent-primary)" strokeWidth="2.5" />
+                  <circle cx="300" cy="80" r="5" fill="#050505" stroke="var(--accent-primary)" strokeWidth="2.5" />
+                  <circle cx="500" cy="40" r="5" fill="#050505" stroke="var(--accent-primary)" strokeWidth="2.5" />
                 </svg>
               </div>
               <div className="chart-labels">
@@ -116,17 +124,36 @@ export default function ManufacturerAnalytics() {
               <h3 className="chart-title">Average Batch Fill Rates</h3>
               <div className="svg-chart-container">
                 <svg viewBox="0 0 500 200" width="100%" height="100%">
+                  <defs>
+                    <linearGradient id="fmcgGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#FF6B00" />
+                      <stop offset="100%" stopColor="#C94E00" />
+                    </linearGradient>
+                    <linearGradient id="elecGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#8B5CF6" />
+                      <stop offset="100%" stopColor="#6D28D9" />
+                    </linearGradient>
+                    <linearGradient id="agriGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#22C55E" />
+                      <stop offset="100%" stopColor="#15803D" />
+                    </linearGradient>
+                    <linearGradient id="apparelGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#F59E0B" />
+                      <stop offset="100%" stopColor="#B45309" />
+                    </linearGradient>
+                  </defs>
+
                   {/* Grid Lines */}
-                  <line x1="0" y1="50" x2="500" y2="50" stroke="var(--border-default)" strokeWidth="0.5" strokeDasharray="4" />
-                  <line x1="0" y1="100" x2="500" y2="100" stroke="var(--border-default)" strokeWidth="0.5" strokeDasharray="4" />
-                  <line x1="0" y1="150" x2="500" y2="150" stroke="var(--border-default)" strokeWidth="0.5" strokeDasharray="4" />
+                  <line x1="0" y1="50" x2="500" y2="50" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="0.5" strokeDasharray="4" />
+                  <line x1="0" y1="100" x2="500" y2="100" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="0.5" strokeDasharray="4" />
+                  <line x1="0" y1="150" x2="500" y2="150" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="0.5" strokeDasharray="4" />
 
                   {/* Bars */}
                   {[
-                    { x: 50, h: 140, label: "FMCG", fill: "var(--accent-primary)" },
-                    { x: 170, h: 110, label: "Elec", fill: "var(--accent-premium)" },
-                    { x: 290, h: 160, label: "Agri", fill: "var(--accent-success)" },
-                    { x: 410, h: 80, label: "Apparel", fill: "var(--accent-warning)" },
+                    { x: 50, h: 140, label: "FMCG", fill: "url(#fmcgGrad)" },
+                    { x: 170, h: 110, label: "Elec", fill: "url(#elecGrad)" },
+                    { x: 290, h: 160, label: "Agri", fill: "url(#agriGrad)" },
+                    { x: 410, h: 80, label: "Apparel", fill: "url(#apparelGrad)" },
                   ].map((bar, bIdx) => (
                     <g key={bIdx}>
                       <rect
@@ -134,7 +161,7 @@ export default function ManufacturerAnalytics() {
                         y={200 - bar.h}
                         width="40"
                         height={bar.h}
-                        rx="5"
+                        rx="6"
                         fill={bar.fill}
                       />
                     </g>
@@ -193,7 +220,8 @@ export default function ManufacturerAnalytics() {
           padding-top: calc(64px + var(--space-8));
           padding-bottom: var(--space-16);
           min-height: calc(100vh - 150px);
-          background-color: var(--bg-primary);
+          background-color: #050505;
+          background-image: radial-gradient(circle at 50% 0%, rgba(255, 107, 0, 0.05) 0%, transparent 50%);
         }
 
         .analytics-header {
@@ -209,13 +237,14 @@ export default function ManufacturerAnalytics() {
           font-size: 0.85rem;
           color: var(--accent-primary);
           text-decoration: none;
-          font-weight: 600;
+          font-weight: 700;
           display: inline-block;
           margin-bottom: var(--space-2);
+          transition: color var(--transition-fast);
         }
 
         .back-link:hover {
-          text-decoration: underline;
+          color: var(--accent-primary-hover);
         }
 
         .analytics-title {
@@ -224,6 +253,7 @@ export default function ManufacturerAnalytics() {
           font-weight: 800;
           color: var(--text-primary);
           margin: 0 0 var(--space-2);
+          letter-spacing: -0.02em;
         }
 
         .analytics-subtitle {
@@ -235,7 +265,8 @@ export default function ManufacturerAnalytics() {
         /* Time filter tags */
         .time-filters {
           display: flex;
-          background: var(--bg-elevated);
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           padding: 3px;
           border-radius: var(--radius-md);
         }
@@ -252,10 +283,14 @@ export default function ManufacturerAnalytics() {
           transition: all var(--transition-fast);
         }
 
-        .filter-btn--active {
-          background: var(--bg-surface);
+        .filter-btn:hover {
           color: var(--text-primary);
-          box-shadow: var(--shadow-sm);
+        }
+
+        .filter-btn--active {
+          background: var(--accent-primary);
+          color: #FFFFFF !important;
+          box-shadow: 0 4px 12px rgba(255, 107, 0, 0.25);
         }
 
         /* KPI section */
@@ -273,19 +308,30 @@ export default function ManufacturerAnalytics() {
         }
 
         .kpi-card {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: var(--bg-card-glass);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.07);
           border-radius: var(--radius-lg);
           padding: var(--space-5);
-          box-shadow: var(--shadow-sm);
+          box-shadow: var(--shadow-premium);
+          transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+        }
+
+        .kpi-card:hover {
+          border-color: var(--border-orange);
+          box-shadow: var(--shadow-premium), 0 0 24px rgba(255, 107, 0, 0.08);
+          transform: translateY(-2px);
         }
 
         .kpi-label {
-          font-size: 0.85rem;
-          font-weight: 600;
+          font-size: 0.8rem;
+          font-weight: 700;
           color: var(--text-secondary);
           display: block;
           margin-bottom: var(--space-2);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
 
         .kpi-value {
@@ -324,11 +370,20 @@ export default function ManufacturerAnalytics() {
         }
 
         .chart-card {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: var(--bg-card-glass);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.07);
           border-radius: var(--radius-xl);
           padding: var(--space-6);
-          box-shadow: var(--shadow-sm);
+          box-shadow: var(--shadow-premium);
+          transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+        }
+
+        .chart-card:hover {
+          border-color: var(--border-orange);
+          box-shadow: var(--shadow-premium), 0 0 24px rgba(255, 107, 0, 0.08);
+          transform: translateY(-2px);
         }
 
         .chart-title {
@@ -355,11 +410,19 @@ export default function ManufacturerAnalytics() {
 
         /* Batches performance table section */
         .card-section {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: var(--bg-card-glass);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.07);
           border-radius: var(--radius-xl);
           padding: var(--space-6);
-          box-shadow: var(--shadow-sm);
+          box-shadow: var(--shadow-premium);
+          transition: border-color var(--transition-base), box-shadow var(--transition-base);
+        }
+
+        .card-section:hover {
+          border-color: var(--border-orange);
+          box-shadow: var(--shadow-premium), 0 0 32px rgba(255, 107, 0, 0.06);
         }
 
         .section-title {
@@ -384,7 +447,7 @@ export default function ManufacturerAnalytics() {
           letter-spacing: 0.05em;
           color: var(--text-tertiary);
           padding-bottom: var(--space-3);
-          border-bottom: 1px solid var(--border-default);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .batch-performance-row {
@@ -392,8 +455,13 @@ export default function ManufacturerAnalytics() {
           grid-template-columns: 2fr 1.5fr 1fr;
           align-items: center;
           padding: var(--space-4) 0;
-          border-bottom: 1px solid var(--border-light);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
           gap: var(--space-4);
+          transition: background-color var(--transition-fast);
+        }
+
+        .batch-performance-row:hover {
+          background-color: rgba(255, 255, 255, 0.02);
         }
 
         .batch-performance-row:last-child {
@@ -412,10 +480,11 @@ export default function ManufacturerAnalytics() {
         .category-tag {
           font-size: 0.7rem;
           color: var(--text-secondary);
-          background: var(--bg-elevated);
+          background: rgba(255, 255, 255, 0.06);
           padding: 2px 8px;
           border-radius: var(--radius-sm);
           font-weight: 500;
+          border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .batch-fill-meter {
@@ -427,7 +496,7 @@ export default function ManufacturerAnalytics() {
         .fill-bar-track {
           flex: 1;
           height: 6px;
-          background-color: var(--bg-elevated);
+          background-color: rgba(255, 255, 255, 0.06);
           border-radius: var(--radius-full);
           overflow: hidden;
         }
@@ -443,6 +512,7 @@ export default function ManufacturerAnalytics() {
           font-weight: 600;
           color: var(--text-secondary);
           width: 32px;
+          font-variant-numeric: tabular-nums;
         }
 
         .batch-revenue {

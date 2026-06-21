@@ -429,19 +429,22 @@ export default function ProfilePage() {
           padding-top: calc(64px + var(--space-8));
           padding-bottom: var(--space-16);
           min-height: calc(100vh - 150px);
-          background-color: var(--bg-primary);
+          background-color: #050505;
         }
 
         /* Profile Banner styling */
         .profile-banner {
-          background: linear-gradient(135deg, #1e1b4b, #311042);
+          background: linear-gradient(135deg, rgba(255, 107, 0, 0.12) 0%, rgba(12, 12, 12, 0.88) 100%);
           border-radius: var(--radius-xl);
           padding: var(--space-8);
           position: relative;
           overflow: hidden;
           color: white;
-          box-shadow: var(--shadow-lg);
+          border: 1px solid rgba(255, 107, 0, 0.28);
+          box-shadow: 0 8px 32px rgba(255, 107, 0, 0.14), var(--shadow-premium);
           margin-bottom: var(--space-8);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
         }
 
         .profile-banner__orb {
@@ -454,7 +457,7 @@ export default function ProfilePage() {
         .profile-banner__orb--1 {
           width: 250px;
           height: 250px;
-          background: #8B5CF6;
+          background: var(--accent-primary);
           top: -50px;
           right: -50px;
         }
@@ -462,7 +465,7 @@ export default function ProfilePage() {
         .profile-banner__orb--2 {
           width: 200px;
           height: 200px;
-          background: #10B981;
+          background: #FF9A3C;
           bottom: -50px;
           left: 40%;
         }
@@ -487,15 +490,15 @@ export default function ProfilePage() {
           width: 72px;
           height: 72px;
           border-radius: 50%;
-          background: var(--accent-primary);
+          background: linear-gradient(135deg, #FF6B00 0%, #C94E00 100%);
           color: white;
           font-size: 2rem;
           font-weight: 800;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: var(--shadow-md);
-          border: 3px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 4px 16px rgba(255, 107, 0, 0.3);
+          border: 3px solid rgba(255, 107, 0, 0.45);
         }
 
         .user-name {
@@ -516,7 +519,7 @@ export default function ProfilePage() {
           display: flex;
           align-items: center;
           gap: var(--space-4);
-          background: rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.06);
           border: 1px solid rgba(255, 255, 255, 0.12);
           padding: var(--space-3) var(--space-5);
           border-radius: var(--radius-lg);
@@ -543,7 +546,7 @@ export default function ProfilePage() {
 
         .circle {
           fill: none;
-          stroke: #10B981;
+          stroke: #22C55E;
           stroke-width: 2.8;
           stroke-linecap: round;
         }
@@ -579,7 +582,7 @@ export default function ProfilePage() {
           display: flex;
           gap: var(--space-3);
           margin-bottom: var(--space-6);
-          border-bottom: 1px solid var(--border-default);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
           padding-bottom: var(--space-2);
           overflow-x: auto;
         }
@@ -599,21 +602,24 @@ export default function ProfilePage() {
 
         .profile-tab:hover {
           color: var(--text-primary);
-          background-color: var(--bg-elevated);
+          background-color: rgba(255, 255, 255, 0.04);
         }
 
         .profile-tab--active {
           color: var(--accent-primary);
-          background-color: var(--accent-primary-light);
+          background-color: rgba(255, 107, 0, 0.15);
+          box-shadow: inset 0 0 0 1px rgba(255, 107, 0, 0.25);
         }
 
         /* Card sections */
         .card-section {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: rgba(12, 12, 12, 0.82);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: var(--radius-xl);
           padding: var(--space-6);
-          box-shadow: var(--shadow-sm);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .card-section__header {
@@ -629,6 +635,18 @@ export default function ProfilePage() {
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .section-title::before {
+          content: '';
+          display: block;
+          width: 3px;
+          height: 14px;
+          background: var(--accent-primary);
+          border-radius: 2px;
         }
 
         /* Profile details form */
@@ -667,22 +685,22 @@ export default function ProfilePage() {
         .form-group select {
           padding: var(--space-3) var(--space-4);
           border-radius: var(--radius-md);
-          border: 1px solid var(--border-default);
-          background: var(--bg-primary);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.05);
           color: var(--text-primary);
           font-weight: 500;
           outline: none;
-          transition: all var(--transition-fast);
+          transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
         }
 
         .form-group input:focus:not(:disabled),
         .form-group select:focus:not(:disabled) {
           border-color: var(--accent-primary);
-          background: var(--bg-surface);
+          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
         }
 
         .form-group input:disabled {
-          opacity: 0.7;
+          opacity: 0.5;
           cursor: not-allowed;
         }
 
@@ -710,16 +728,22 @@ export default function ProfilePage() {
         }
 
         .address-card {
-          border: 1px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.02);
           border-radius: var(--radius-lg);
           padding: var(--space-5);
           position: relative;
-          transition: border-color var(--transition-fast);
+          transition: all var(--transition-fast);
+        }
+
+        .address-card:hover {
+          border-color: rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.04);
         }
 
         .address-card--default {
-          border-color: var(--accent-success);
-          background: var(--accent-success-light) 10;
+          border-color: #22C55E;
+          background: rgba(34, 197, 94, 0.06);
         }
 
         .address-card__header {
@@ -738,8 +762,8 @@ export default function ProfilePage() {
         .default-badge {
           font-size: 0.65rem;
           font-weight: 700;
-          color: var(--accent-success);
-          background: var(--accent-success-light);
+          color: #22C55E;
+          background: rgba(34, 197, 94, 0.12);
           padding: 2px 8px;
           border-radius: var(--radius-sm);
         }
@@ -781,7 +805,7 @@ export default function ProfilePage() {
           justify-content: space-between;
           align-items: center;
           padding: var(--space-4) 0;
-          border-bottom: 1px solid var(--border-light);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
           gap: var(--space-4);
         }
 
@@ -799,7 +823,7 @@ export default function ProfilePage() {
         .category-tag {
           font-size: 0.7rem;
           color: var(--text-secondary);
-          background: var(--bg-elevated);
+          background: rgba(255, 255, 255, 0.05);
           padding: 2px 8px;
           border-radius: var(--radius-sm);
           font-weight: 500;
@@ -817,8 +841,8 @@ export default function ProfilePage() {
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(15, 17, 23, 0.7);
-          backdrop-filter: blur(8px);
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(12px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -826,14 +850,16 @@ export default function ProfilePage() {
         }
 
         .modal-content {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: rgba(12, 12, 12, 0.94);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: var(--radius-xl);
           width: 90%;
           max-width: 500px;
           padding: var(--space-8);
           position: relative;
-          box-shadow: var(--shadow-xl);
+          box-shadow: var(--shadow-premium);
         }
 
         .modal-close {
@@ -863,15 +889,16 @@ export default function ProfilePage() {
           width: 100%;
           padding: var(--space-3) var(--space-4);
           border-radius: var(--radius-md);
-          border: 1px solid var(--border-default);
-          background: var(--bg-primary);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.05);
           color: var(--text-primary);
           outline: none;
+          transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
         }
 
         .modal-form input:focus {
           border-color: var(--accent-primary);
-          background: var(--bg-surface);
+          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
         }
       `}</style>
     </>

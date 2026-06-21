@@ -250,32 +250,35 @@ export default function ManufacturerDashboard() {
           padding-top: calc(64px + var(--space-8));
           padding-bottom: var(--space-16);
           min-height: calc(100vh - 150px);
-          background-color: var(--bg-primary);
+          background-color: #050505;
         }
 
         /* Welcome Banner Card styling */
         .welcome-banner {
-          background: linear-gradient(135deg, #0f172a, #1e293b);
+          background: linear-gradient(135deg, rgba(255, 107, 0, 0.12) 0%, rgba(12, 12, 12, 0.88) 100%);
           border-radius: var(--radius-xl);
           padding: var(--space-8);
           position: relative;
           overflow: hidden;
           color: white;
-          box-shadow: var(--shadow-lg);
+          border: 1px solid rgba(255, 107, 0, 0.28);
+          box-shadow: 0 8px 32px rgba(255, 107, 0, 0.14), var(--shadow-premium);
           margin-bottom: var(--space-8);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
         }
 
         .welcome-banner__orb {
           position: absolute;
           border-radius: 50%;
           filter: blur(50px);
-          opacity: 0.15;
+          opacity: 0.2;
         }
 
         .welcome-banner__orb--1 {
           width: 250px;
           height: 250px;
-          background: #8B5CF6;
+          background: var(--accent-primary);
           top: -50px;
           right: -50px;
         }
@@ -283,7 +286,7 @@ export default function ManufacturerDashboard() {
         .welcome-banner__orb--2 {
           width: 200px;
           height: 200px;
-          background: #0D6EFD;
+          background: #FF9A3C;
           bottom: -50px;
           left: 30%;
         }
@@ -348,11 +351,20 @@ export default function ManufacturerDashboard() {
         }
 
         .kpi-card {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: rgba(12, 12, 12, 0.82);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: var(--radius-lg);
           padding: var(--space-5);
-          box-shadow: var(--shadow-sm);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          transition: all var(--transition-base);
+        }
+
+        .kpi-card:hover {
+          transform: translateY(-2px);
+          border-color: rgba(255, 107, 0, 0.25);
+          box-shadow: 0 8px 32px rgba(255, 107, 0, 0.12);
         }
 
         .kpi-card__header {
@@ -407,11 +419,13 @@ export default function ManufacturerDashboard() {
         }
 
         .card-section {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: rgba(12, 12, 12, 0.82);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: var(--radius-xl);
           padding: var(--space-6);
-          box-shadow: var(--shadow-sm);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .card-section__header {
@@ -427,6 +441,18 @@ export default function ManufacturerDashboard() {
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .section-title::before {
+          content: '';
+          display: block;
+          width: 3px;
+          height: 14px;
+          background: var(--accent-primary);
+          border-radius: 2px;
         }
 
         /* Mfr Active Batch Card */
@@ -437,14 +463,16 @@ export default function ManufacturerDashboard() {
         }
 
         .mfr-batch-card {
-          border: 1px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.02);
           border-radius: var(--radius-lg);
           padding: var(--space-5);
-          transition: border var(--transition-fast);
+          transition: all var(--transition-base);
         }
 
         .mfr-batch-card:hover {
-          border-color: var(--text-tertiary);
+          border-color: rgba(255, 107, 0, 0.25);
+          background: rgba(255, 255, 255, 0.04);
         }
 
         .mfr-batch-card__header {
@@ -465,7 +493,7 @@ export default function ManufacturerDashboard() {
         .category-tag {
           font-size: 0.75rem;
           color: var(--text-secondary);
-          background: var(--bg-elevated);
+          background: rgba(255, 255, 255, 0.05);
           padding: 2px 8px;
           border-radius: var(--radius-sm);
           font-weight: 500;
@@ -475,7 +503,8 @@ export default function ManufacturerDashboard() {
           font-size: 0.7rem;
           font-weight: 700;
           color: var(--accent-primary);
-          background: var(--accent-primary-light);
+          background: rgba(255, 107, 0, 0.12);
+          border: 1px solid rgba(255, 107, 0, 0.25);
           padding: 2px 8px;
           border-radius: var(--radius-full);
           text-transform: uppercase;
@@ -495,7 +524,7 @@ export default function ManufacturerDashboard() {
 
         .progress-track {
           height: 8px;
-          background-color: var(--bg-elevated);
+          background-color: rgba(255, 255, 255, 0.07);
           border-radius: var(--radius-full);
           overflow: hidden;
         }
@@ -507,7 +536,7 @@ export default function ManufacturerDashboard() {
         }
 
         .mfr-batch-card__pricing {
-          border-top: 1px solid var(--border-light);
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
           padding-top: var(--space-3);
         }
 
@@ -529,8 +558,8 @@ export default function ManufacturerDashboard() {
           flex-direction: column;
           align-items: center;
           padding: var(--space-2);
-          border: 1px solid var(--border-default);
-          background-color: var(--bg-primary);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background-color: rgba(255, 255, 255, 0.03);
           border-radius: var(--radius-md);
           font-size: 0.8rem;
           transition: all var(--transition-fast);
@@ -538,8 +567,8 @@ export default function ManufacturerDashboard() {
 
         .pricing-tier--unlocked {
           border-color: var(--accent-success);
-          background-color: var(--accent-success-light);
-          color: var(--accent-success);
+          background-color: rgba(34, 197, 94, 0.12);
+          color: #22C55E;
           font-weight: 600;
         }
 
@@ -565,7 +594,8 @@ export default function ManufacturerDashboard() {
           align-items: center;
           gap: var(--space-4);
           padding: var(--space-3) var(--space-4);
-          border: 1px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background-color: rgba(255, 255, 255, 0.02);
           border-radius: var(--radius-lg);
           text-decoration: none;
           transition: all var(--transition-base);
@@ -573,13 +603,13 @@ export default function ManufacturerDashboard() {
 
         .action-item:hover {
           border-color: var(--accent-primary);
-          background-color: var(--accent-primary-light);
+          background-color: rgba(255, 107, 0, 0.06);
           transform: translateX(4px);
         }
 
         .action-icon {
           font-size: 1.5rem;
-          background-color: var(--bg-elevated);
+          background-color: rgba(255, 255, 255, 0.05);
           width: 44px;
           height: 44px;
           border-radius: var(--radius-md);
@@ -591,7 +621,7 @@ export default function ManufacturerDashboard() {
         }
 
         .action-item:hover .action-icon {
-          background-color: var(--bg-surface);
+          background-color: rgba(255, 107, 0, 0.12);
         }
 
         .action-item h5 {
@@ -623,7 +653,7 @@ export default function ManufacturerDashboard() {
           left: 4px;
           bottom: 8px;
           width: 2px;
-          background-color: var(--border-default);
+          background-color: rgba(255, 255, 255, 0.08);
         }
 
         .timeline-item {
@@ -644,13 +674,13 @@ export default function ManufacturerDashboard() {
           height: 10px;
           border-radius: 50%;
           background-color: var(--text-tertiary);
-          border: 2px solid var(--bg-surface);
+          border: 2px solid #0f0f0f;
           z-index: 2;
         }
 
         .timeline-item:first-child .timeline-marker {
           background-color: var(--accent-primary);
-          box-shadow: 0 0 0 3px var(--accent-primary-light);
+          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.25);
         }
 
         .timeline-content {

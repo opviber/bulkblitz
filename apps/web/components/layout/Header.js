@@ -3,6 +3,12 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { 
+  Menu, X, Search, Bell, Sun, Moon, 
+  ShoppingCart, Factory, Info, ChevronDown, ChevronRight, 
+  Compass, Package, Wallet, HelpCircle, Plus, 
+  BookOpen, Terminal, Mail, Award
+} from "lucide-react";
 import { USER, CATEGORIES } from "@/lib/mock-data";
 
 function HeaderContent() {
@@ -10,7 +16,7 @@ function HeaderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [activeRail, setActiveRail] = useState("buyer");
   const [labelsExpanded, setLabelsExpanded] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,7 +63,7 @@ function HeaderContent() {
       if (desktop) {
         document.documentElement.style.setProperty(
           "--current-sidebar-width",
-          sidebarExpanded ? "280px" : "72px"
+          sidebarExpanded ? "280px" : "0px"
         );
       } else {
         document.documentElement.style.setProperty("--current-sidebar-width", "0px");
@@ -95,60 +101,48 @@ function HeaderContent() {
     router.push("/");
   };
 
+  const railConfig = [
+    { id: "buyer", icon: ShoppingCart, label: "Buyer" },
+    { id: "mfg", icon: Factory, label: "Mfg" },
+    { id: "help", icon: Info, label: "Help" },
+  ];
+
   return (
     <>
       {/* ─────────────────────────────────────────────
-         Gmail-Style Top Header Bar
+         Top Header Bar
       ───────────────────────────────────────────── */}
-      <header className="gmail-header">
-        <div className="gmail-header__left">
-          {/* Hamburger toggle */}
+      <header className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-6 bg-neutral-950/80 backdrop-blur-xl border-b border-white/5 z-[1050] select-none">
+        
+        {/* Left Side: Hamburger & Brand Logo */}
+        <div className="flex items-center gap-4">
           <button
-            className="gmail-header__hamburger"
+            className="p-2 hover:bg-neutral-900 rounded-lg text-neutral-400 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
             onClick={handleHamburgerClick}
             aria-label="Toggle navigation menu"
           >
-            <span></span>
-            <span></span>
-            <span></span>
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          {/* Logo & Subtitle */}
-          <Link href="/" className="gmail-header__logo">
-            <div className="gmail-header__logo-icon">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 32 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect width="32" height="32" rx="8" fill="url(#logo-grad)" />
-                <path d="M8 20L12 10H15L11 20H8Z" fill="white" fillOpacity="0.9" />
-                <path d="M14 20L18 10H21L17 20H14Z" fill="white" fillOpacity="0.9" />
-                <path d="M20 20L24 10H27L23 20H20Z" fill="white" fillOpacity="0.7" />
-                <defs>
-                  <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32">
-                    <stop stopColor="#0D6EFD" />
-                    <stop offset="1" stopColor="#8B5CF6" />
-                  </linearGradient>
-                </defs>
-              </svg>
+          <Link href="/" className="flex items-center gap-3 text-white decoration-transparent">
+            {/* Minimal High-End stacked boxes style logo */}
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-display font-black text-white text-base shadow-lg shadow-primary/25">
+              B
             </div>
-            <div className="gmail-header__logo-text">
-              <span className="gmail-header__logo-name">BulkBlitz</span>
-              <span className="gmail-header__logo-tagline">bulk up. price down.</span>
+            <div className="flex flex-col justify-center leading-none">
+              <span className="text-sm font-display font-black tracking-tight text-white">BulkBlitz</span>
+              <span className="text-[9px] font-medium tracking-wide text-neutral-500 uppercase mt-0.5">Buy Together. Pay Less.</span>
             </div>
           </Link>
         </div>
 
-        {/* Central Search Bar */}
-        <div className="gmail-header__search-container">
-          <form className="gmail-header__search-form" onSubmit={handleSearchSubmit}>
-            <span className="gmail-header__search-icon">🔍</span>
+        {/* Center Side: Search Bar */}
+        <div className="flex-1 max-w-lg mx-8 hidden md:block">
+          <form className="relative flex items-center w-full bg-neutral-900/50 hover:bg-neutral-900/80 border border-white/5 rounded-xl px-4 py-1.5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 transition-all duration-200" onSubmit={handleSearchSubmit}>
+            <Search className="w-4 h-4 text-neutral-500 mr-2.5 flex-shrink-0" />
             <input
               type="text"
-              className="gmail-header__search-input"
+              className="w-full bg-transparent border-none outline-none text-white text-xs placeholder-neutral-500"
               placeholder="Search active batches, categories, manufacturers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -156,163 +150,141 @@ function HeaderContent() {
             {searchQuery && (
               <button
                 type="button"
-                className="gmail-header__search-clear"
+                className="text-neutral-500 hover:text-neutral-300 text-xs px-1 cursor-pointer"
                 onClick={handleSearchClear}
                 aria-label="Clear search"
               >
-                ✕
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </form>
         </div>
 
-        {/* Right Section Actions */}
-        <div className="gmail-header__right">
-          <span className="gmail-header__portal-badge">
+        {/* Right Side: Quick Settings & User Status */}
+        <div className="flex items-center gap-4">
+          <span className="hidden sm:inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border border-primary/20 bg-primary/10 text-primary">
             {activeRail === "buyer" ? "🛒 Buyer" : activeRail === "mfg" ? "🏭 Mfg" : "ℹ️ Info"}
           </span>
 
-          {/* Theme switcher */}
+          {/* Theme Switcher */}
           <button
-            className="gmail-header__icon-btn"
+            className="p-2 hover:bg-neutral-900 rounded-lg text-neutral-400 hover:text-white transition-colors cursor-pointer flex items-center justify-center"
             onClick={toggleTheme}
             aria-label="Toggle Theme"
           >
-            {theme === "light" ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-              </svg>
-            )}
+            {theme === "light" ? <Moon className="w-4.5 h-4.5" /> : <Sun className="w-4.5 h-4.5" />}
           </button>
 
-          {/* Quick Action Button */}
-          <Link href="/auth" className="btn btn--primary btn--sm header-action-btn">
+          {/* Get Started CTA */}
+          <Link href="/auth" className="hidden sm:inline-flex items-center justify-center px-4 py-1.5 rounded-lg btn-primary-new font-bold text-xs">
             Get Started
           </Link>
 
-          {/* User Profile initials */}
-          <Link href="/profile" className="gmail-header__profile" title="My Profile">
-            <div className="gmail-header__avatar">
+          {/* User Profile Tooltip */}
+          <Link href="/profile" className="relative group flex items-center cursor-pointer" title="My Profile">
+            <div className="w-8 h-8 rounded-full border border-primary/30 bg-primary/10 text-primary flex items-center justify-center text-xs font-bold hover:scale-105 transition-transform duration-200">
               {USER.avatar}
             </div>
-            <span className="gmail-header__trust-tooltip">Trust Score: {USER.trustScore}</span>
+            <span className="absolute top-12 right-0 bg-neutral-900 border border-white/5 text-white text-[10px] font-semibold px-2 py-1 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+              Trust Score: {USER.trustScore}
+            </span>
           </Link>
         </div>
       </header>
 
       {/* ─────────────────────────────────────────────
-         Gmail-Style Left Sidebar (App Rail + Pane)
+         Left Sidebar Container
       ───────────────────────────────────────────── */}
-      <aside className={`gmail-sidebar ${sidebarExpanded ? "gmail-sidebar--expanded" : "gmail-sidebar--collapsed"}`}>
+      <aside className={`fixed top-16 left-0 bottom-0 z-50 flex border-white/5 bg-neutral-950/90 backdrop-blur-2xl transition-all duration-300 overflow-hidden ${sidebarExpanded ? "w-[280px] border-r" : "w-0 border-r-0"}`}>
         
-        {/* Leftmost Column: App Rail (72px) */}
-        <div className="gmail-sidebar__rail">
-          <button
-            className={`gmail-sidebar__rail-btn ${activeRail === "buyer" ? "gmail-sidebar__rail-btn--active" : ""}`}
-            onClick={() => {
-              setActiveRail("buyer");
-              setSidebarExpanded(true);
-            }}
-            aria-label="Buyer navigation"
-          >
-            <span className="rail-icon">🛒</span>
-            <span className="rail-label">Buyer</span>
-          </button>
-
-          <button
-            className={`gmail-sidebar__rail-btn ${activeRail === "mfg" ? "gmail-sidebar__rail-btn--active" : ""}`}
-            onClick={() => {
-              setActiveRail("mfg");
-              setSidebarExpanded(true);
-            }}
-            aria-label="Manufacturer navigation"
-          >
-            <span className="rail-icon">🏭</span>
-            <span className="rail-label">Mfg</span>
-          </button>
-
-          <button
-            className={`gmail-sidebar__rail-btn ${activeRail === "help" ? "gmail-sidebar__rail-btn--active" : ""}`}
-            onClick={() => {
-              setActiveRail("help");
-              setSidebarExpanded(true);
-            }}
-            aria-label="Help & Info"
-          >
-            <span className="rail-icon">ℹ️</span>
-            <span className="rail-label">Help</span>
-          </button>
+        {/* Leftmost Column: App Rail (72px / w-18) */}
+        <div className="w-18 flex flex-col items-center py-4 gap-6 border-r border-white/5 flex-shrink-0">
+          {railConfig.map((item) => {
+            const IconComponent = item.icon;
+            const isActive = activeRail === item.id;
+            return (
+              <button
+                key={item.id}
+                className={`flex flex-col items-center gap-1.5 w-full py-2 text-neutral-400 hover:text-white transition-colors cursor-pointer ${isActive ? "text-primary hover:text-primary" : ""}`}
+                onClick={() => {
+                  setActiveRail(item.id);
+                  setSidebarExpanded(true);
+                }}
+                aria-label={`${item.label} navigation`}
+              >
+                <div className={`p-2 rounded-xl transition-colors ${isActive ? "bg-primary/10 text-primary" : "hover:bg-neutral-900"}`}>
+                  <IconComponent className="w-5 h-5" />
+                </div>
+                {/* Hide text when collapsed to avoid cramped layout */}
+                <span className={`text-[9px] font-bold tracking-wider uppercase transition-all duration-200 ${sidebarExpanded ? "opacity-100 scale-100" : "opacity-0 scale-90 h-0 overflow-hidden"}`}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Right Column: Navigation Pane (208px) */}
         {sidebarExpanded && (
-          <div className="gmail-sidebar__pane">
+          <div className="w-[208px] flex flex-col py-4 px-3 flex-shrink-0 overflow-y-auto select-none">
             
-            {/* Gmail-style Compose button */}
-            <div className="gmail-sidebar__action-box">
+            {/* Compose/Action Button */}
+            <div className="mb-4">
               {activeRail === "buyer" && (
-                <Link href="/" className="gmail-sidebar__compose-btn">
-                  <span className="compose-icon">🔍</span>
-                  <span className="compose-text">Shop Batches</span>
+                <Link href="/" className="w-full flex items-center justify-center gap-2 py-2 rounded-xl btn-primary-new text-xs font-bold shadow-lg shadow-primary/20">
+                  <Search className="w-3.5 h-3.5" />
+                  <span>Shop Batches</span>
                 </Link>
               )}
               {activeRail === "mfg" && (
-                <Link href="/manufacturer/batch/new" className="gmail-sidebar__compose-btn">
-                  <span className="compose-icon">➕</span>
-                  <span className="compose-text">Create Batch</span>
+                <Link href="/manufacturer/batch/new" className="w-full flex items-center justify-center gap-2 py-2 rounded-xl btn-primary-new text-xs font-bold shadow-lg shadow-primary/20">
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create Batch</span>
                 </Link>
               )}
               {activeRail === "help" && (
                 <button
-                  className="gmail-sidebar__compose-btn"
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl btn-primary-new text-xs font-bold shadow-lg shadow-primary/20 cursor-pointer"
                   onClick={() => alert("Customer Support Sandbox Triggered!")}
                 >
-                  <span className="compose-icon">💬</span>
-                  <span className="compose-text">Get Help</span>
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Get Help</span>
                 </button>
               )}
             </div>
 
-            {/* List Links */}
-            <nav className="gmail-sidebar__nav-list">
+            {/* Navigation Lists */}
+            <nav className="flex flex-col gap-1">
               {activeRail === "buyer" && (
                 <>
                   <Link
                     href="/"
-                    className={`gmail-sidebar__nav-item ${pathname === "/" ? "gmail-sidebar__nav-item--active" : ""}`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}
                   >
-                    <span className="nav-icon">🏠</span>
-                    <span className="nav-label">Discover Batches</span>
+                    <Compass className="w-4 h-4" />
+                    <span>Discover Batches</span>
                   </Link>
                   <Link
                     href="/orders"
-                    className={`gmail-sidebar__nav-item ${pathname === "/orders" ? "gmail-sidebar__nav-item--active" : ""}`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/orders" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}
                   >
-                    <span className="nav-icon">📦</span>
-                    <span className="nav-label">My Orders</span>
-                    <span className="nav-badge">2</span>
+                    <Package className="w-4 h-4" />
+                    <span>My Orders</span>
+                    <span className="ml-auto text-[10px] font-bold bg-danger/10 text-danger px-1.5 py-0.5 rounded-full">2</span>
                   </Link>
                   <Link
                     href="/wallet"
-                    className={`gmail-sidebar__nav-item ${pathname === "/wallet" ? "gmail-sidebar__nav-item--active" : ""}`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/wallet" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}
                   >
-                    <span className="nav-icon">💰</span>
-                    <span className="nav-label">BulkCash Wallet</span>
+                    <Wallet className="w-4 h-4" />
+                    <span>BulkCash Wallet</span>
                   </Link>
                   <Link
                     href="/#how-it-works"
-                    className="gmail-sidebar__nav-item"
+                    className="flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors"
                   >
-                    <span className="nav-icon">❓</span>
-                    <span className="nav-label">How It Works</span>
+                    <HelpCircle className="w-4 h-4" />
+                    <span>How It Works</span>
                   </Link>
                 </>
               )}
@@ -321,84 +293,78 @@ function HeaderContent() {
                 <>
                   <Link
                     href="/manufacturer"
-                    className={`gmail-sidebar__nav-item ${pathname === "/manufacturer" ? "gmail-sidebar__nav-item--active" : ""}`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/manufacturer" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}
                   >
-                    <span className="nav-icon">📊</span>
-                    <span className="nav-label">Dashboard</span>
+                    <Terminal className="w-4 h-4" />
+                    <span>Dashboard</span>
                   </Link>
                   <Link
                     href="/manufacturer/analytics"
-                    className={`gmail-sidebar__nav-item ${pathname === "/manufacturer/analytics" ? "gmail-sidebar__nav-item--active" : ""}`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/manufacturer/analytics" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}
                   >
-                    <span className="nav-icon">📈</span>
-                    <span className="nav-label">Analytics</span>
+                    <Award className="w-4 h-4" />
+                    <span>Analytics</span>
                   </Link>
                   <Link
                     href="/manufacturer/batch/new"
-                    className={`gmail-sidebar__nav-item ${pathname === "/manufacturer/batch/new" ? "gmail-sidebar__nav-item--active" : ""}`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/manufacturer/batch/new" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}
                   >
-                    <span className="nav-icon">➕</span>
-                    <span className="nav-label">Create Batch</span>
-                  </Link>
-                  <Link href="#" className="gmail-sidebar__nav-item">
-                    <span className="nav-icon">🏆</span>
-                    <span className="nav-label">Success Stories</span>
+                    <Plus className="w-4 h-4" />
+                    <span>Create Batch</span>
                   </Link>
                 </>
               )}
 
               {activeRail === "help" && (
                 <>
-                  <Link href="#" className="gmail-sidebar__nav-item">
-                    <span className="nav-icon">📖</span>
-                    <span className="nav-label">Help Center</span>
+                  <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors">
+                    <BookOpen className="w-4 h-4" />
+                    <span>Help Center</span>
                   </Link>
-                  <Link href="#" className="gmail-sidebar__nav-item">
-                    <span className="nav-icon">⚙️</span>
-                    <span className="nav-label">Sandbox Tool</span>
+                  <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors">
+                    <Terminal className="w-4 h-4" />
+                    <span>Sandbox Tool</span>
                   </Link>
-                  <Link href="#" className="gmail-sidebar__nav-item">
-                    <span className="nav-icon">✉️</span>
-                    <span className="nav-label">Contact Support</span>
+                  <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors">
+                    <Mail className="w-4 h-4" />
+                    <span>Contact Support</span>
                   </Link>
                 </>
               )}
             </nav>
 
-            <div className="gmail-sidebar__divider"></div>
+            <div className="h-px bg-white/5 my-4" />
 
-            {/* Labels collapsable Category list (only under buyer mode) */}
+            {/* Collapsible Labels / Categories list (only in buyer mode) */}
             {activeRail === "buyer" && (
-              <div className="gmail-sidebar__labels-section">
+              <div className="flex flex-col gap-1">
                 <div
-                  className="gmail-sidebar__labels-header"
+                  className="flex items-center justify-between px-3 py-1.5 text-[9px] font-bold text-neutral-500 hover:text-neutral-400 uppercase tracking-widest cursor-pointer"
                   onClick={() => setLabelsExpanded(!labelsExpanded)}
                   role="button"
                   aria-expanded={labelsExpanded}
                 >
-                  <span className={`labels-arrow ${labelsExpanded ? "labels-arrow--expanded" : ""}`}>
-                    ▶
-                  </span>
-                  <span className="labels-title">Product Categories</span>
+                  <span>Product Categories</span>
+                  {labelsExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                 </div>
 
                 {labelsExpanded && (
-                  <div className="gmail-sidebar__labels-list">
+                  <div className="flex flex-col gap-0.5 mt-1">
                     {CATEGORIES.map((cat) => {
                       const isActive = searchParams.get("category") === cat.id;
                       return (
                         <Link
                           key={cat.id}
                           href={`/?category=${cat.id}`}
-                          className={`gmail-sidebar__label-item ${isActive ? "gmail-sidebar__label-item--active" : ""}`}
+                          className={`flex items-center gap-2.5 px-3 py-1.5 rounded-full text-neutral-400 hover:text-white text-xs transition-colors ${isActive ? "bg-neutral-900 text-white font-semibold" : ""}`}
                         >
                           <span
-                            className="label-dot"
+                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                             style={{ backgroundColor: cat.color }}
-                          ></span>
-                          <span className="label-icon">{cat.icon}</span>
-                          <span className="label-name">{cat.name}</span>
-                          <span className="label-count">{cat.count}</span>
+                          />
+                          <span className="text-xs">{cat.icon}</span>
+                          <span className="truncate flex-1">{cat.name}</span>
+                          <span className="text-[10px] font-bold text-neutral-500">{cat.count}</span>
                         </Link>
                       );
                     })}
@@ -411,91 +377,82 @@ function HeaderContent() {
       </aside>
 
       {/* ─────────────────────────────────────────────
-         Gmail-Style Responsive Mobile Drawer
+         Responsive Mobile Drawer
       ───────────────────────────────────────────── */}
       {mobileMenuOpen && (
         <div
-          className="gmail-mobile-backdrop"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1100]"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      <div className={`gmail-mobile-drawer ${mobileMenuOpen ? "gmail-mobile-drawer--open" : ""}`}>
-        <div className="gmail-mobile-drawer__header">
-          <Link href="/" className="gmail-header__logo" onClick={() => setMobileMenuOpen(false)}>
-            <div className="gmail-header__logo-icon">
-              <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="8" fill="url(#mobile-logo-grad)" />
-                <path d="M8 20L12 10H15L11 20H8Z" fill="white" fillOpacity="0.9" />
-                <path d="M14 20L18 10H21L17 20H14Z" fill="white" fillOpacity="0.9" />
-                <path d="M20 20L24 10H27L23 20H20Z" fill="white" fillOpacity="0.7" />
-                <defs>
-                  <linearGradient id="mobile-logo-grad" x1="0" y1="0" x2="32" y2="32">
-                    <stop stopColor="#0D6EFD" />
-                    <stop offset="1" stopColor="#8B5CF6" />
-                  </linearGradient>
-                </defs>
-              </svg>
+      <div className={`fixed top-0 bottom-0 left-0 w-[280px] bg-neutral-950/95 backdrop-blur-2xl shadow-2xl z-[1200] flex flex-col transform transition-transform duration-300 ease-out ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex items-center justify-between p-5 border-b border-white/5">
+          <Link href="/" className="flex items-center gap-3 text-white decoration-transparent" onClick={() => setMobileMenuOpen(false)}>
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center font-display font-black text-white text-sm">
+              B
             </div>
-            <div className="gmail-header__logo-text">
-              <span className="gmail-header__logo-name">BulkBlitz</span>
-            </div>
+            <span className="text-sm font-display font-black tracking-tight">BulkBlitz</span>
           </Link>
           <button
-            className="gmail-mobile-drawer__close"
+            className="text-neutral-400 hover:text-white text-lg p-1 cursor-pointer"
             onClick={() => setMobileMenuOpen(false)}
             aria-label="Close menu"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="gmail-mobile-drawer__content">
-          {/* Quick switcher buttons */}
-          <div className="gmail-mobile-drawer__modes">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+          {/* Mobile Portal Mode Switcher */}
+          <div className="grid grid-cols-2 gap-2">
             <button
-              className={`gmail-mobile-drawer__mode-btn ${activeRail === "buyer" ? "active" : ""}`}
+              className={`py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg border cursor-pointer ${activeRail === "buyer" ? "bg-primary/10 text-primary border-primary/30" : "bg-neutral-900 border-white/5 text-neutral-400"}`}
               onClick={() => setActiveRail("buyer")}
             >
               Buyer Portal
             </button>
             <button
-              className={`gmail-mobile-drawer__mode-btn ${activeRail === "mfg" ? "active" : ""}`}
+              className={`py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg border cursor-pointer ${activeRail === "mfg" ? "bg-primary/10 text-primary border-primary/30" : "bg-neutral-900 border-white/5 text-neutral-400"}`}
               onClick={() => setActiveRail("mfg")}
             >
-              Manufacturer Portal
+              Mfg Portal
             </button>
           </div>
 
-          <nav className="gmail-mobile-drawer__links">
+          <nav className="flex flex-col gap-1">
             {activeRail === "buyer" && (
               <>
-                <Link href="/" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                  🏠 Discover Batches
+                <Link href="/" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                  <Compass className="w-4 h-4" />
+                  <span>Discover Batches</span>
                 </Link>
-                <Link href="/orders" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                  📦 My Orders <span className="mobile-badge">2</span>
+                <Link href="/orders" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                  <Package className="w-4 h-4" />
+                  <span>My Orders</span>
+                  <span className="ml-auto text-[10px] font-bold bg-danger/10 text-danger px-1.5 py-0.5 rounded-full">2</span>
                 </Link>
-                <Link href="/wallet" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                  💰 BulkCash Wallet
+                <Link href="/wallet" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                  <Wallet className="w-4 h-4" />
+                  <span>BulkCash Wallet</span>
                 </Link>
-                <Link href="/#how-it-works" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                  ❓ How It Works
+                <Link href="/#how-it-works" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                  <HelpCircle className="w-4 h-4" />
+                  <span>How It Works</span>
                 </Link>
 
-                <div className="gmail-sidebar__divider" style={{ margin: "var(--space-4) 0" }}></div>
-                <div style={{ paddingLeft: "var(--space-2)", fontSize: "0.8rem", textTransform: "uppercase", color: "var(--text-tertiary)", fontWeight: "600", marginBottom: "var(--space-2)" }}>Categories</div>
+                <div className="h-px bg-white/5 my-4" />
+                <div className="px-4 text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Categories</div>
                 
                 {CATEGORIES.map(cat => (
                   <Link
                     key={cat.id}
                     href={`/?category=${cat.id}`}
-                    className="mobile-link"
+                    className="flex items-center gap-3 px-4 py-2 text-neutral-400 hover:text-white text-xs rounded-lg"
                     onClick={() => setMobileMenuOpen(false)}
-                    style={{ fontSize: '0.85rem', opacity: 0.9 }}
                   >
-                    <span style={{ marginRight: '8px' }}>{cat.icon}</span>
-                    {cat.name}
+                    <span>{cat.icon}</span>
+                    <span>{cat.name}</span>
                   </Link>
                 ))}
               </>
@@ -503,663 +460,30 @@ function HeaderContent() {
 
             {activeRail === "mfg" && (
               <>
-                <Link href="/manufacturer" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                  📊 Dashboard
+                <Link href="/manufacturer" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                  <Terminal className="w-4 h-4" />
+                  <span>Dashboard</span>
                 </Link>
-                <Link href="/manufacturer/analytics" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                  📈 Analytics
+                <Link href="/manufacturer/analytics" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                  <Award className="w-4 h-4" />
+                  <span>Analytics</span>
                 </Link>
-                <Link href="/manufacturer/batch/new" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
-                  ➕ Create a Batch
+                <Link href="/manufacturer/batch/new" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                  <Plus className="w-4 h-4" />
+                  <span>Create Batch</span>
                 </Link>
               </>
             )}
           </nav>
         </div>
       </div>
-
-      <style jsx global>{`
-        /* ─────────────────────────────────────────────
-           Gmail Top Header styles
-        ───────────────────────────────────────────── */
-        .gmail-header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 64px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 var(--space-6);
-          background: var(--bg-glass);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid var(--border-light);
-          z-index: 1050;
-        }
-
-        .gmail-header__left {
-          display: flex;
-          align-items: center;
-          gap: var(--space-4);
-        }
-
-        .gmail-header__hamburger {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-          width: 20px;
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: 0;
-        }
-
-        .gmail-header__hamburger span {
-          display: block;
-          height: 2px;
-          background: var(--text-primary);
-          border-radius: 2px;
-          width: 100%;
-        }
-
-        .gmail-header__logo {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          text-decoration: none;
-          color: var(--text-primary);
-        }
-
-        .gmail-header__logo-icon {
-          flex-shrink: 0;
-        }
-
-        .gmail-header__logo-text {
-          display: flex;
-          flex-direction: column;
-          line-height: 1.1;
-        }
-
-        .gmail-header__logo-name {
-          font-family: var(--font-heading), sans-serif;
-          font-weight: 800;
-          font-size: 1.1rem;
-          background: linear-gradient(135deg, #0d6efd, #8b5cf6);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .gmail-header__logo-tagline {
-          font-size: 0.6rem;
-          color: var(--text-tertiary);
-          letter-spacing: 0.05em;
-        }
-
-        /* Search bar */
-        .gmail-header__search-container {
-          flex: 1;
-          max-width: 720px;
-          margin: 0 var(--space-6);
-          display: none;
-        }
-
-        @media (min-width: 768px) {
-          .gmail-header__search-container {
-            display: block;
-          }
-        }
-
-        .gmail-header__search-form {
-          position: relative;
-          display: flex;
-          align-items: center;
-          width: 100%;
-          background: var(--bg-elevated);
-          border-radius: var(--radius-xl);
-          border: 1px solid var(--border-light);
-          padding: 0 var(--space-4);
-          height: 44px;
-          transition: all var(--transition-fast);
-        }
-
-        .gmail-header__search-form:focus-within {
-          background: var(--bg-surface);
-          border-color: var(--accent-primary);
-          box-shadow: var(--shadow-sm);
-        }
-
-        .gmail-header__search-icon {
-          font-size: 1rem;
-          color: var(--text-secondary);
-          margin-right: var(--space-3);
-        }
-
-        .gmail-header__search-input {
-          flex: 1;
-          background: transparent;
-          border: none;
-          outline: none;
-          color: var(--text-primary);
-          font-size: 0.9rem;
-          font-weight: 500;
-        }
-
-        .gmail-header__search-clear {
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: var(--text-tertiary);
-          font-size: 0.9rem;
-          padding: var(--space-1);
-        }
-
-        /* Right actions */
-        .gmail-header__right {
-          display: flex;
-          align-items: center;
-          gap: var(--space-4);
-        }
-
-        .gmail-header__portal-badge {
-          font-size: 0.7rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          background: var(--bg-elevated);
-          color: var(--text-secondary);
-          padding: 3px 8px;
-          border-radius: var(--radius-sm);
-          letter-spacing: 0.05em;
-          display: none;
-        }
-
-        @media (min-width: 640px) {
-          .gmail-header__portal-badge {
-            display: inline-block;
-          }
-        }
-
-        .gmail-header__icon-btn {
-          background: none;
-          border: none;
-          color: var(--text-secondary);
-          cursor: pointer;
-          padding: var(--space-2);
-          border-radius: var(--radius-sm);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all var(--transition-fast);
-        }
-
-        .gmail-header__icon-btn:hover {
-          background: var(--bg-elevated);
-          color: var(--text-primary);
-        }
-
-        .header-action-btn {
-          display: none !important;
-        }
-
-        @media (min-width: 640px) {
-          .header-action-btn {
-            display: flex !important;
-          }
-        }
-
-        /* User profile avatar */
-        .gmail-header__profile {
-          position: relative;
-          display: flex;
-          align-items: center;
-          text-decoration: none;
-          cursor: pointer;
-        }
-
-        .gmail-header__avatar {
-          width: 32px;
-          height: 32px;
-          border-radius: var(--radius-full);
-          background: linear-gradient(135deg, var(--accent-primary-light), var(--accent-premium-light));
-          border: 1.5px solid var(--border-default);
-          color: var(--accent-primary);
-          font-weight: 700;
-          font-size: 0.8rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: transform var(--transition-fast);
-        }
-
-        .gmail-header__profile:hover .gmail-header__avatar {
-          transform: scale(1.05);
-        }
-
-        .gmail-header__trust-tooltip {
-          position: absolute;
-          top: calc(100% + var(--space-2));
-          right: 0;
-          background: var(--text-primary);
-          color: var(--bg-surface);
-          font-size: 0.72rem;
-          font-weight: 600;
-          padding: 4px 8px;
-          border-radius: var(--radius-sm);
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
-          white-space: nowrap;
-          transition: all var(--transition-fast);
-          box-shadow: var(--shadow-md);
-        }
-
-        .gmail-header__profile:hover .gmail-header__trust-tooltip {
-          opacity: 1;
-          visibility: visible;
-        }
-
-        /* ─────────────────────────────────────────────
-           Gmail Left Sidebar styles
-        ───────────────────────────────────────────── */
-        .gmail-sidebar {
-          position: fixed;
-          top: 64px;
-          left: 0;
-          bottom: 0;
-          display: none;
-          z-index: 1000;
-          transition: width var(--transition-base);
-          border-right: 1px solid var(--border-light);
-          overflow: hidden;
-        }
-
-        @media (min-width: 992px) {
-          .gmail-sidebar {
-            display: flex;
-          }
-        }
-
-        .gmail-sidebar--expanded {
-          width: 280px;
-        }
-
-        .gmail-sidebar--collapsed {
-          width: 72px;
-        }
-
-        /* Glassmorphism backing with theme logic */
-        [data-theme='dark'] .gmail-sidebar {
-          background: rgba(12, 12, 12, 0.9);
-          backdrop-filter: blur(25px);
-          -webkit-backdrop-filter: blur(25px);
-        }
-
-        [data-theme='light'] .gmail-sidebar {
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(25px);
-          -webkit-backdrop-filter: blur(25px);
-        }
-
-        /* Left Rail (72px) */
-        .gmail-sidebar__rail {
-          width: 72px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: var(--space-4) 0;
-          gap: var(--space-6);
-          border-right: 1px solid var(--border-light);
-          flex-shrink: 0;
-        }
-
-        .gmail-sidebar__rail-btn {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--space-1);
-          background: none;
-          border: none;
-          color: var(--text-secondary);
-          font-family: inherit;
-          cursor: pointer;
-          width: 100%;
-          padding: var(--space-2) 0;
-          transition: all var(--transition-fast);
-        }
-
-        .rail-icon {
-          font-size: 1.4rem;
-          padding: 6px 16px;
-          border-radius: var(--radius-xl);
-          transition: all var(--transition-fast);
-          display: inline-block;
-          line-height: 1;
-        }
-
-        .rail-label {
-          font-size: 0.65rem;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-        }
-
-        .gmail-sidebar__rail-btn:hover .rail-icon {
-          background: var(--bg-elevated);
-          color: var(--text-primary);
-        }
-
-        .gmail-sidebar__rail-btn--active {
-          color: var(--accent-primary);
-        }
-
-        .gmail-sidebar__rail-btn--active .rail-icon {
-          background: var(--accent-primary-light);
-          color: var(--accent-primary);
-        }
-
-        /* Wide Pane (208px) */
-        .gmail-sidebar__pane {
-          width: 208px;
-          display: flex;
-          flex-direction: column;
-          padding: var(--space-4) var(--space-3);
-          flex-shrink: 0;
-          overflow-y: auto;
-        }
-
-        /* Compose-style button */
-        .gmail-sidebar__action-box {
-          margin-bottom: var(--space-5);
-        }
-
-        .gmail-sidebar__compose-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: var(--space-3);
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
-          border-radius: var(--radius-xl);
-          padding: 12px 20px;
-          text-decoration: none;
-          color: var(--text-primary);
-          font-weight: 700;
-          font-size: 0.85rem;
-          cursor: pointer;
-          box-shadow: var(--shadow-sm);
-          transition: all var(--transition-fast);
-        }
-
-        .gmail-sidebar__compose-btn:hover {
-          box-shadow: var(--shadow-md), var(--shadow-glow-primary);
-          border-color: var(--accent-primary);
-          transform: translateY(-1px);
-        }
-
-        .compose-icon {
-          font-size: 1.15rem;
-        }
-
-        /* Navigation List Items */
-        .gmail-sidebar__nav-list {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .gmail-sidebar__nav-item {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          padding: var(--space-2) var(--space-4);
-          border-radius: var(--radius-full);
-          text-decoration: none;
-          color: var(--text-secondary);
-          font-size: 0.85rem;
-          font-weight: 500;
-          transition: all var(--transition-fast);
-        }
-
-        .gmail-sidebar__nav-item:hover {
-          background: var(--bg-elevated);
-          color: var(--text-primary);
-        }
-
-        .gmail-sidebar__nav-item--active {
-          background: var(--accent-primary-light) !important;
-          color: var(--accent-primary) !important;
-          font-weight: 700;
-        }
-
-        .nav-badge {
-          margin-left: auto;
-          font-size: 0.7rem;
-          font-weight: 700;
-          background: var(--accent-danger-light);
-          color: var(--accent-danger);
-          padding: 1px 6px;
-          border-radius: var(--radius-full);
-        }
-
-        .gmail-sidebar__divider {
-          height: 1px;
-          background: var(--border-light);
-          margin: var(--space-4) 0;
-        }
-
-        /* Collapsible Labels */
-        .gmail-sidebar__labels-section {
-          margin-top: var(--space-2);
-        }
-
-        .gmail-sidebar__labels-header {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          padding: var(--space-2) var(--space-3);
-          font-size: 0.7rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          font-weight: 700;
-          color: var(--text-tertiary);
-          cursor: pointer;
-          user-select: none;
-        }
-
-        .gmail-sidebar__labels-header:hover {
-          color: var(--text-secondary);
-        }
-
-        .labels-arrow {
-          font-size: 0.55rem;
-          transition: transform var(--transition-fast);
-          display: inline-block;
-        }
-
-        .labels-arrow--expanded {
-          transform: rotate(90deg);
-        }
-
-        .gmail-sidebar__labels-list {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          margin-top: var(--space-1);
-          padding-left: var(--space-2);
-        }
-
-        .gmail-sidebar__label-item {
-          display: flex;
-          align-items: center;
-          padding: var(--space-2) var(--space-4);
-          border-radius: var(--radius-full);
-          text-decoration: none;
-          color: var(--text-secondary);
-          font-size: 0.8rem;
-          font-weight: 500;
-          transition: all var(--transition-fast);
-        }
-
-        .gmail-sidebar__label-item:hover {
-          background: var(--bg-elevated);
-          color: var(--text-primary);
-        }
-
-        .gmail-sidebar__label-item--active {
-          background: var(--bg-elevated);
-          color: var(--text-primary);
-          font-weight: 700;
-        }
-
-        .label-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          margin-right: var(--space-3);
-          flex-shrink: 0;
-        }
-
-        .label-icon {
-          font-size: 0.95rem;
-        }
-
-        .label-name {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          flex: 1;
-        }
-
-        .label-count {
-          font-size: 0.7rem;
-          color: var(--text-tertiary);
-          font-weight: 600;
-          margin-left: var(--space-2);
-        }
-
-        /* ─────────────────────────────────────────────
-           Gmail Mobile Sidebar Drawer & Backdrop
-        ───────────────────────────────────────────── */
-        .gmail-mobile-backdrop {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.4);
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
-          z-index: 1100;
-        }
-
-        .gmail-mobile-drawer {
-          position: fixed;
-          top: 0;
-          bottom: 0;
-          left: 0;
-          width: 280px;
-          background: var(--bg-surface);
-          box-shadow: var(--shadow-xl);
-          z-index: 1200;
-          display: flex;
-          flex-direction: column;
-          transform: translateX(-100%);
-          transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .gmail-mobile-drawer--open {
-          transform: translateX(0);
-        }
-
-        .gmail-mobile-drawer__header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: var(--space-4) var(--space-5);
-          border-bottom: 1px solid var(--border-light);
-        }
-
-        .gmail-mobile-drawer__close {
-          background: none;
-          border: none;
-          color: var(--text-secondary);
-          font-size: 1.1rem;
-          cursor: pointer;
-        }
-
-        .gmail-mobile-drawer__content {
-          flex: 1;
-          overflow-y: auto;
-          padding: var(--space-4);
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-4);
-        }
-
-        .gmail-mobile-drawer__modes {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--space-2);
-          margin-bottom: var(--space-2);
-        }
-
-        .gmail-mobile-drawer__mode-btn {
-          padding: 8px;
-          font-size: 0.75rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          border-radius: var(--radius-md);
-          border: 1px solid var(--border-default);
-          background: var(--bg-primary);
-          color: var(--text-secondary);
-          cursor: pointer;
-          transition: all var(--transition-fast);
-        }
-
-        .gmail-mobile-drawer__mode-btn.active {
-          background: var(--accent-primary-light);
-          color: var(--accent-primary);
-          border-color: var(--accent-primary);
-        }
-
-        .gmail-mobile-drawer__links {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-1);
-        }
-
-        .mobile-link {
-          display: flex;
-          align-items: center;
-          padding: var(--space-3) var(--space-4);
-          color: var(--text-secondary);
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 0.95rem;
-          border-radius: var(--radius-md);
-          transition: background var(--transition-fast);
-        }
-
-        .mobile-link:hover {
-          background: var(--bg-elevated);
-          color: var(--text-primary);
-        }
-
-        .mobile-badge {
-          margin-left: auto;
-          font-size: 0.7rem;
-          font-weight: 700;
-          background: var(--accent-danger-light);
-          color: var(--accent-danger);
-          padding: 1px 6px;
-          border-radius: var(--radius-full);
-        }
-      `}</style>
     </>
   );
 }
 
 function HeaderSkeleton() {
   return (
-    <header className="gmail-header" style={{ height: "64px", borderBottom: "1px solid var(--border-light)" }} />
+    <header className="fixed top-0 left-0 right-0 h-16 bg-neutral-950 border-b border-white/5 z-[1050]" />
   );
 }
 

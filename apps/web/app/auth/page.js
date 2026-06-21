@@ -100,8 +100,8 @@ export default function AuthPage() {
                 <path d="M20 20L24 10H27L23 20H20Z" fill="white" fillOpacity="0.7" />
                 <defs>
                   <linearGradient id="auth-logo-grad" x1="0" y1="0" x2="32" y2="32">
-                    <stop stopColor="#0D6EFD" />
-                    <stop offset="1" stopColor="#8B5CF6" />
+                    <stop stopColor="#FF6B00" />
+                    <stop offset="1" stopColor="#C94E00" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -273,7 +273,7 @@ export default function AuthPage() {
           display: grid;
           grid-template-columns: 1fr;
           min-height: 100vh;
-          background-color: var(--bg-surface);
+          background-color: #050505;
         }
 
         @media (min-width: 1024px) {
@@ -289,6 +289,7 @@ export default function AuthPage() {
           justify-content: center;
           padding: var(--space-6) var(--space-8);
           position: relative;
+          background-color: #050505;
         }
 
         .auth-form-wrapper {
@@ -312,7 +313,7 @@ export default function AuthPage() {
           font-weight: 800;
           font-size: 1.4rem;
           letter-spacing: -0.02em;
-          background: linear-gradient(135deg, #0D6EFD, #8B5CF6);
+          background: linear-gradient(135deg, #FFFFFF 0%, #FF6B00 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -354,18 +355,19 @@ export default function AuthPage() {
           width: 100%;
           padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-12) + 8px);
           border-radius: var(--radius-lg);
-          border: 2px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.15);
           font-size: 1.1rem;
           font-weight: 600;
-          background: var(--bg-primary);
+          background: rgba(255, 255, 255, 0.05);
           color: var(--text-primary);
           outline: none;
-          transition: border-color var(--transition-fast);
+          transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
         }
 
         .phone-input:focus {
           border-color: var(--accent-primary);
-          background: var(--bg-surface);
+          background: rgba(255, 255, 255, 0.08);
+          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
         }
 
         /* OTP Inputs */
@@ -379,11 +381,11 @@ export default function AuthPage() {
         .otp-box {
           height: 64px;
           border-radius: var(--radius-lg);
-          border: 2px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.15);
           text-align: center;
           font-size: 1.6rem;
           font-weight: 800;
-          background: var(--bg-primary);
+          background: rgba(255, 255, 255, 0.05);
           color: var(--text-primary);
           outline: none;
           transition: all var(--transition-fast);
@@ -391,8 +393,8 @@ export default function AuthPage() {
 
         .otp-box:focus {
           border-color: var(--accent-primary);
-          background: var(--bg-surface);
-          box-shadow: 0 0 0 4px var(--accent-primary-light);
+          background: rgba(255, 255, 255, 0.08);
+          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
         }
 
         .otp-resend-row {
@@ -428,13 +430,13 @@ export default function AuthPage() {
         /* Banner styling */
         .auth-banner-side {
           display: none;
-          background: radial-gradient(circle at top right, #1f1b3d, #0A0A0F);
+          background: radial-gradient(circle at top right, rgba(255, 107, 0, 0.12), #050505);
           position: relative;
           overflow: hidden;
           padding: var(--space-12) var(--space-16);
           flex-direction: column;
           justify-content: center;
-          border-left: 1px solid var(--border-default);
+          border-left: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         @media (min-width: 1024px) {
@@ -447,13 +449,13 @@ export default function AuthPage() {
           position: absolute;
           border-radius: 50%;
           filter: blur(80px);
-          opacity: 0.35;
+          opacity: 0.25;
         }
 
         .banner-orb--1 {
           width: 350px;
           height: 350px;
-          background: #8B5CF6;
+          background: var(--accent-primary);
           top: -100px;
           right: -50px;
           animation: float 8s ease-in-out infinite;
@@ -462,7 +464,7 @@ export default function AuthPage() {
         .banner-orb--2 {
           width: 250px;
           height: 250px;
-          background: #0D6EFD;
+          background: #FF9A3C;
           bottom: 10%;
           left: -50px;
           animation: float 6s ease-in-out infinite reverse;
@@ -471,7 +473,7 @@ export default function AuthPage() {
         .banner-orb--3 {
           width: 180px;
           height: 180px;
-          background: #34D399;
+          background: var(--accent-success);
           top: 40%;
           right: 15%;
           animation: pulse 5s ease-in-out infinite;
@@ -485,9 +487,9 @@ export default function AuthPage() {
         }
 
         .banner-badge {
-          background: rgba(139, 92, 246, 0.2);
-          border: 1px solid rgba(139, 92, 246, 0.3);
-          color: #A78BFA;
+          background: rgba(255, 107, 0, 0.15);
+          border: 1px solid rgba(255, 107, 0, 0.28);
+          color: var(--accent-primary);
           font-size: 0.8rem;
           font-weight: 700;
           padding: 4px 12px;
@@ -534,7 +536,7 @@ export default function AuthPage() {
           font-size: 1.6rem;
           font-weight: 800;
           margin-bottom: 2px;
-          background: linear-gradient(135deg, #FFF, #D8B4FE);
+          background: linear-gradient(135deg, #FFFFFF, #FF9A3C);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
@@ -581,7 +583,7 @@ export default function AuthPage() {
         .divider-text::after {
           content: '';
           flex: 1;
-          border-bottom: 1px solid var(--border-default);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .divider-text:not(:empty)::before {
@@ -604,8 +606,8 @@ export default function AuthPage() {
           align-items: center;
           justify-content: center;
           gap: var(--space-2);
-          background: var(--bg-surface);
-          border: 1.5px solid var(--border-default);
+          background: rgba(255, 255, 255, 0.05);
+          border: 1.5px solid rgba(255, 255, 255, 0.15);
           color: var(--text-primary);
           padding: var(--space-3) var(--space-4);
           font-size: 0.95rem;
@@ -616,8 +618,8 @@ export default function AuthPage() {
         }
 
         .btn--social:hover:not(:disabled) {
-          border-color: var(--text-secondary);
-          background: var(--bg-elevated);
+          border-color: rgba(255, 255, 255, 0.25);
+          background: rgba(255, 255, 255, 0.08);
           transform: translateY(-1px);
           box-shadow: var(--shadow-sm);
         }

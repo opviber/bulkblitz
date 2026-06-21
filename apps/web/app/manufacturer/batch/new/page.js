@@ -338,7 +338,8 @@ export default function CreateBatchWizard() {
           padding-top: calc(64px + var(--space-8));
           padding-bottom: var(--space-16);
           min-height: calc(100vh - 150px);
-          background-color: var(--bg-primary);
+          background-color: #050505;
+          background-image: radial-gradient(circle at 50% 0%, rgba(255, 107, 0, 0.05) 0%, transparent 50%);
         }
 
         .wizard-header {
@@ -351,6 +352,7 @@ export default function CreateBatchWizard() {
           font-weight: 800;
           color: var(--text-primary);
           margin: 0 0 var(--space-2);
+          letter-spacing: -0.02em;
         }
 
         .wizard-subtitle {
@@ -373,14 +375,15 @@ export default function CreateBatchWizard() {
           top: 18px;
           left: 5%;
           right: 5%;
-          height: 3px;
-          background: var(--border-default);
+          height: 2px;
+          background: rgba(255, 255, 255, 0.08);
           z-index: 1;
         }
 
         .wizard-steps-fill {
           height: 100%;
           background: var(--accent-primary);
+          box-shadow: 0 0 8px var(--accent-primary);
           transition: width var(--transition-base);
         }
 
@@ -397,8 +400,8 @@ export default function CreateBatchWizard() {
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          background: var(--bg-surface);
-          border: 3px solid var(--border-default);
+          background: #111111;
+          border: 2.5px solid rgba(255, 255, 255, 0.1);
           color: var(--text-secondary);
           font-weight: 700;
           display: flex;
@@ -416,7 +419,7 @@ export default function CreateBatchWizard() {
 
         .wizard-step--active .step-circle {
           border-color: var(--accent-primary);
-          background-color: var(--accent-primary-light);
+          background-color: rgba(255, 107, 0, 0.1);
           color: var(--accent-primary);
         }
 
@@ -427,7 +430,8 @@ export default function CreateBatchWizard() {
         .wizard-step--current .step-circle {
           background-color: var(--accent-primary);
           color: white;
-          box-shadow: 0 0 0 4px var(--accent-primary-light);
+          border-color: var(--accent-primary);
+          box-shadow: 0 0 16px rgba(255, 107, 0, 0.4);
         }
 
         .wizard-step--current .step-label {
@@ -437,12 +441,15 @@ export default function CreateBatchWizard() {
 
         /* Form styling */
         .wizard-content {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background: var(--bg-card-glass);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.07);
           border-radius: var(--radius-xl);
           padding: var(--space-8);
           max-width: 800px;
           margin: 0 auto;
+          box-shadow: var(--shadow-premium);
         }
 
         .wizard-step-body h3 {
@@ -500,35 +507,36 @@ export default function CreateBatchWizard() {
         .form-group select {
           padding: var(--space-3) var(--space-4);
           border-radius: var(--radius-md);
-          border: 1px solid var(--border-default);
-          background: var(--bg-primary);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.04);
           color: var(--text-primary);
           font-size: 0.95rem;
           outline: none;
-          transition: all var(--transition-fast);
+          transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
         }
 
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
           border-color: var(--accent-primary);
-          background: var(--bg-surface);
+          background: rgba(255, 255, 255, 0.08);
+          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.12);
         }
 
         /* Drag-and-drop Upload */
         .upload-dropzone {
-          border: 2px dashed var(--border-default);
+          border: 2px dashed rgba(255, 255, 255, 0.12);
           border-radius: var(--radius-lg);
           padding: var(--space-6) var(--space-4);
           text-align: center;
           cursor: pointer;
-          background: var(--bg-primary);
-          transition: all var(--transition-fast);
+          background: rgba(255, 255, 255, 0.02);
+          transition: border-color var(--transition-fast), background-color var(--transition-fast);
         }
 
         .upload-dropzone:hover {
           border-color: var(--accent-primary);
-          background: var(--accent-primary-light) 05;
+          background: rgba(255, 107, 0, 0.03);
         }
 
         .upload-icon {
@@ -566,22 +574,31 @@ export default function CreateBatchWizard() {
           grid-template-columns: repeat(3, 1fr) auto;
           gap: var(--space-4);
           align-items: flex-end;
-          border: 1px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.02);
           border-radius: var(--radius-lg);
-          padding: var(--space-4) var(--space-6);
+          padding: var(--space-5) var(--space-6);
           position: relative;
+          transition: border-color var(--transition-fast);
+        }
+
+        .tier-builder-row:hover {
+          border-color: rgba(255, 107, 0, 0.18);
         }
 
         .tier-index-badge {
           position: absolute;
           top: -10px;
           left: 16px;
-          background: var(--accent-premium-light);
-          color: var(--accent-premium);
+          background: rgba(255, 107, 0, 0.15);
+          border: 1px solid rgba(255, 107, 0, 0.3);
+          color: var(--accent-primary);
           font-size: 0.7rem;
-          font-weight: 700;
+          font-weight: 800;
           padding: 2px 8px;
           border-radius: var(--radius-sm);
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
         }
 
         .tier-remove-btn {
@@ -603,10 +620,10 @@ export default function CreateBatchWizard() {
           display: flex;
           flex-direction: column;
           gap: var(--space-4);
-          background-color: var(--bg-primary);
+          background-color: rgba(255, 255, 255, 0.02);
           border-radius: var(--radius-lg);
           padding: var(--space-6);
-          border: 1px solid var(--border-default);
+          border: 1px solid rgba(255, 255, 255, 0.06);
           margin-bottom: var(--space-8);
         }
 
@@ -637,8 +654,8 @@ export default function CreateBatchWizard() {
         }
 
         .preview-tier-pill {
-          background-color: var(--bg-surface);
-          border: 1px solid var(--border-default);
+          background-color: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           padding: 6px 12px;
           border-radius: var(--radius-full);
           font-size: 0.85rem;
@@ -649,7 +666,7 @@ export default function CreateBatchWizard() {
           display: flex;
           justify-content: flex-end;
           gap: var(--space-4);
-          border-top: 1px solid var(--border-default);
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
           padding-top: var(--space-6);
           margin-top: var(--space-6);
         }

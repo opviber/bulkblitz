@@ -96,10 +96,10 @@ export default function CustomCursor() {
           position: fixed;
           top: 0;
           left: 0;
-          width: 20px;
-          height: 20px;
-          background: rgba(139, 92, 246, 0.1);
-          border: 1.5px solid var(--accent-premium, #8B5CF6);
+          width: 18px;
+          height: 18px;
+          background: rgba(255, 106, 0, 0.05);
+          border: 1.5px solid var(--primary, #FF6A00);
           border-radius: 50%;
           pointer-events: none;
           z-index: 99999;
@@ -117,15 +117,15 @@ export default function CustomCursor() {
         }
 
         .custom-cursor--hovered {
-          width: 56px;
-          height: 56px;
-          background: rgba(13, 110, 253, 0.15);
-          border-color: var(--accent-primary, #0D6EFD);
-          box-shadow: 0 0 15px rgba(13, 110, 253, 0.3);
+          width: 50px;
+          height: 50px;
+          background: rgba(255, 106, 0, 0.15);
+          border-color: var(--primary, #FF6A00);
+          box-shadow: 0 0 15px rgba(255, 106, 0, 0.3);
         }
 
         .custom-cursor__badge {
-          font-size: 9px;
+          font-size: 8px;
           font-weight: 800;
           letter-spacing: 0.1em;
           color: var(--text-primary, #FFFFFF);

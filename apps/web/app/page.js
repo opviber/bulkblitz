@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowRight, Flame, Clock, Sparkles, FolderOpen, CheckCircle, BarChart3, TrendingUp, Check, Factory } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
@@ -54,7 +55,6 @@ function HomePageContent() {
     return matchesCategory && matchesSearch && b.status !== 'CLOSED';
   });
 
-
   const getTrending = () => {
     return [...batches].sort((a, b) => (b.velocity || 0) - (a.velocity || 0));
   };
@@ -81,82 +81,85 @@ function HomePageContent() {
   const liveCount = batches.filter((b) => b.status === 'LIVE').length;
 
   const TABS = [
-    { id: 'trending', icon: '🔥', label: 'Trending' },
-    { id: 'ending',   icon: '⏰', label: 'Ending Soon' },
-    { id: 'new',      icon: '✨', label: 'New' },
+    { id: 'trending', icon: Flame, label: 'Trending' },
+    { id: 'ending', icon: Clock, label: 'Ending Soon' },
+    { id: 'new', icon: Sparkles, label: 'New' },
   ];
 
   const CTA_FEATURES = [
-    'First batch completely free',
+    'First batch completely free listing',
     'Only 4% fee on successful batches',
     'Payout within 3 business days',
     'GST invoice auto-generated',
   ];
 
   const CTA_STATS = [
-    { v: '₹0',  l: 'Upfront Cost' },
-    { v: '4%',  l: 'Success Fee' },
-    { v: '3d',  l: 'Payout Time' },
-    { v: '320+',l: 'Active Sellers' },
+    { v: '₹0', l: 'Upfront Cost' },
+    { v: '4%', l: 'Success Fee' },
+    { v: '3d', l: 'Payout Time' },
+    { v: '320+', l: 'Active Sellers' },
   ];
 
   const PROOF_CARDS = [
-    { k: 'Demand signal', v: 'Buyers reserve slots before production locks.', tone: 'blue', img: '/demand_signal.png' },
-    { k: 'Tier unlock', v: 'Every reservation pushes the whole batch closer to factory pricing.', tone: 'green', img: '/tier_unlock.png' },
-    { k: 'Shared upside', v: 'When the batch closes, everyone pays the final lowest unlocked price.', tone: 'amber', img: '/shared_upside.png' },
+    { k: 'Demand Signal', v: 'Buyers reserve slots before production locks, proving market fit.', tone: 'orange' },
+    { k: 'Tier Unlock', v: 'Every reservation pushes the whole batch closer to factory pricing.', tone: 'green' },
+    { k: 'Shared Upside', v: 'When the batch closes, everyone pays the final lowest unlocked price.', tone: 'amber' },
   ];
 
   return (
     <>
       <Header />
 
-      <main>
+      <main className="relative bg-neutral-950">
         <HeroSection stats={STATS} />
 
         {/* ── SECTION 1: LIVE BATCHES ─────────────────────────────────────── */}
-        <section className="section" id="batches">
-          <div className="container">
+        <section className="py-20 border-t border-white/5" id="batches">
+          <div className="container mx-auto px-4">
 
             {/* Section Header */}
-            <div className="section-hdr">
-              <div>
-                <div className="section-hdr__eyebrow">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+              <div className="flex flex-col text-left">
+                <div className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-3 before:content-[''] before:block before:w-0.5 before:h-3 before:bg-primary before:rounded-sm">
                   Live Now
                 </div>
-                <h2 className="section-hdr__title">
-                  Active Batches
-                  <span className="section-hdr__badge">{liveCount} live</span>
+                <h2 className="text-2xl sm:text-3xl font-display font-black text-white flex items-center gap-3 tracking-tight leading-tight">
+                  <span>Active Batches</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-500/10 text-green-400 border border-green-500/20">{liveCount} live</span>
                 </h2>
-                <p className="section-hdr__sub">
-                  Join a batch and watch the price fall in real time
+                <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-md">
+                  Join an active batch and watch the price fall in real time.
                 </p>
               </div>
             </div>
 
-            {/* Segmented Tab Control */}
-            <div className="seg-tabs" role="tablist" id="batch-tabs">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  id={`tab-${tab.id}`}
-                  className={`seg-tab${activeTab === tab.id ? ' seg-tab--active' : ''}`}
-                  onClick={() => setActiveTab(tab.id)}
-                  role="tab"
-                  aria-selected={activeTab === tab.id}
-                >
-                  {tab.icon} {tab.label}
-                </button>
-              ))}
+            {/* Segmented Tab Controls */}
+            <div className="flex gap-1.5 p-1 rounded-xl bg-neutral-900/40 border border-white/5 w-fit mb-8" role="tablist">
+              {TABS.map((tab) => {
+                const TabIcon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${isActive ? 'bg-primary/10 text-primary border border-primary/20 shadow-md' : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'}`}
+                    onClick={() => setActiveTab(tab.id)}
+                    role="tab"
+                    aria-selected={isActive}
+                  >
+                    <TabIcon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Batch Grid */}
-            <div className="batch-grid batch-grid--featured">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {loading ? (
                 Array(4).fill(0).map((_, idx) => (
                   <div
                     key={idx}
-                    className="skeleton-card skeleton"
-                    style={{ height: '360px', borderRadius: 'var(--radius-lg)' }}
+                    className="skeleton h-[360px] rounded-2xl bg-neutral-900/40 border border-white/5 animate-pulse"
                   />
                 ))
               ) : currentTabBatches.length > 0 ? (
@@ -169,10 +172,10 @@ function HomePageContent() {
                   />
                 ))
               ) : (
-                <div className="empty-state">
-                  <div className="empty-state__illus">📭</div>
-                  <h3 className="empty-state__title">Nothing here yet</h3>
-                  <p className="empty-state__text">
+                <div className="col-span-full py-16 flex flex-col items-center justify-center text-center border border-dashed border-white/5 rounded-2xl bg-neutral-900/10">
+                  <div className="text-3xl">📭</div>
+                  <h3 className="text-base font-bold text-white mt-4 font-display">Nothing here yet</h3>
+                  <p className="text-xs text-neutral-400 max-w-sm mt-1">
                     No batches match this filter right now. Try another tab or check back soon!
                   </p>
                 </div>
@@ -183,57 +186,57 @@ function HomePageContent() {
         </section>
 
         {/* ── SECTION 2: BROWSE BY CATEGORY ───────────────────────────────── */}
-        <section className="section section--alt" id="categories-section">
-          <div className="container">
+        <section className="py-20 border-t border-white/5 bg-neutral-950/40" id="categories-section">
+          <div className="container mx-auto px-4">
 
             {/* Section Header */}
-            <div className="section-hdr">
-              <div>
-                <div className="section-hdr__eyebrow">
-                  Explore
-                </div>
-                <h2 className="section-hdr__title">Browse by Category</h2>
-                <p className="section-hdr__sub">
-                  Find batches in your favorite product categories
-                </p>
+            <div className="flex flex-col text-left mb-8">
+              <div className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-3 before:content-[''] before:block before:w-0.5 before:h-3 before:bg-primary before:rounded-sm">
+                Explore
               </div>
+              <h2 className="text-2xl sm:text-3xl font-display font-black text-white tracking-tight">Browse by Category</h2>
+              <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+                Find batches in your favorite product categories.
+              </p>
             </div>
 
             {/* Category Tiles */}
-            <div className="cat-tiles" id="category-filters">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-3 mb-8" id="category-filters">
               <button
-                className={`cat-tile${activeCategory === 'all' ? ' cat-tile--active' : ''}`}
+                className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all cursor-pointer text-center gap-2 ${activeCategory === 'all' ? 'border-primary bg-primary/10 text-primary shadow-lg shadow-primary/10' : 'border-white/5 bg-neutral-900/20 hover:bg-neutral-900/50 text-white'}`}
                 onClick={() => handleCategoryChange('all')}
                 id="chip-all"
               >
-                <span className="cat-tile__icon">🌟</span>
-                <span className="cat-tile__name">All</span>
-                <span className="cat-tile__count">{batches.length}</span>
+                <span className="text-2xl">🌟</span>
+                <span className="text-xs font-bold">All</span>
+                <span className="text-[10px] font-bold text-neutral-500">{batches.length}</span>
               </button>
 
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  id={`chip-${cat.id}`}
-                  className={`cat-tile${activeCategory === cat.id ? ' cat-tile--active' : ''}`}
-                  onClick={() => handleCategoryChange(cat.id)}
-                  style={{ '--cat-color': cat.color }}
-                >
-                  <span className="cat-tile__icon">{cat.icon}</span>
-                  <span className="cat-tile__name">{cat.name}</span>
-                  <span className="cat-tile__count">{cat.count}</span>
-                </button>
-              ))}
+              {CATEGORIES.map((cat) => {
+                const isSelected = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    id={`chip-${cat.id}`}
+                    className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all cursor-pointer text-center gap-2 ${isSelected ? 'bg-primary/10 text-primary shadow-lg shadow-primary/10' : 'border-white/5 bg-neutral-900/20 hover:bg-neutral-900/50 text-white'}`}
+                    style={{ borderColor: isSelected ? 'var(--primary)' : '' }}
+                    onClick={() => handleCategoryChange(cat.id)}
+                  >
+                    <span className="text-2xl">{cat.icon}</span>
+                    <span className="text-xs font-bold truncate max-w-full">{cat.name}</span>
+                    <span className="text-[10px] font-bold text-neutral-500">{cat.count}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Filtered Batch Grid */}
-            <div className="batch-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {loading ? (
                 Array(4).fill(0).map((_, idx) => (
                   <div
                     key={idx}
-                    className="skeleton-card skeleton"
-                    style={{ height: '360px', borderRadius: 'var(--radius-lg)' }}
+                    className="skeleton h-[360px] rounded-2xl bg-neutral-900/40 border border-white/5 animate-pulse"
                   />
                 ))
               ) : filteredBatches.length > 0 ? (
@@ -246,10 +249,10 @@ function HomePageContent() {
                   />
                 ))
               ) : (
-                <div className="empty-state">
-                  <div className="empty-state__illus">🔍</div>
-                  <h3 className="empty-state__title">No matches found</h3>
-                  <p className="empty-state__text">
+                <div className="col-span-full py-16 flex flex-col items-center justify-center text-center border border-dashed border-white/5 rounded-2xl bg-neutral-900/10">
+                  <FolderOpen className="w-8 h-8 text-neutral-500" />
+                  <h3 className="text-base font-bold text-white mt-4 font-display">No matches found</h3>
+                  <p className="text-xs text-neutral-400 max-w-sm mt-1">
                     {searchQuery 
                       ? `We couldn't find any batches matching "${searchQuery}".`
                       : "No active batches match this filter right now. Try checking other categories!"}
@@ -257,8 +260,7 @@ function HomePageContent() {
                   {searchQuery && (
                     <button 
                       onClick={() => router.push('/')}
-                      className="btn btn--secondary btn--sm"
-                      style={{ marginTop: 'var(--space-4)' }}
+                      className="px-4 py-1.5 rounded-lg btn-secondary-new text-xs font-bold mt-4 cursor-pointer"
                     >
                       Clear Search
                     </button>
@@ -271,697 +273,171 @@ function HomePageContent() {
         </section>
 
         {/* ── SECTION 3: WHY IT DROPS ─────────────────────────────────────── */}
-        <section className="proof-section" id="price-drop-proof">
-          <div className="container">
-            <div className="proof-layout">
-              <div className="proof-copy">
-                <div className="section-hdr__eyebrow">
-                  Crowd Mechanics
+        <section className="py-20 border-t border-white/5 bg-neutral-950" id="price-drop-proof">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              {/* Left Column: simulator info */}
+              <div className="lg:col-span-6 flex flex-col text-left gap-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-3 before:content-[''] before:block before:w-0.5 before:h-3 before:bg-primary before:rounded-sm">
+                    Crowd Mechanics
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-display font-black text-white tracking-tight leading-tight">
+                    One more buyer can drop <br />the price for everyone.
+                  </h2>
+                  <p className="text-sm text-neutral-400 mt-3 leading-relaxed">
+                    BulkBlitz turns scattered demand into a live manufacturing signal, so buyers see the batch move toward better tiers instead of waiting for opaque wholesale quotes.
+                  </p>
                 </div>
-                <h2 className="proof-title">One more buyer can drop the price for everyone.</h2>
-                <p className="proof-sub">
-                  BulkBlitz turns scattered demand into a live manufacturing signal, so buyers see the batch move toward better tiers instead of waiting for opaque wholesale quotes.
-                </p>
-              </div>
-              <div className="proof-cards">
-                {PROOF_CARDS.map((card, index) => (
-                  <div key={card.k} className={`proof-card proof-card--${card.tone}`}>
-                    <div className="proof-card__img-container">
-                      <img src={card.img} alt={card.k} className="proof-card__img" />
+
+                {/* Live simulation widget */}
+                <div className="p-6 rounded-2xl border border-white/5 bg-neutral-900/30 backdrop-blur-md shadow-2xl flex flex-col gap-4 w-full">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-white font-display">Live Batch #1842: Premium Rice</span>
+                    <span className="inline-flex items-center gap-1.5 text-green-400">
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      <span>98% Filled</span>
+                    </span>
+                  </div>
+
+                  <div className="relative h-2 w-full bg-neutral-950 rounded-full overflow-hidden border border-white/5">
+                    <div className="h-full w-[98%] bg-gradient-to-r from-primary to-accent rounded-full relative">
+                      <div className="absolute inset-0 bg-white/20 animate-pulse" />
                     </div>
-                    <span className="proof-card__num">{String(index + 1).padStart(2, '0')}</span>
-                    <h3>{card.k}</h3>
-                    <p>{card.v}</p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="flex flex-col p-2 bg-neutral-950/40 rounded-lg border border-green-500/20 text-green-400">
+                      <span className="font-mono font-bold text-sm">₹120</span>
+                      <span className="text-[9px] font-semibold text-green-500/80">Tier 1</span>
+                    </div>
+                    <div className="flex flex-col p-2 bg-neutral-950/40 rounded-lg border border-green-500/20 text-green-400">
+                      <span className="font-mono font-bold text-sm">₹95</span>
+                      <span className="text-[9px] font-semibold text-green-500/80">Tier 2</span>
+                    </div>
+                    <div className="flex flex-col p-2 bg-neutral-950/40 rounded-lg border border-primary/20 text-primary">
+                      <span className="font-mono font-bold text-sm">₹75</span>
+                      <span className="text-[9px] font-semibold text-primary/80">Next Tier</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 text-primary text-xs rounded-xl font-bold">
+                    <Flame className="w-4 h-4 flex-shrink-0 animate-bounce" />
+                    <span>Only 2 more orders needed to unlock ₹75/kg pricing for everyone!</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: proof cards */}
+              <div className="lg:col-span-6 flex flex-col gap-6">
+                {PROOF_CARDS.map((card, idx) => (
+                  <div key={card.k} className="relative group p-6 rounded-2xl border border-white/5 bg-neutral-900/20 backdrop-blur-md flex gap-5 hover:border-white/10 transition-colors">
+                    <div className="absolute top-4 right-4 text-4xl font-mono font-black text-white/5 select-none">{String(idx + 1).padStart(2, '0')}</div>
+                    
+                    {/* Widget Content visual mockups */}
+                    <div className="w-1/3 hidden sm:block flex-shrink-0 p-3 rounded-xl border border-white/5 bg-neutral-950/40">
+                      {idx === 0 && (
+                        <div className="flex flex-col gap-1.5 text-[9px] text-left">
+                          <div className="font-bold text-neutral-400 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-primary" /> Live reservations</div>
+                          <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-neutral-500 truncate max-w-[60px]">Sharma Dist.</span><span className="text-green-400 font-bold font-mono">+50 slots</span></div>
+                          <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-neutral-500 truncate max-w-[60px]">FreshFoods</span><span className="text-green-400 font-bold font-mono">+20 slots</span></div>
+                          <div className="flex justify-between"><span className="text-neutral-500 truncate max-w-[60px]">R. Patel Co.</span><span className="text-green-400 font-bold font-mono">+100 slots</span></div>
+                        </div>
+                      )}
+                      {idx === 1 && (
+                        <div className="flex flex-col gap-1.5 text-[9px] text-left">
+                          <div className="font-bold text-neutral-400 flex items-center gap-1"><BarChart3 className="w-3 h-3 text-green-400" /> Volume Tiers</div>
+                          <div className="flex justify-between text-neutral-500"><span className="truncate">1-20 slots</span><span className="font-mono">₹120 <Check className="inline w-2.5 h-2.5 text-green-400" /></span></div>
+                          <div className="flex justify-between text-neutral-500"><span className="truncate">21-50 slots</span><span className="font-mono">₹95 <Check className="inline w-2.5 h-2.5 text-green-400" /></span></div>
+                          <div className="flex justify-between text-white font-bold"><span className="truncate">51-100 slots</span><span className="font-mono text-primary">₹75 ●</span></div>
+                        </div>
+                      )}
+                      {idx === 2 && (
+                        <div className="flex flex-col gap-1.5 text-[9px] text-left">
+                          <div className="font-bold text-neutral-400 flex items-center gap-1"><CheckCircle className="w-3 h-3 text-amber-500" /> Order Summary</div>
+                          <div className="flex justify-between text-neutral-500"><span>Initial Price</span><span className="line-through font-mono">₹12,000</span></div>
+                          <div className="flex justify-between text-white font-bold"><span>Final Price</span><span className="text-green-400 font-mono">₹7,500</span></div>
+                          <div className="border-t border-white/5 my-0.5" />
+                          <div className="flex justify-between text-primary font-bold"><span>Refunded</span><span className="font-mono">₹4,500 Saved</span></div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col text-left justify-center">
+                      <h3 className="text-base font-bold text-white font-display">{card.k}</h3>
+                      <p className="text-xs text-neutral-400 mt-1 leading-relaxed max-w-sm">{card.v}</p>
+                    </div>
                   </div>
                 ))}
               </div>
+
             </div>
           </div>
         </section>
 
-        {/* ── SECTION 3: MANUFACTURER CTA ─────────────────────────────────── */}
-        <section className="cta-section" id="cta-section">
-          <div className="container">
-            <div className="cta-card">
+        {/* ── SECTION 4: MANUFACTURER CTA ─────────────────────────────────── */}
+        <section className="py-20 border-t border-white/5" id="cta-section">
+          <div className="container mx-auto px-4">
+            <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-neutral-950 via-neutral-900/50 to-neutral-950 p-8 md:p-12 shadow-2xl">
+              
+              <div className="absolute inset-0 bg-grid-pattern opacity-[0.015] pointer-events-none" />
 
-              <div className="cta-pattern" aria-hidden="true" />
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {/* Left side copy */}
+                <div className="lg:col-span-7 flex flex-col text-left gap-6">
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border border-primary/20 bg-primary/10 text-primary">
+                      <Factory className="w-3.5 h-3.5" />
+                      <span>For Manufacturers</span>
+                    </span>
+                    <h2 className="text-2xl sm:text-4xl font-display font-black text-white mt-4 tracking-tight leading-none">
+                      Scale your production. <br />
+                      Fill your order book.
+                    </h2>
+                  </div>
 
-              {/* Split layout */}
-              <div className="cta-layout">
-
-                {/* Left: copy */}
-                <div className="cta-left">
-                  <span className="cta-eyebrow">🏭 For Manufacturers</span>
-                  <h2 className="cta-title">
-                    Scale your production.<br />Fill your order book.
-                  </h2>
-                  <div className="cta-features">
-                    {CTA_FEATURES.map((f) => (
-                      <div key={f} className="cta-feature">
-                        <span className="cta-check">✓</span>
-                        {f}
+                  <div className="flex flex-col gap-3">
+                    {CTA_FEATURES.map((feature) => (
+                      <div key={feature} className="flex items-center gap-3 text-xs text-neutral-300 font-medium">
+                        <div className="w-5 h-5 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3" />
+                        </div>
+                        <span>{feature}</span>
                       </div>
                     ))}
                   </div>
+
                   <a
                     href="/manufacturer"
-                    className="btn btn--primary btn--lg cta-btn"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl btn-primary-new font-bold text-sm self-start"
                     id="cta-manufacturer"
                   >
-                    Start Selling Today →
+                    Start Selling Today
+                    <ArrowRight className="w-4 h-4" />
                   </a>
                 </div>
 
-                {/* Right: stats */}
-                <div className="cta-right">
-                  <div className="cta-stats">
-                    {CTA_STATS.map((s) => (
-                      <div key={s.l} className="cta-stat">
-                        <span className="cta-stat__val">{s.v}</span>
-                        <span className="cta-stat__label">{s.l}</span>
+                {/* Right side stats */}
+                <div className="lg:col-span-5">
+                  <div className="grid grid-cols-2 gap-4 min-w-[280px]">
+                    {CTA_STATS.map((stat) => (
+                      <div key={stat.l} className="flex flex-col p-5 bg-neutral-900/40 border border-white/5 rounded-2xl backdrop-blur-md hover:border-white/10 transition-colors">
+                        <span className="text-2xl sm:text-3xl font-mono font-black text-white tracking-tight">{stat.v}</span>
+                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mt-1.5 leading-none">{stat.l}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
               </div>
+
             </div>
           </div>
         </section>
       </main>
 
       <Footer />
-
-      <style jsx>{`
-        /* ── KEYFRAMES ────────────────────────────────────────────────────── */
-        @keyframes pulseSoft {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%       { opacity: 0.5; transform: scale(0.85); }
-        }
-
-        @keyframes shimmer {
-          0%   { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-
-        /* ── SECTIONS ────────────────────────────────────────────────────── */
-        .section {
-          padding: var(--space-20) 0;
-          position: relative;
-          background-image:
-            radial-gradient(circle at 10% 20%, rgba(255, 107, 0, 0.04), transparent 30%),
-            radial-gradient(circle at 90% 80%, rgba(255, 107, 0, 0.04), transparent 30%);
-        }
-
-        .section--alt {
-          padding: var(--space-20) 0;
-          position: relative;
-          background:
-            radial-gradient(circle at 80% 20%, rgba(255, 107, 0, 0.06), transparent 35%),
-            linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-primary) 100%);
-          border-top: 1px solid var(--border-light);
-          border-bottom: 1px solid var(--border-light);
-        }
-
-        /* ── SECTION HEADER ──────────────────────────────────────────────── */
-        .section-hdr {
-          margin-bottom: var(--space-8);
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          gap: var(--space-6);
-        }
-
-        .section-hdr__eyebrow {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 0.75rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: var(--text-tertiary);
-          margin-bottom: var(--space-3);
-        }
-
-
-
-        .section-hdr__title {
-          font-family: var(--font-heading), sans-serif;
-          font-size: clamp(1.5rem, 3vw, 2.2rem);
-          font-weight: 800;
-          color: var(--text-primary);
-          margin: 0 0 var(--space-2);
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          letter-spacing: -0.02em;
-          line-height: 1.2;
-          text-wrap: balance;
-        }
-
-        .section-hdr__badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 3px 12px;
-          background: var(--accent-success-light);
-          color: var(--accent-success);
-          font-size: 0.7rem;
-          font-weight: 700;
-          border-radius: var(--radius-full);
-          font-family: var(--font-body), sans-serif;
-          letter-spacing: 0;
-          text-transform: none;
-        }
-
-        .section-hdr__sub {
-          font-size: 0.95rem;
-          color: var(--text-secondary);
-          margin: 0;
-          max-width: 520px;
-        }
-
-        /* ── SEGMENTED TABS ──────────────────────────────────────────────── */
-        .seg-tabs {
-          display: flex;
-          gap: var(--space-2);
-          margin-bottom: var(--space-6);
-          background: var(--bg-elevated);
-          padding: var(--space-1);
-          border-radius: var(--radius-xl);
-          width: fit-content;
-          border: 1px solid var(--border-default);
-          box-shadow: var(--shadow-sm);
-        }
-
-        .seg-tab {
-          padding: var(--space-2) var(--space-5);
-          border-radius: var(--radius-lg);
-          font-size: 0.85rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all var(--transition-fast);
-          border: none;
-          background: transparent;
-          color: var(--text-secondary);
-          white-space: nowrap;
-          line-height: 1.5;
-        }
-
-        .seg-tab:hover:not(.seg-tab--active) {
-          color: var(--text-primary);
-          background: rgba(0, 0, 0, 0.04);
-        }
-
-        .seg-tab--active {
-          background: var(--bg-surface);
-          color: var(--text-primary);
-          box-shadow: var(--shadow-sm);
-        }
-
-        /* ── BATCH GRID ──────────────────────────────────────────────────── */
-        .batch-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: var(--space-6);
-        }
-
-        .batch-grid--featured {
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        }
-
-        @media (min-width: 1024px) {
-          .batch-grid--featured {
-            grid-template-columns: repeat(4, 1fr);
-          }
-        }
-
-        /* ── CATEGORY TILES ──────────────────────────────────────────────── */
-        .cat-tiles {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-          gap: var(--space-3);
-          margin-bottom: var(--space-8);
-        }
-
-        .cat-tile {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--space-2);
-          padding: var(--space-4) var(--space-3);
-          background:
-            linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 96%, #ffffff) 0%, var(--bg-surface) 100%);
-          border: 1px solid var(--border-default);
-          border-radius: var(--radius-xl);
-          cursor: pointer;
-          transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base), background var(--transition-base);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .cat-tile::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: var(--cat-color, var(--accent-primary));
-          opacity: 0;
-          transition: opacity var(--transition-base);
-          border-radius: inherit;
-        }
-
-        .cat-tile:hover {
-          border-color: var(--cat-color, var(--accent-primary));
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
-          background: var(--bg-surface);
-        }
-
-        .cat-tile:hover::before {
-          opacity: 0.05;
-        }
-
-        .cat-tile--active {
-          border-color: var(--cat-color, var(--accent-primary));
-          background: var(--accent-primary-light);
-          box-shadow: 0 0 0 1px var(--cat-color, var(--accent-primary));
-          transform: translateY(-2px);
-        }
-
-        /* ── PROOF SECTION ──────────────────────────────────────────────── */
-        .proof-section {
-          padding: var(--space-20) 0;
-          background:
-            radial-gradient(circle at 20% 50%, rgba(255, 107, 0, 0.05), transparent 30%),
-            var(--bg-primary);
-          border-bottom: 1px solid var(--border-light);
-          position: relative;
-        }
-
-        .proof-layout {
-          display: grid;
-          grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-          gap: var(--space-8);
-          align-items: stretch;
-        }
-
-        .proof-copy {
-          padding: var(--space-8);
-          border: 1px solid color-mix(in srgb, var(--accent-primary) 18%, var(--border-default));
-          border-radius: var(--radius-2xl);
-          background:
-            radial-gradient(circle at 90% 10%, rgba(255, 107, 0, 0.12), transparent 32%),
-            linear-gradient(135deg, color-mix(in srgb, var(--bg-surface) 94%, #ffffff), var(--bg-surface));
-          box-shadow: var(--shadow-premium);
-        }
-
-        .proof-title {
-          max-width: 560px;
-          font-family: var(--font-heading), sans-serif;
-          font-size: clamp(2rem, 4vw, 3.4rem);
-          font-weight: 900;
-          line-height: 1;
-          letter-spacing: 0;
-          margin: 0 0 var(--space-5);
-          color: var(--text-primary);
-        }
-
-        .proof-sub {
-          font-size: 1rem;
-          line-height: 1.75;
-          color: var(--text-secondary);
-          margin: 0;
-        }
-
-        .proof-cards {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: var(--space-4);
-        }
-
-        .proof-card {
-          min-height: 320px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: var(--space-6);
-          border-radius: var(--radius-xl);
-          border: 1px solid var(--border-default);
-          background:
-            linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #ffffff), var(--bg-surface));
-          box-shadow: var(--shadow-premium);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .proof-card__img-container {
-          margin-top: calc(-1 * var(--space-6));
-          margin-left: calc(-1 * var(--space-6));
-          margin-right: calc(-1 * var(--space-6));
-          width: calc(100% + (2 * var(--space-6)));
-          height: 160px;
-          margin-bottom: var(--space-5);
-          border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-          overflow: hidden;
-          position: relative;
-          z-index: 2;
-          background: rgba(0, 0, 0, 0.2);
-          border-bottom: 1px solid var(--border-light);
-        }
-
-        .proof-card__img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform var(--transition-base);
-        }
-
-        .proof-card:hover .proof-card__img {
-          transform: scale(1.05);
-        }
-
-        .proof-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          opacity: 0.13;
-          background:
-            repeating-linear-gradient(135deg, currentColor 0 1px, transparent 1px 18px);
-          pointer-events: none;
-        }
-
-        .proof-card--blue { color: var(--accent-primary); }
-        .proof-card--green { color: var(--accent-success); }
-        .proof-card--amber { color: var(--accent-warning); }
-
-        .proof-card__num {
-          position: absolute;
-          top: var(--space-4);
-          left: var(--space-4);
-          font-family: var(--font-heading), sans-serif;
-          font-size: 2.4rem;
-          font-weight: 900;
-          line-height: 1;
-          color: currentColor;
-          opacity: 0.35;
-          z-index: 3;
-          pointer-events: none;
-        }
-
-        .proof-card h3 {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 1.2rem;
-          font-weight: 800;
-          color: var(--text-primary);
-          margin: 0 0 var(--space-2);
-          letter-spacing: 0;
-        }
-
-        .proof-card p {
-          margin: 0;
-          color: var(--text-secondary);
-          font-size: 0.9rem;
-          line-height: 1.6;
-        }
-
-        .cat-tile--active::before {
-          opacity: 0.06;
-        }
-
-        .cat-tile__icon {
-          font-size: 1.75rem;
-          line-height: 1;
-          position: relative;
-          z-index: 1;
-          transition: transform var(--transition-spring);
-        }
-
-        .cat-tile:hover .cat-tile__icon {
-          transform: scale(1.15);
-        }
-
-        .cat-tile__name {
-          font-size: 0.78rem;
-          font-weight: 600;
-          color: var(--text-primary);
-          text-align: center;
-          position: relative;
-          z-index: 1;
-          line-height: 1.3;
-        }
-
-        .cat-tile--active .cat-tile__name {
-          color: var(--cat-color, var(--accent-primary));
-        }
-
-        .cat-tile__count {
-          font-size: 0.65rem;
-          color: var(--text-tertiary);
-          font-weight: 500;
-          position: relative;
-          z-index: 1;
-        }
-
-        /* ── EMPTY STATE ─────────────────────────────────────────────────── */
-        .empty-state {
-          grid-column: 1 / -1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: var(--space-16) var(--space-6);
-          text-align: center;
-        }
-
-        .empty-state__illus {
-          font-size: 4rem;
-          margin-bottom: var(--space-5);
-          opacity: 0.55;
-          filter: grayscale(20%);
-          line-height: 1;
-        }
-
-        .empty-state__title {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0 0 var(--space-2);
-          letter-spacing: -0.01em;
-        }
-
-        .empty-state__text {
-          font-size: 0.9rem;
-          color: var(--text-secondary);
-          max-width: 380px;
-          margin: 0;
-          line-height: 1.65;
-        }
-
-        /* ── CTA SECTION ─────────────────────────────────────────────────── */
-        .cta-section {
-          padding: var(--space-16) 0;
-        }
-
-        .cta-card {
-          position: relative;
-          overflow: hidden;
-          border-radius: var(--radius-2xl);
-          padding: var(--space-12) var(--space-10);
-          background:
-            radial-gradient(circle at 78% 20%, rgba(255, 107, 0, 0.18), transparent 28%),
-            linear-gradient(135deg, #050505 0%, #17110C 50%, #080808 100%);
-          color: white;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .cta-pattern {
-          position: absolute;
-          inset: 0;
-          opacity: 0.18;
-          background-image:
-            linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px);
-          background-size: 38px 38px;
-          pointer-events: none;
-        }
-
-        .cta-layout {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-10);
-        }
-
-        @media (min-width: 768px) {
-          .cta-layout {
-            flex-direction: row;
-            align-items: center;
-          }
-        }
-
-        .cta-left {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .cta-right {
-          flex-shrink: 0;
-        }
-
-        .cta-eyebrow {
-          font-size: 0.8rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: rgba(255, 255, 255, 0.55);
-          display: block;
-          margin-bottom: var(--space-4);
-        }
-
-        .cta-title {
-          font-family: var(--font-heading), sans-serif;
-          font-size: clamp(1.5rem, 3vw, 2.2rem);
-          font-weight: 800;
-          margin: 0 0 var(--space-6);
-          color: white;
-          line-height: 1.2;
-          letter-spacing: -0.02em;
-        }
-
-        .cta-features {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-3);
-          margin-bottom: var(--space-8);
-        }
-
-        .cta-feature {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          font-size: 0.9rem;
-          color: rgba(255, 255, 255, 0.8);
-          font-weight: 500;
-        }
-
-        .cta-check {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: rgba(52, 211, 153, 0.18);
-          color: #34D399;
-          font-size: 0.7rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          font-weight: 800;
-        }
-
-        .cta-btn {
-          background: linear-gradient(135deg, #FF6B00 0%, #B34B00 100%);
-          border: none;
-          color: white;
-          transition: opacity var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-        }
-
-        .cta-btn:hover {
-          opacity: 0.92;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(255, 107, 0, 0.4);
-        }
-
-        .cta-stats {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: var(--space-4);
-          min-width: 280px;
-        }
-
-        .cta-stat {
-          display: flex;
-          flex-direction: column;
-          padding: var(--space-4) var(--space-5);
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: var(--radius-lg);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          transition: background var(--transition-fast), border-color var(--transition-fast);
-        }
-
-        .cta-stat:hover {
-          background: rgba(255, 255, 255, 0.09);
-          border-color: rgba(255, 255, 255, 0.18);
-        }
-
-        .cta-stat__val {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 1.75rem;
-          font-weight: 800;
-          color: white;
-          line-height: 1;
-          letter-spacing: -0.03em;
-        }
-
-        .cta-stat__label {
-          font-size: 0.7rem;
-          color: rgba(255, 255, 255, 0.48);
-          font-weight: 500;
-          margin-top: var(--space-1);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-        }
-
-        /* ── RESPONSIVE TWEAKS ───────────────────────────────────────────── */
-        @media (max-width: 640px) {
-          .section-hdr {
-            display: block;
-          }
-
-          .seg-tabs {
-            width: 100%;
-            justify-content: stretch;
-          }
-          .seg-tab {
-            flex: 1;
-            text-align: center;
-            padding: var(--space-2) var(--space-3);
-            font-size: 0.78rem;
-          }
-
-          .cat-tiles {
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-          }
-
-          .cta-card {
-            padding: var(--space-8) var(--space-5);
-          }
-
-          .cta-stats {
-            min-width: unset;
-            width: 100%;
-          }
-        }
-
-        @media (max-width: 900px) {
-          .proof-layout,
-          .proof-cards {
-            grid-template-columns: 1fr;
-          }
-
-          .proof-card {
-            min-height: 180px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .section-hdr__title {
-            flex-wrap: wrap;
-          }
-        }
-      `}</style>
     </>
   );
 }
@@ -969,7 +445,7 @@ function HomePageContent() {
 export default function HomePage() {
   return (
     <Suspense fallback={
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', color: 'var(--text-secondary)', background: 'var(--bg-primary)', fontFamily: 'var(--font-sans)' }}>
+      <div className="flex justify-center items-center min-h-screen text-xs font-bold text-neutral-400 bg-neutral-950 font-sans tracking-widest uppercase">
         Loading BulkBlitz...
       </div>
     }>

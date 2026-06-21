@@ -1,8 +1,8 @@
-import { Kanit, Inter } from "next/font/google";
+import { Inter, Inter_Tight, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 
-const kanit = Kanit({
+const interTight = Inter_Tight({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800", "900"],
@@ -13,6 +13,13 @@ const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-number",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -87,7 +94,7 @@ const websiteSchema = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${kanit.variable} ${inter.variable}`}>
+    <html lang="en" className={`${interTight.variable} ${inter.variable} ${spaceGrotesk.variable}`}>
       <head>
         <JsonLd data={orgSchema} />
         <JsonLd data={websiteSchema} />
