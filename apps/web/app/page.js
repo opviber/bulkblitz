@@ -121,7 +121,6 @@ function HomePageContent() {
             <div className="section-hdr">
               <div>
                 <div className="section-hdr__eyebrow">
-                  <span className="section-hdr__dot" />
                   Live Now
                 </div>
                 <h2 className="section-hdr__title">
@@ -191,7 +190,6 @@ function HomePageContent() {
             <div className="section-hdr">
               <div>
                 <div className="section-hdr__eyebrow">
-                  <span className="section-hdr__dot section-hdr__dot--purple" />
                   Explore
                 </div>
                 <h2 className="section-hdr__title">Browse by Category</h2>
@@ -278,7 +276,6 @@ function HomePageContent() {
             <div className="proof-layout">
               <div className="proof-copy">
                 <div className="section-hdr__eyebrow">
-                  <span className="section-hdr__dot" />
                   Crowd Mechanics
                 </div>
                 <h2 className="proof-title">One more buyer can drop the price for everyone.</h2>
@@ -407,19 +404,7 @@ function HomePageContent() {
           margin-bottom: var(--space-3);
         }
 
-        .section-hdr__dot {
-          display: inline-block;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: var(--accent-success);
-          flex-shrink: 0;
-          animation: pulseSoft 2s ease-in-out infinite;
-        }
 
-        .section-hdr__dot--purple {
-          background: var(--accent-premium);
-        }
 
         .section-hdr__title {
           font-family: var(--font-heading), sans-serif;

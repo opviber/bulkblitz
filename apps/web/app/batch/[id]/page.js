@@ -217,7 +217,7 @@ export default function BatchDetailPage({ params }) {
                 <div className="batch-detail__image-badges">
                   {batch.status === "LIVE" && (
                     <span className="badge badge--success">
-                      <span className="badge__dot"></span> LIVE
+                      LIVE
                     </span>
                   )}
                   {savingsPercent > 0 && (
@@ -478,7 +478,7 @@ export default function BatchDetailPage({ params }) {
         .batch-detail__image-placeholder { height: 320px; background: linear-gradient(135deg, var(--bg-elevated), var(--bg-primary)); display: flex; align-items: center; justify-content: center; }
         .batch-detail__image-icon { font-size: 5rem; opacity: 0.5; }
         .batch-detail__image-badges { position: absolute; top: var(--space-4); left: var(--space-4); display: flex; gap: var(--space-2); }
-        .badge__dot { width: 6px; height: 6px; background: currentColor; border-radius: 50%; animation: pulseSoft 1.5s infinite; display: inline-block; margin-right: 4px; }
+
 
         /* Manufacturer Card */
         .mfg-card { display: flex; gap: var(--space-4); padding: var(--space-4); background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-lg); margin-bottom: var(--space-5); }

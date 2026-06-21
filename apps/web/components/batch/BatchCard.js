@@ -140,7 +140,6 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
             borderColor: `${status.color}33`
           }}
         >
-          {batch.status === "LIVE" && <span className="batch-card__live-dot"></span>}
           {status.label}
         </div>
 
@@ -349,13 +348,7 @@ export default function BatchCard({ batch, manufacturer, index = 0 }) {
           backdrop-filter: blur(8px);
         }
 
-        .batch-card__live-dot {
-          width: 6px;
-          height: 6px;
-          background: currentColor;
-          border-radius: 50%;
-          animation: pulseSoft 1.5s ease-in-out infinite;
-        }
+
 
         .batch-card__savings-badge {
           position: absolute;
