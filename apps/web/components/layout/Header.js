@@ -24,6 +24,21 @@ function HeaderContent() {
   const [theme, setTheme] = useState("dark");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDesktop, setIsDesktop] = useState(false);
+  const [customAvatar, setCustomAvatar] = useState(null);
+
+  useEffect(() => {
+    const loadAvatar = () => {
+      const stored = localStorage.getItem(`profile_avatar_ashish.sharma@gmail.com`);
+      if (stored) {
+        setCustomAvatar(stored);
+      } else {
+        setCustomAvatar(null);
+      }
+    };
+    loadAvatar();
+    window.addEventListener("avatarChanged", loadAvatar);
+    return () => window.removeEventListener("avatarChanged", loadAvatar);
+  }, []);
 
   // Synchronize theme attribute
   useEffect(() => {
@@ -180,8 +195,12 @@ function HeaderContent() {
 
           {/* User Profile Tooltip */}
           <Link href="/profile" className="relative group flex items-center cursor-pointer" title="My Profile">
-            <div className="w-8 h-8 rounded-full border border-primary/30 bg-primary/10 text-primary flex items-center justify-center text-xs font-bold hover:scale-105 transition-transform duration-200">
-              {USER.avatar}
+            <div className="w-8 h-8 rounded-full border border-primary/30 bg-primary/10 text-primary flex items-center justify-center text-xs font-bold hover:scale-105 transition-transform duration-200 overflow-hidden">
+              {customAvatar ? (
+                <img src={customAvatar} className="w-full h-full object-cover" alt="User Profile" />
+              ) : (
+                USER.avatar
+              )}
             </div>
             <span className="absolute top-12 right-0 bg-neutral-900 border border-white/5 text-white text-[10px] font-semibold px-2 py-1 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
               Trust Score: {USER.trustScore}

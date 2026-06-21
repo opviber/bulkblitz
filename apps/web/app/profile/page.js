@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/utils";
 import { 
   User, MapPin, Heart, ShoppingBag, Wallet, ShieldAlert,
   Edit2, Trash2, Plus, Check, Star, AlertCircle, CreditCard,
-  Bell, Key, Phone, Mail, Calendar, Sparkles, CheckCircle2, Loader2, ArrowUpRight, ChevronRight
+  Bell, Key, Phone, Mail, Calendar, Sparkles, CheckCircle2, Loader2, ArrowUpRight, ChevronRight, Camera
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -32,6 +32,20 @@ export default function ProfilePage() {
   const [wallet, setWallet] = useState({ balance: 0, transactions: [] });
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [loadingWallet, setLoadingWallet] = useState(false);
+
+  // Profile Picture Avatar Settings
+  const [customAvatar, setCustomAvatar] = useState(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const AVATAR_PRESETS = [
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+    "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80"
+  ];
 
   // Address Modals
   const [showAddAddress, setShowAddAddress] = useState(false);
@@ -95,6 +109,10 @@ export default function ProfilePage() {
           const storedCards = localStorage.getItem(`payment_cards_${data.email}`);
           if (storedCards) {
             setSavedCards(JSON.parse(storedCards));
+          }
+          const storedAvatar = localStorage.getItem(`profile_avatar_${data.email}`);
+          if (storedAvatar) {
+            setCustomAvatar(storedAvatar);
           }
         }
       }
@@ -188,6 +206,45 @@ export default function ProfilePage() {
       console.error("Error updating profile details:", err);
       alert("Server error occurred while updating profile");
     }
+  };
+
+  // Profile picture change handlers
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 1024 * 1024) {
+      alert("Image size should be less than 1MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      setCustomAvatar(base64String);
+      if (profile.email) {
+        localStorage.setItem(`profile_avatar_${profile.email}`, base64String);
+        window.dispatchEvent(new Event("avatarChanged"));
+      }
+      setShowAvatarModal(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSelectPreset = (url) => {
+    setCustomAvatar(url);
+    if (profile.email) {
+      localStorage.setItem(`profile_avatar_${profile.email}`, url);
+      window.dispatchEvent(new Event("avatarChanged"));
+    }
+    setShowAvatarModal(false);
+  };
+
+  const handleRemoveAvatar = () => {
+    setCustomAvatar(null);
+    if (profile.email) {
+      localStorage.removeItem(`profile_avatar_${profile.email}`);
+      window.dispatchEvent(new Event("avatarChanged"));
+    }
+    setShowAvatarModal(false);
   };
 
   // Add shipping address
@@ -419,10 +476,29 @@ export default function ProfilePage() {
               
               <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-5">
-                  {/* Large avatar with letter logo */}
-                  <div className="w-18 h-18 rounded-full bg-gradient-to-tr from-primary to-[#FF8C24] flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-primary/25 border-2 border-white/10">
-                    {profile.name ? profile.name.charAt(0).toUpperCase() : "U"}
+                  
+                  {/* Large avatar with image edit option */}
+                  <div 
+                    onClick={() => setShowAvatarModal(true)}
+                    className="relative group cursor-pointer w-18 h-18 rounded-full shadow-lg shadow-primary/25 border-2 border-white/10 overflow-hidden"
+                  >
+                    <div className="w-full h-full bg-gradient-to-tr from-primary to-[#FF8C24] flex items-center justify-center text-white text-2xl font-black">
+                      {customAvatar ? (
+                        <img src={customAvatar} className="w-full h-full object-cover" alt={profile.name} />
+                      ) : (
+                        profile.name ? profile.name.charAt(0).toUpperCase() : "U"
+                      )}
+                    </div>
+                    {/* Hover edit camera overlay */}
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <Camera className="w-5 h-5 text-white" />
+                    </div>
+                    {/* Tiny edit camera badge */}
+                    <div className="absolute bottom-0 right-0 p-1 rounded-full bg-primary border border-white/10 text-white shadow-md">
+                      <Camera className="w-2.5 h-2.5" />
+                    </div>
                   </div>
+
                   <div className="flex flex-col text-left">
                     <h1 className="text-xl md:text-2xl font-display font-black text-white tracking-tight">{profile.name}</h1>
                     <span className="text-xs text-neutral-400 mt-1">Member since {profile.joinedAt ? formatDate(profile.joinedAt) : "..."}</span>
@@ -1130,12 +1206,87 @@ export default function ProfilePage() {
         </div>
       </main>
 
+      {/* Hidden file input for custom avatar uploading */}
+      <input 
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleFileChange}
+      />
+
+      {/* ─────────────────────────────────────────────
+         Update Profile Picture Modal
+      ───────────────────────────────────────────── */}
+      {showAvatarModal && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-[1100]" onClick={() => setShowAvatarModal(false)}>
+          <div className="bg-neutral-900 border border-white/10 rounded-2xl max-w-md w-full p-6 text-left relative shadow-2xl animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={() => setShowAvatarModal(false)}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors cursor-pointer text-lg p-1"
+            >
+              ×
+            </button>
+            <h3 className="text-base font-display font-bold text-white mb-2">Update Profile Avatar</h3>
+            <p className="text-[10px] text-neutral-500 mb-5">Select a pre-designed premium portrait or upload a custom image file.</p>
+            
+            <div className="space-y-6">
+              {/* Option A: File Upload */}
+              <div className="flex flex-col gap-2">
+                <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider">Custom Image</span>
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full py-3 border border-dashed border-white/15 hover:border-primary/40 bg-neutral-950 hover:bg-primary/5 rounded-xl text-xs font-bold text-neutral-300 hover:text-primary transition-colors cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Upload Custom Photo</span>
+                </button>
+              </div>
+
+              {/* Option B: Presets */}
+              <div className="flex flex-col gap-2.5">
+                <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider">Preset Avatars</span>
+                <div className="grid grid-cols-6 gap-3">
+                  {AVATAR_PRESETS.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSelectPreset(preset)}
+                      className="w-full aspect-square rounded-full border border-white/5 hover:border-primary overflow-hidden shadow cursor-pointer transition-colors"
+                    >
+                      <img src={preset} className="w-full h-full object-cover" alt={`Preset ${idx + 1}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 border-t border-white/5 pt-4">
+                {customAvatar && (
+                  <button 
+                    onClick={handleRemoveAvatar}
+                    className="flex-1 py-2.5 rounded-xl bg-danger/10 hover:bg-danger/20 text-danger border border-danger/25 text-xs font-bold cursor-pointer transition-colors text-center"
+                  >
+                    Remove Photo
+                  </button>
+                )}
+                <button 
+                  onClick={() => setShowAvatarModal(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold cursor-pointer transition-colors text-center"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─────────────────────────────────────────────
          Add Shipping Address Modal
       ───────────────────────────────────────────── */}
       {showAddAddress && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-[1100]" onClick={() => setShowAddAddress(false)}>
-          <div className="bg-neutral-900 border border-white/10 rounded-2xl max-w-md w-full p-6 text-left relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-neutral-900 border border-white/10 rounded-2xl max-w-md w-full p-6 text-left relative shadow-2xl animate-fade-in" onClick={(e) => e.stopPropagation()}>
             <button 
               onClick={() => setShowAddAddress(false)}
               className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors cursor-pointer text-lg p-1"
@@ -1224,7 +1375,7 @@ export default function ProfilePage() {
       ───────────────────────────────────────────── */}
       {showEditAddress && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-[1100]" onClick={() => setShowEditAddress(null)}>
-          <div className="bg-neutral-900 border border-white/10 rounded-2xl max-w-md w-full p-6 text-left relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-neutral-900 border border-white/10 rounded-2xl max-w-md w-full p-6 text-left relative shadow-2xl animate-fade-in" onClick={(e) => e.stopPropagation()}>
             <button 
               onClick={() => setShowEditAddress(null)}
               className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors cursor-pointer text-lg p-1"
@@ -1309,7 +1460,7 @@ export default function ProfilePage() {
       ───────────────────────────────────────────── */}
       {showDepositModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 z-[1100]" onClick={() => setShowDepositModal(false)}>
-          <div className="bg-neutral-900 border border-white/10 rounded-2xl max-w-sm w-full p-6 text-left relative shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-neutral-900 border border-white/10 rounded-2xl max-w-sm w-full p-6 text-left relative shadow-2xl animate-fade-in" onClick={(e) => e.stopPropagation()}>
             <button 
               onClick={() => setShowDepositModal(false)}
               className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors cursor-pointer text-lg p-1"
