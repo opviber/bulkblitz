@@ -6,7 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { 
-  Building2, CheckCircle2, Package, Coins, Percent, Users, TrendingUp, Settings, PlusCircle, Calendar, MapPin, ShieldCheck, ArrowUpRight, ArrowDownRight, Check, Truck, AlertCircle, ExternalLink, X, Loader2, CreditCard, BarChart3, Sparkles
+  Building2, CheckCircle2, Package, Coins, Percent, Users, TrendingUp, Settings, PlusCircle, Calendar, MapPin, ShieldCheck, ArrowUpRight, ArrowDownRight, Check, Truck, AlertCircle, ExternalLink, X, Loader2, CreditCard, BarChart3, Sparkles, Activity
 } from "lucide-react";
 
 export default function ManufacturerDashboard() {
