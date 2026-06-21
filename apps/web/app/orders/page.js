@@ -5,6 +5,9 @@ import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { formatPrice, formatDate } from "@/lib/utils";
+import { 
+  Package, Calendar, Check, ExternalLink, MapPin, Building2, ChevronDown, ChevronUp, Loader2
+} from "lucide-react";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -31,12 +34,12 @@ export default function OrdersPage() {
   const getStatusColor = (status) => {
     switch (status) {
       case "DELIVERED":
-        return "var(--accent-success)";
+        return "#1DB954"; // Green (success)
       case "SHIPPED":
-        return "var(--accent-warning)";
+        return "#F59E0B"; // Amber (warning)
       case "CONFIRMED":
       default:
-        return "var(--accent-primary)";
+        return "#FF6B00"; // Primary orange
     }
   };
 
@@ -57,109 +60,147 @@ export default function OrdersPage() {
     <>
       <Header />
 
-      <main className="orders-main">
-        <div className="container">
+      <main className="pt-28 pb-20 min-h-[calc(100vh-150px)] bg-[#050505] text-left">
+        <div className="max-w-4xl mx-auto px-4">
           {/* Page Header */}
-          <div className="orders-header animate-fade-in">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
             <div>
-              <h1 className="orders-title">
+              <h1 className="text-3xl md:text-4xl font-display font-black text-white tracking-tight flex items-center gap-3">
                 My Orders
-                {!loading && <span className="orders-count-badge">{orders.length}</span>}
+                {!loading && (
+                  <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full">
+                    {orders.length}
+                  </span>
+                )}
               </h1>
-              <p className="orders-subtitle">
+              <p className="text-sm text-neutral-400 mt-2">
                 Track your active crowd-buys and order history.
               </p>
             </div>
-            <Link href="/" className="btn btn--secondary btn--sm">
+            <Link 
+              href="/" 
+              className="px-4 py-2 text-xs font-bold rounded-lg border border-white/10 hover:border-white/20 text-neutral-300 hover:text-white transition-all bg-white/2 cursor-pointer"
+            >
               Browse More Batches
             </Link>
           </div>
 
           {loading ? (
-            <div className="orders-list">
+            <div className="flex flex-col gap-5">
               {[1, 2, 3].map((n) => (
-                <div key={n} className="skeleton" style={{ height: "200px", borderRadius: "var(--radius-lg)", marginBottom: "var(--space-4)" }}></div>
+                <div 
+                  key={n} 
+                  className="h-48 w-full rounded-2xl bg-neutral-900/40 border border-white/5 animate-pulse"
+                ></div>
               ))}
             </div>
           ) : orders.length === 0 ? (
-
-            <div className="empty-state animate-fade-in-up">
-              <div className="empty-state__icon">📦</div>
-              <h3>No orders yet</h3>
-              <p>Join active batches to unlock massive manufacturer discounts together!</p>
-              <Link href="/" className="btn btn--primary">
+            <div className="flex flex-col items-center text-center p-12 md:p-16 rounded-2xl border border-white/5 bg-neutral-900/10 backdrop-blur-xl max-w-md mx-auto my-12 shadow-2xl">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 text-primary">
+                <Package className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-display font-bold text-white mb-2">No orders yet</h3>
+              <p className="text-xs text-neutral-400 mb-6 leading-relaxed">
+                Join active batches to unlock massive manufacturer discounts together!
+              </p>
+              <Link 
+                href="/" 
+                className="px-6 py-2.5 rounded-xl bg-primary hover:bg-accent text-white text-sm font-bold shadow-lg shadow-primary/20 transition-all cursor-pointer"
+              >
                 Explore Batches
               </Link>
             </div>
           ) : (
-            <div className="orders-layout">
-              {/* Orders List */}
-              <div className="orders-list stagger-children">
-                {orders.map((order, index) => {
-                  const isActive = selectedOrder?.id === order.id;
-                  const stepIndex = getStepIndex(order.status);
-                  
-                  return (
-                    <div
-                      key={order.id}
-                      className={`order-card animate-fade-in-up ${isActive ? "order-card--active" : ""}`}
-                      onClick={() => setSelectedOrder(isActive ? null : order)}
-                    >
-                      <div className="order-card__header">
-                        <div>
-                          <span className="order-card__id">Order #{order.id}</span>
-                          <span className="order-card__date">
-                            Ordered on {formatDate(order.orderedAt)}
+            <div className="flex flex-col gap-5">
+              {orders.map((order) => {
+                const isActive = selectedOrder?.id === order.id;
+                const stepIndex = getStepIndex(order.status);
+                
+                return (
+                  <div
+                    key={order.id}
+                    className={`p-6 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                      isActive 
+                        ? "bg-neutral-950 border-primary shadow-lg shadow-primary/5" 
+                        : "bg-neutral-900/40 border-white/5 hover:border-white/12 hover:bg-neutral-900/60 shadow-xl"
+                    }`}
+                    onClick={() => setSelectedOrder(isActive ? null : order)}
+                  >
+                    {/* Card Header */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-4 border-b border-white/5">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-bold text-neutral-400">Order</span>
+                          <span className="font-mono text-xs text-primary font-bold bg-primary/5 border border-primary/10 px-2 py-0.5 rounded break-all max-w-[280px] md:max-w-md">
+                            #{order.id}
                           </span>
                         </div>
+                        <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                          <Calendar className="w-3.5 h-3.5 opacity-60" />
+                          <span>Ordered on {formatDate(order.orderedAt)}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 self-end sm:self-auto">
                         <span
-                          className="status-badge"
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider border uppercase"
                           style={{
-                            backgroundColor: `${getStatusColor(order.status)}15`,
+                            backgroundColor: `${getStatusColor(order.status)}12`,
                             color: getStatusColor(order.status),
-                            borderColor: `${getStatusColor(order.status)}30`,
+                            borderColor: `${getStatusColor(order.status)}24`,
                           }}
                         >
                           {order.status}
                         </span>
+                        {isActive ? (
+                          <ChevronUp className="w-4 h-4 text-neutral-500" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-neutral-500" />
+                        )}
                       </div>
+                    </div>
 
-                      <div className="order-card__body">
-                        <div className="order-card__details">
-                          <h3 className="order-card__title">{order.batchTitle}</h3>
-                          <span className="order-card__manufacturer">
-                            by {order.manufacturer.name}
-                          </span>
-                          
-                          <div className="order-card__meta">
-                            <div className="meta-item">
-                              <span className="meta-label">Quantity</span>
-                              <span className="meta-value">{order.quantity} units</span>
-                            </div>
-                            <div className="meta-item">
-                              <span className="meta-label">Price per unit</span>
-                              <span className="meta-value">{formatPrice(order.pricePerUnit, false)}</span>
-                            </div>
-                            <div className="meta-item">
-                              <span className="meta-label">Total Amount</span>
-                              <span className="meta-value price-total">
-                                {formatPrice(order.totalAmount, false)}
-                              </span>
-                            </div>
-                          </div>
+                    {/* Card Body */}
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <h3 className="text-lg font-display font-bold text-white hover:text-primary transition-colors duration-200">
+                          {order.batchTitle}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-xs text-neutral-400 mt-1">
+                          <Building2 className="w-3.5 h-3.5 text-neutral-500" />
+                          <span>by {order.manufacturer.name}</span>
                         </div>
                       </div>
 
-                      {/* Stepper Timeline */}
-                      <div className="stepper">
-                        <div className="stepper__line">
-                          <div
-                            className="stepper__line-fill"
-                            style={{
-                              width: `${((stepIndex - 1) / 3) * 100}%`,
-                            }}
-                          ></div>
+                      {/* Metadata Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-white/3 border border-white/5">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Quantity</span>
+                          <span className="text-sm font-semibold text-neutral-200">{order.quantity} units</span>
                         </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Price per Unit</span>
+                          <span className="text-sm font-semibold text-neutral-200">{formatPrice(order.pricePerUnit, false)}</span>
+                        </div>
+                        <div className="flex flex-col gap-1 col-span-2 sm:col-span-1 border-t sm:border-t-0 sm:border-l border-white/5 pt-3 sm:pt-0 sm:pl-4">
+                          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Total Amount</span>
+                          <span className="text-sm font-bold text-green-400">{formatPrice(order.totalAmount, false)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Stepper Timeline */}
+                    <div className="relative mt-8 pt-4">
+                      {/* Progress Line */}
+                      <div className="absolute top-8 left-[12.5%] right-[12.5%] h-0.5 bg-neutral-800 -translate-y-1/2 z-0">
+                        <div
+                          className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 ease-out"
+                          style={{ width: `${((stepIndex - 1) / 3) * 100}%` }}
+                        ></div>
+                      </div>
+
+                      {/* Steps Grid */}
+                      <div className="relative grid grid-cols-4 z-10">
                         {[
                           { label: "Ordered", desc: "Hold authorized" },
                           { label: "Confirmed", desc: "Batch successful" },
@@ -168,427 +209,106 @@ export default function OrdersPage() {
                         ].map((step, sIdx) => {
                           const isCompleted = stepIndex > sIdx;
                           const isCurrent = stepIndex === sIdx + 1;
+                          
                           return (
-                            <div
-                              key={step.label}
-                              className={`stepper__step ${isCompleted ? "stepper__step--completed" : ""} ${isCurrent ? "stepper__step--current" : ""}`}
-                            >
-                              <div className="stepper__dot">
-                                {isCompleted ? (
-                                  <svg
-                                    width="10"
-                                    height="8"
-                                    viewBox="0 0 10 8"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      d="M9 1L3.5 6.5L1 4"
-                                      stroke="white"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  </svg>
-                                ) : (
-                                  <span className="stepper__dot-inner"></span>
-                                )}
+                            <div key={step.label} className="flex flex-col items-center text-center group">
+                              {/* Circle Container */}
+                              <div className="relative flex items-center justify-center h-8">
+                                <div
+                                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                                    isCompleted
+                                      ? "bg-primary border-2 border-primary text-white shadow-[0_0_12px_rgba(255,106,0,0.3)]"
+                                      : isCurrent
+                                      ? "bg-neutral-950 border-2 border-primary text-primary shadow-[0_0_0_4px_rgba(255,106,0,0.15)]"
+                                      : "bg-neutral-900 border-2 border-neutral-800 text-neutral-600"
+                                  }`}
+                                >
+                                  {isCompleted ? (
+                                    <Check className="w-4 h-4" />
+                                  ) : isCurrent ? (
+                                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                  ) : (
+                                    <div className="w-1.5 h-1.5 rounded-full bg-neutral-700" />
+                                  )}
+                                </div>
                               </div>
-                              <div className="stepper__text">
-                                <span className="stepper__label">{step.label}</span>
-                                <span className="stepper__desc">{step.desc}</span>
+
+                              {/* Labels */}
+                              <div className="mt-3 flex flex-col items-center gap-0.5">
+                                <span
+                                  className={`text-xs font-bold transition-colors duration-200 ${
+                                    isCurrent ? "text-primary" : isCompleted ? "text-neutral-200" : "text-neutral-500"
+                                  }`}
+                                >
+                                  {step.label}
+                                </span>
+                                <span className="hidden sm:block text-[10px] text-neutral-500 font-medium">
+                                  {step.desc}
+                                </span>
                               </div>
                             </div>
                           );
                         })}
                       </div>
+                    </div>
 
-                      {/* Expanded Section */}
-                      {isActive && (
-                        <div className="order-card__expanded animate-slide-down" onClick={(e) => e.stopPropagation()}>
-                          <hr className="divider" />
-                          <div className="expanded-grid">
+                    {/* Expanded Section */}
+                    {isActive && (
+                      <div 
+                        className="mt-6 pt-6 border-t border-white/5 text-left" 
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                          <div className="md:col-span-2 space-y-4">
                             <div>
-                              <h4>Shipping Details</h4>
-                              <p className="expanded-text">
-                                <strong>Manufacturer:</strong> {order.manufacturer.name}<br />
-                                <strong>Origin:</strong> {order.manufacturer.city}, {order.manufacturer.state}
-                              </p>
-                              {order.trackingNumber && (
-                                <p className="tracking-info">
-                                  <strong>Tracking Number:</strong>{" "}
-                                  <span className="tracking-link">{order.trackingNumber}</span>
+                              <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Shipping Details</h4>
+                              <div className="space-y-2 text-xs text-neutral-300">
+                                <p>
+                                  <strong className="text-neutral-400">Manufacturer:</strong> {order.manufacturer.name}
                                 </p>
-                              )}
+                                <p className="flex items-center gap-1">
+                                  <MapPin className="w-3.5 h-3.5 text-neutral-500" />
+                                  <span>{order.manufacturer.city}, {order.manufacturer.state}</span>
+                                </p>
+                              </div>
                             </div>
-                            <div className="expanded-actions">
-                              <Link href={`/batch/${order.batchId}`} className="btn btn--secondary btn--sm w-full text-center">
-                                View Original Batch
-                              </Link>
-                              <button className="btn btn--ghost btn--sm w-full">
-                                Need Help? Contact Support
-                              </button>
-                            </div>
+
+                            {order.trackingNumber && (
+                              <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-white/3 border border-white/5 max-w-fit">
+                                <span className="text-xs font-medium text-neutral-400">Tracking Number:</span>
+                                <span className="font-mono text-xs font-bold text-primary select-all">{order.trackingNumber}</span>
+                                <span className="text-[10px] text-neutral-500">(UPS Ground)</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col gap-2.5">
+                            <Link 
+                              href={`/batch/${order.batchId}`} 
+                              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 text-neutral-300 hover:text-white text-xs font-bold transition-all bg-white/2 cursor-pointer w-full text-center"
+                            >
+                              <span>View Original Batch</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+                            <button 
+                              onClick={() => alert("Connecting to support team...")}
+                              className="px-4 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white text-xs font-bold transition-all cursor-pointer w-full"
+                            >
+                              Need Help? Contact Support
+                            </button>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
       </main>
 
       <Footer />
-
-      <style jsx>{`
-        .orders-main {
-          padding-top: calc(64px + var(--space-8));
-          padding-bottom: var(--space-16);
-          min-height: calc(100vh - 150px);
-          background-color: #050505;
-        }
-
-        .orders-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-bottom: var(--space-8);
-          gap: var(--space-4);
-          flex-wrap: wrap;
-        }
-
-        .orders-title {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 2.2rem;
-          font-weight: 800;
-          color: var(--text-primary);
-          margin: 0 0 var(--space-2);
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-        }
-
-        .orders-count-badge {
-          font-size: 1rem;
-          font-weight: 700;
-          background: rgba(255, 107, 0, 0.12);
-          color: var(--accent-primary);
-          padding: 2px 10px;
-          border-radius: var(--radius-full);
-          border: 1px solid rgba(255, 107, 0, 0.3);
-        }
-
-        .orders-subtitle {
-          color: var(--text-secondary);
-          margin: 0;
-          font-size: 1rem;
-        }
-
-        .orders-layout {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-6);
-        }
-
-        .orders-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-5);
-        }
-
-        .order-card {
-          background: rgba(12, 12, 12, 0.82);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-radius: var(--radius-lg);
-          padding: var(--space-6);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-          transition: all var(--transition-base);
-          cursor: pointer;
-        }
-
-        .order-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-          border-color: rgba(255, 255, 255, 0.12);
-        }
-
-        .order-card--active {
-          border-color: var(--accent-primary);
-          box-shadow: 0 8px 32px rgba(255, 107, 0, 0.15), 0 0 0 1px var(--accent-primary);
-        }
-
-        .order-card__header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--space-4);
-        }
-
-        .order-card__id {
-          font-weight: 700;
-          color: var(--text-primary);
-          margin-right: var(--space-3);
-          font-size: 1.05rem;
-        }
-
-        .order-card__date {
-          color: var(--text-tertiary);
-          font-size: 0.85rem;
-        }
-
-        .status-badge {
-          font-size: 0.75rem;
-          font-weight: 700;
-          padding: var(--space-1) var(--space-3);
-          border-radius: var(--radius-full);
-          border: 1px solid;
-          letter-spacing: 0.05em;
-        }
-
-        .order-card__title {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0 0 2px;
-        }
-
-        .order-card__manufacturer {
-          font-size: 0.85rem;
-          color: var(--text-secondary);
-          display: block;
-          margin-bottom: var(--space-4);
-        }
-
-        .order-card__meta {
-          display: flex;
-          gap: var(--space-8);
-          margin-bottom: var(--space-6);
-          flex-wrap: wrap;
-        }
-
-        .meta-item {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .meta-label {
-          font-size: 0.75rem;
-          color: var(--text-tertiary);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .meta-value {
-          font-weight: 600;
-          color: var(--text-primary);
-        }
-
-        .price-total {
-          color: var(--accent-success);
-          font-weight: 700;
-        }
-
-        /* Stepper CSS */
-        .stepper {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          position: relative;
-          margin-top: var(--space-6);
-          padding-top: var(--space-4);
-        }
-
-        .stepper__line {
-          position: absolute;
-          top: 24px;
-          left: 12.5%;
-          right: 12.5%;
-          height: 3px;
-          background-color: rgba(255, 255, 255, 0.1);
-          z-index: 1;
-        }
-
-        .stepper__line-fill {
-          height: 100%;
-          background: linear-gradient(90deg, #FF6B00, #FF9A3C);
-          transition: width var(--transition-slow) cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .stepper__step {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          position: relative;
-          z-index: 2;
-          text-align: center;
-        }
-
-        .stepper__dot {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background-color: rgba(12, 12, 12, 0.9);
-          border: 3px solid rgba(255, 255, 255, 0.15);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all var(--transition-base);
-          margin-bottom: var(--space-2);
-        }
-
-        .stepper__dot-inner {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background-color: transparent;
-          transition: all var(--transition-base);
-        }
-
-        .stepper__label {
-          display: block;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--text-secondary);
-          transition: color var(--transition-base);
-        }
-
-        .stepper__desc {
-          display: block;
-          font-size: 0.7rem;
-          color: var(--text-tertiary);
-        }
-
-        /* Completed Step */
-        .stepper__step--completed .stepper__dot {
-          background-color: var(--accent-primary);
-          border-color: var(--accent-primary);
-          box-shadow: 0 0 10px rgba(255, 107, 0, 0.3);
-        }
-
-        .stepper__step--completed .stepper__label {
-          color: var(--text-primary);
-        }
-
-        /* Current Step */
-        .stepper__step--current .stepper__dot {
-          border-color: var(--accent-primary);
-          background-color: rgba(12, 12, 12, 0.9);
-          box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.2);
-        }
-
-        .stepper__step--current .stepper__dot-inner {
-          background-color: var(--accent-primary);
-        }
-
-        .stepper__step--current .stepper__label {
-          color: var(--accent-primary);
-          font-weight: 700;
-        }
-
-        /* Expanded Details styling */
-        .order-card__expanded {
-          margin-top: var(--space-4);
-        }
-
-        .divider {
-          border: none;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
-          margin: var(--space-4) 0;
-        }
-
-        .expanded-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: var(--space-4);
-        }
-
-        @media (min-width: 640px) {
-          .expanded-grid {
-            grid-template-columns: 2fr 1fr;
-            align-items: center;
-          }
-        }
-
-        .expanded-grid h4 {
-          margin: 0 0 var(--space-2);
-          font-size: 0.95rem;
-          color: var(--text-primary);
-          font-weight: 600;
-        }
-
-        .expanded-text {
-          font-size: 0.85rem;
-          color: var(--text-secondary);
-          line-height: 1.5;
-          margin: 0;
-        }
-
-        .tracking-info {
-          font-size: 0.85rem;
-          margin: var(--space-2) 0 0 0;
-          color: var(--text-secondary);
-        }
-
-        .tracking-link {
-          color: var(--accent-primary);
-          text-decoration: underline;
-          cursor: pointer;
-        }
-
-        .expanded-actions {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-2);
-        }
-
-        /* Empty State */
-        .empty-state {
-          text-align: center;
-          padding: var(--space-16) var(--space-6);
-          background: rgba(12, 12, 12, 0.82);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-radius: var(--radius-xl);
-          max-width: 500px;
-          margin: var(--space-8) auto;
-          box-shadow: var(--shadow-premium);
-        }
-
-        .empty-state__icon {
-          font-size: 4rem;
-          margin-bottom: var(--space-4);
-        }
-
-        .empty-state h3 {
-          font-family: var(--font-heading), sans-serif;
-          font-size: 1.5rem;
-          font-weight: 700;
-          margin: 0 0 var(--space-2);
-          color: var(--text-primary);
-        }
-
-        .empty-state p {
-          color: var(--text-secondary);
-          margin: 0 0 var(--space-6);
-          font-size: 0.95rem;
-        }
-
-        @media (max-width: 576px) {
-          .stepper__desc {
-            display: none;
-          }
-          .stepper__label {
-            font-size: 0.7rem;
-          }
-        }
-      `}</style>
     </>
   );
 }
