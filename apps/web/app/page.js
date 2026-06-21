@@ -2,12 +2,67 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowRight, Flame, Clock, Sparkles, FolderOpen, CheckCircle, BarChart3, TrendingUp, Check, Factory } from 'lucide-react';
+import { 
+  ArrowRight, Flame, Clock, Sparkles, FolderOpen, CheckCircle, 
+  BarChart3, TrendingUp, Check, Factory, Layers, ShoppingBag, 
+  Cpu, Shirt, Home, Wheat, PenTool, Dumbbell
+} from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
 import BatchCard from '@/components/batch/BatchCard';
 import { CATEGORIES, STATS } from '@/lib/mock-data';
+
+const categoryIconMap = {
+  all: Layers,
+  fmcg: ShoppingBag,
+  electronics: Cpu,
+  apparel: Shirt,
+  'home-kitchen': Home,
+  agriculture: Wheat,
+  'personal-care': Sparkles,
+  stationery: PenTool,
+  'sports-fitness': Dumbbell,
+};
+
+function LiveJoinTicker() {
+  const joins = [
+    { name: 'Rahul K.', city: 'Mumbai', slots: 10, time: 'just now' },
+    { name: 'Priya S.', city: 'Pune', slots: 5, time: '12s ago' },
+    { name: 'Amit G.', city: 'Delhi', slots: 20, time: '35s ago' },
+    { name: 'Meena R.', city: 'Bangalore', slots: 15, time: '1m ago' },
+    { name: 'Sandeep V.', city: 'Surat', slots: 8, time: '2m ago' },
+    { name: 'Kunal M.', city: 'Ahmedabad', slots: 12, time: '3m ago' },
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % joins.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentJoin = joins[currentIndex];
+
+  return (
+    <div className="h-6 overflow-hidden relative w-full text-left">
+      <div 
+        key={currentIndex} 
+        className="flex items-center justify-between text-[11px] text-neutral-400 font-medium animate-fade-in-up"
+      >
+        <span className="flex items-center gap-1.5 truncate">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+          <span>
+            <strong className="text-white font-bold">{currentJoin.name}</strong> from {currentJoin.city} joined <strong className="text-primary font-bold">+{currentJoin.slots} units</strong>
+          </span>
+        </span>
+        <span className="text-[9px] text-neutral-500 font-mono shrink-0 ml-2">{currentJoin.time}</span>
+      </div>
+    </div>
+  );
+}
 
 function HomePageContent() {
   const router = useRouter();
@@ -36,6 +91,26 @@ function HomePageContent() {
     }
     loadBatches();
   }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      },
+      { threshold: 0.05 }
+    );
+
+    const revealElements = document.querySelectorAll('.reveal');
+    revealElements.forEach((el) => observer.observe(el));
+
+    return () => {
+      revealElements.forEach((el) => observer.unobserve(el));
+    };
+  }, [loading, batches, activeCategory, activeTab]);
 
   const handleCategoryChange = (catId) => {
     const params = new URLSearchParams(window.location.search);
@@ -118,7 +193,7 @@ function HomePageContent() {
           <div className="container mx-auto px-4">
 
             {/* Section Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 reveal">
               <div className="flex flex-col text-left">
                 <div className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-3 before:content-[''] before:block before:w-0.5 before:h-3 before:bg-primary before:rounded-sm">
                   Live Now
@@ -134,7 +209,7 @@ function HomePageContent() {
             </div>
 
             {/* Segmented Tab Controls */}
-            <div className="flex gap-1.5 p-1 rounded-xl bg-neutral-900/40 border border-white/5 w-fit mb-8" role="tablist">
+            <div className="flex gap-1.5 p-1 rounded-xl bg-neutral-900/40 border border-white/5 w-fit mb-8 reveal" role="tablist">
               {TABS.map((tab) => {
                 const TabIcon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -164,12 +239,13 @@ function HomePageContent() {
                 ))
               ) : currentTabBatches.length > 0 ? (
                 currentTabBatches.slice(0, 4).map((batch, i) => (
-                  <BatchCard
-                    key={batch.id}
-                    batch={batch}
-                    manufacturer={batch.manufacturer}
-                    index={i}
-                  />
+                  <div key={batch.id} className="reveal" style={{ transitionDelay: `${i * 100}ms` }}>
+                    <BatchCard
+                      batch={batch}
+                      manufacturer={batch.manufacturer}
+                      index={i}
+                    />
+                  </div>
                 ))
               ) : (
                 <div className="col-span-full py-16 flex flex-col items-center justify-center text-center border border-dashed border-white/5 rounded-2xl bg-neutral-900/10">
@@ -190,7 +266,7 @@ function HomePageContent() {
           <div className="container mx-auto px-4">
 
             {/* Section Header */}
-            <div className="flex flex-col text-left mb-8">
+            <div className="flex flex-col text-left mb-8 reveal">
               <div className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-3 before:content-[''] before:block before:w-0.5 before:h-3 before:bg-primary before:rounded-sm">
                 Explore
               </div>
@@ -200,34 +276,53 @@ function HomePageContent() {
               </p>
             </div>
 
-            {/* Category Tiles */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-3 mb-8" id="category-filters">
-              <button
-                className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all cursor-pointer text-center gap-2 ${activeCategory === 'all' ? 'border-primary bg-primary/10 text-primary shadow-lg shadow-primary/10' : 'border-white/5 bg-neutral-900/20 hover:bg-neutral-900/50 text-white'}`}
-                onClick={() => handleCategoryChange('all')}
-                id="chip-all"
-              >
-                <span className="text-2xl">🌟</span>
-                <span className="text-xs font-bold">All</span>
-                <span className="text-[10px] font-bold text-neutral-500">{batches.length}</span>
-              </button>
-
-              {CATEGORIES.map((cat) => {
-                const isSelected = activeCategory === cat.id;
-                return (
+            {/* Category Tiles / Horizontal Scrollable Glass Chips */}
+            <div className="relative w-full mb-8 reveal">
+              {/* Fade mask */}
+              <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-neutral-950 to-transparent pointer-events-none z-10" />
+              
+              <div className="scrollbar-none overflow-x-auto pb-2 -mb-2" id="category-filters">
+                <div className="flex items-center gap-3 w-max py-1 px-1">
                   <button
-                    key={cat.id}
-                    id={`chip-${cat.id}`}
-                    className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all cursor-pointer text-center gap-2 ${isSelected ? 'bg-primary/10 text-primary shadow-lg shadow-primary/10' : 'border-white/5 bg-neutral-900/20 hover:bg-neutral-900/50 text-white'}`}
-                    style={{ borderColor: isSelected ? 'var(--primary)' : '' }}
-                    onClick={() => handleCategoryChange(cat.id)}
+                    className={`flex items-center gap-2 px-5 py-3.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
+                      activeCategory === 'all' 
+                        ? 'border-primary bg-primary/10 text-primary shadow-[0_0_20px_rgba(255,106,0,0.15)]' 
+                        : 'border-white/5 bg-neutral-900/20 hover:bg-neutral-900/50 text-neutral-400 hover:text-white'
+                    }`}
+                    onClick={() => handleCategoryChange('all')}
+                    id="chip-all"
                   >
-                    <span className="text-2xl">{cat.icon}</span>
-                    <span className="text-xs font-bold truncate max-w-full">{cat.name}</span>
-                    <span className="text-[10px] font-bold text-neutral-500">{cat.count}</span>
+                    <Layers className="w-4 h-4 shrink-0" />
+                    <span>All Batches</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${activeCategory === 'all' ? 'bg-primary/20 text-primary' : 'bg-neutral-950 text-neutral-500'}`}>
+                      {batches.length}
+                    </span>
                   </button>
-                );
-              })}
+
+                  {CATEGORIES.map((cat) => {
+                    const isSelected = activeCategory === cat.id;
+                    const IconComponent = categoryIconMap[cat.id] || FolderOpen;
+                    return (
+                      <button
+                        key={cat.id}
+                        id={`chip-${cat.id}`}
+                        className={`flex items-center gap-2 px-5 py-3.5 rounded-xl border transition-all cursor-pointer text-xs font-bold ${
+                          isSelected 
+                            ? 'border-primary bg-primary/10 text-primary shadow-[0_0_20px_rgba(255,106,0,0.15)]' 
+                            : 'border-white/5 bg-neutral-900/20 hover:bg-neutral-900/50 text-neutral-400 hover:text-white'
+                        }`}
+                        onClick={() => handleCategoryChange(cat.id)}
+                      >
+                        <IconComponent className="w-4 h-4 shrink-0" />
+                        <span className="truncate max-w-[120px]">{cat.name}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-primary/20 text-primary' : 'bg-neutral-950 text-neutral-500'}`}>
+                          {cat.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Filtered Batch Grid */}
@@ -241,12 +336,13 @@ function HomePageContent() {
                 ))
               ) : filteredBatches.length > 0 ? (
                 filteredBatches.map((batch, i) => (
-                  <BatchCard
-                    key={batch.id}
-                    batch={batch}
-                    manufacturer={batch.manufacturer}
-                    index={i}
-                  />
+                  <div key={batch.id} className="reveal" style={{ transitionDelay: `${i * 100}ms` }}>
+                    <BatchCard
+                      batch={batch}
+                      manufacturer={batch.manufacturer}
+                      index={i}
+                    />
+                  </div>
                 ))
               ) : (
                 <div className="col-span-full py-16 flex flex-col items-center justify-center text-center border border-dashed border-white/5 rounded-2xl bg-neutral-900/10">
@@ -278,7 +374,7 @@ function HomePageContent() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               
               {/* Left Column: simulator info */}
-              <div className="lg:col-span-6 flex flex-col text-left gap-6">
+              <div className="lg:col-span-6 flex flex-col text-left gap-6 reveal">
                 <div>
                   <div className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-3 before:content-[''] before:block before:w-0.5 before:h-3 before:bg-primary before:rounded-sm">
                     Crowd Mechanics
@@ -301,8 +397,8 @@ function HomePageContent() {
                     </span>
                   </div>
 
-                  <div className="relative h-2 w-full bg-neutral-950 rounded-full overflow-hidden border border-white/5">
-                    <div className="h-full w-[98%] bg-gradient-to-r from-primary to-accent rounded-full relative">
+                  <div className="relative h-2.5 w-full bg-neutral-950 rounded-full overflow-hidden border border-white/5">
+                    <div className="h-full w-[98%] bg-gradient-to-r from-primary to-accent rounded-full relative pulse-glow-bar">
                       <div className="absolute inset-0 bg-white/20 animate-pulse" />
                     </div>
                   </div>
@@ -322,9 +418,12 @@ function HomePageContent() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 text-primary text-xs rounded-xl font-bold">
-                    <Flame className="w-4 h-4 flex-shrink-0 animate-bounce" />
-                    <span>Only 2 more orders needed to unlock ₹75/kg pricing for everyone!</span>
+                  <div className="flex flex-col gap-2 p-3 bg-neutral-950/60 border border-white/5 rounded-xl">
+                    <LiveJoinTicker />
+                    <div className="flex items-center gap-2 text-xs font-bold text-primary border-t border-white/5 pt-2">
+                      <Flame className="w-4 h-4 flex-shrink-0 animate-bounce" />
+                      <span>Only 2 more orders needed to unlock ₹75/kg pricing for everyone!</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -332,11 +431,11 @@ function HomePageContent() {
               {/* Right Column: proof cards */}
               <div className="lg:col-span-6 flex flex-col gap-6">
                 {PROOF_CARDS.map((card, idx) => (
-                  <div key={card.k} className="relative group p-6 rounded-2xl border border-white/5 bg-neutral-900/20 backdrop-blur-md flex gap-5 hover:border-white/10 transition-colors">
+                  <div key={card.k} className="relative group p-6 rounded-2xl border border-white/5 bg-neutral-900/20 backdrop-blur-md flex gap-5 hover:border-white/10 transition-colors reveal" style={{ transitionDelay: `${idx * 150}ms` }}>
                     <div className="absolute top-4 right-4 text-4xl font-mono font-black text-white/5 select-none">{String(idx + 1).padStart(2, '0')}</div>
                     
                     {/* Widget Content visual mockups */}
-                    <div className="w-1/3 hidden sm:block flex-shrink-0 p-3 rounded-xl border border-white/5 bg-neutral-950/40">
+                    <div className="w-1/3 hidden sm:block flex-shrink-0 p-3 rounded-xl border border-white/5 bg-neutral-950/40 animate-fade-in">
                       {idx === 0 && (
                         <div className="flex flex-col gap-1.5 text-[9px] text-left">
                           <div className="font-bold text-neutral-400 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-primary" /> Live reservations</div>
@@ -377,7 +476,7 @@ function HomePageContent() {
         </section>
 
         {/* ── SECTION 4: MANUFACTURER CTA ─────────────────────────────────── */}
-        <section className="py-20 border-t border-white/5" id="cta-section">
+        <section className="py-20 border-t border-white/5 reveal" id="cta-section">
           <div className="container mx-auto px-4">
             <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-neutral-950 via-neutral-900/50 to-neutral-950 p-8 md:p-12 shadow-2xl">
               
@@ -391,9 +490,9 @@ function HomePageContent() {
                       <Factory className="w-3.5 h-3.5" />
                       <span>For Manufacturers</span>
                     </span>
-                    <h2 className="text-2xl sm:text-4xl font-display font-black text-white mt-4 tracking-tight leading-none">
-                      Scale your production. <br />
-                      Fill your order book.
+                    <h2 className="text-2xl sm:text-4xl font-display font-black tracking-tight leading-tight mt-4">
+                      <span className="text-white">Scale your production.</span> <br />
+                      <span className="text-primary">Fill your order book.</span>
                     </h2>
                   </div>
 
@@ -422,14 +521,46 @@ function HomePageContent() {
                 <div className="lg:col-span-5">
                   <div className="grid grid-cols-2 gap-4 min-w-[280px]">
                     {CTA_STATS.map((stat) => (
-                      <div key={stat.l} className="flex flex-col p-5 bg-neutral-900/40 border border-white/5 rounded-2xl backdrop-blur-md hover:border-white/10 transition-colors">
+                      <div key={stat.l} className="flex flex-col p-5 bg-neutral-900/40 border-t-2 border-t-primary/60 border-x border-b border-white/5 rounded-2xl backdrop-blur-md hover:border-t-primary hover:border-x-white/10 hover:border-b-white/10 hover:-translate-y-1 transition-all duration-300 shadow-lg">
                         <span className="text-2xl sm:text-3xl font-mono font-black text-white tracking-tight">{stat.v}</span>
-                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mt-1.5 leading-none">{stat.l}</span>
+                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mt-2 leading-none">{stat.l}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
+              </div>
+
+              {/* Logo Ticker */}
+              <div className="relative z-10 mt-12 pt-8 border-t border-white/5 overflow-hidden">
+                <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest text-center mb-6">
+                  Trusted by leading manufacturers across India
+                </p>
+                <div className="relative w-full overflow-hidden">
+                  {/* Gradient fades on sides */}
+                  <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-neutral-950 to-transparent pointer-events-none z-10" />
+                  <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-neutral-950 to-transparent pointer-events-none z-10" />
+                  
+                  {/* Scrolling container */}
+                  <div className="flex gap-16 animate-marquee w-max select-none">
+                    {/* First set of logos */}
+                    <div className="flex gap-16 items-center">
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">TATA ENTERPRISES</span>
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">RELIANCE MFG</span>
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">BIRLA INDUSTRIES</span>
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">ITC LIMITED</span>
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">GODREJ GROUP</span>
+                    </div>
+                    {/* Duplicate set for seamless loop */}
+                    <div className="flex gap-16 items-center" aria-hidden="true">
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">TATA ENTERPRISES</span>
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">RELIANCE MFG</span>
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">BIRLA INDUSTRIES</span>
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">ITC LIMITED</span>
+                      <span className="text-xs font-black tracking-wider text-neutral-600 font-display">GODREJ GROUP</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
             </div>

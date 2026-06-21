@@ -65,8 +65,8 @@ export default function Footer() {
       <div className="bg-primary/5 py-8 border-b border-primary/10">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex flex-col text-center md:text-left gap-1">
-            <h3 className="font-display font-black text-lg text-white">Stay ahead of every price drop.</h3>
-            <p className="text-xs text-neutral-400">Get notified when new batches launch in your categories.</p>
+            <h3 className="font-display font-black text-lg text-white">Join 48,500+ buyers getting early batch alerts</h3>
+            <p className="text-xs text-neutral-400">Stay ahead of every price drop. Get notified when new batches launch.</p>
           </div>
           <div className="flex w-full md:w-auto items-center max-w-sm gap-2 bg-neutral-900 border border-white/5 rounded-xl p-1">
             <input
@@ -99,18 +99,18 @@ export default function Footer() {
 
           {/* Social Links */}
           <div className="flex items-center gap-3">
-            <a href="#" aria-label="Twitter / X" className="p-2 rounded-lg bg-neutral-900 border border-white/5 text-neutral-400 hover:text-white transition-colors">
+            <a href="#" aria-label="Twitter / X" className="p-2.5 rounded-full bg-neutral-900 border border-white/5 text-neutral-400 hover:text-white hover:border-primary/35 hover:shadow-[0_0_12px_rgba(255,106,0,0.15)] transition-all duration-250">
               <TwitterIcon />
             </a>
-            <a href="#" aria-label="Instagram" className="p-2 rounded-lg bg-neutral-900 border border-white/5 text-neutral-400 hover:text-white transition-colors">
+            <a href="#" aria-label="Instagram" className="p-2.5 rounded-full bg-neutral-900 border border-white/5 text-neutral-400 hover:text-white hover:border-primary/35 hover:shadow-[0_0_12px_rgba(255,106,0,0.15)] transition-all duration-250">
               <InstagramIcon />
             </a>
-            <a href="#" aria-label="LinkedIn" className="p-2 rounded-lg bg-neutral-900 border border-white/5 text-neutral-400 hover:text-white transition-colors">
+            <a href="#" aria-label="LinkedIn" className="p-2.5 rounded-full bg-neutral-900 border border-white/5 text-neutral-400 hover:text-white hover:border-primary/35 hover:shadow-[0_0_12px_rgba(255,106,0,0.15)] transition-all duration-250">
               <LinkedInIcon />
             </a>
           </div>
 
-          <div className="flex items-center gap-1.5 mt-2 self-start px-2.5 py-1 rounded-md border border-neutral-900 bg-neutral-950 text-[10px] text-neutral-400 font-bold">
+          <div className="flex items-center gap-2 mt-2 self-start px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-[10px] text-primary font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(255,106,0,0.05)]">
             <span>🇮🇳</span>
             <span>Made in India</span>
           </div>
@@ -149,11 +149,11 @@ export default function Footer() {
           <h4 className="font-display font-bold text-xs uppercase tracking-wider text-neutral-300">Trust & Safety</h4>
           <div className="grid grid-cols-2 gap-4">
             {trustItems.map((item) => (
-              <div key={item.title} className="flex gap-2.5">
+              <div key={item.title} className="flex gap-2.5 p-3 rounded-xl border border-white/5 bg-neutral-900/20 hover:border-white/10 transition-colors">
                 <span className="text-lg flex-shrink-0">{item.icon}</span>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-neutral-300 leading-tight">{item.title}</span>
-                  <span className="text-[9px] text-neutral-500 mt-0.5 leading-tight">{item.desc}</span>
+                  <span className="text-[10px] font-bold text-neutral-200 leading-tight">{item.title}</span>
+                  <span className="text-[9px] text-neutral-500 mt-1 leading-tight">{item.desc}</span>
                 </div>
               </div>
             ))}

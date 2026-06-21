@@ -1,0 +1,80 @@
+:root {
+  /* Base Colors */
+  --color-void: #09090B;
+  --color-surface: #111113;
+  --color-surface-raised: #18181B;
+  --color-surface-overlay: #1F1F23;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-subtle: rgba(255, 255, 255, 0.04);
+
+  /* Brand Colors */
+  --color-brand: #F97316;
+  --color-brand-dim: rgba(249, 115, 22, 0.12);
+  --color-brand-glow: rgba(249, 115, 22, 0.25);
+
+  /* Text Colors */
+  --color-text-primary: #FAFAFA;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted: #52525B;
+
+  /* Status Colors */
+  --color-live: #22C55E;
+  --color-live-dim: rgba(34, 197, 94, 0.12);
+  --color-warning: #EAB308;
+
+  /* Batch Card Backgrounds by Category */
+  --color-batch-a: #0F1A0F;   /* Deep forest — for agriculture/food */
+  --color-batch-b: #0A0F1A;   /* Deep navy — for electronics */
+  --color-batch-c: #1A0F0A;   /* Deep ember — for FMCG/personal */
+  --color-batch-d: #0F0A1A;   /* Deep violet — for apparel */
+
+  /* Typography */
+  --font-display: var(--font-heading), 'Inter', system-ui, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+  --text-7xl: 4.5rem;
+
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-black: 900;
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  --tracking-tight: -0.03em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.08em;
+  --tracking-wider: 0.12em;
+
+  /* Spacing & Radius */
+  --space-section: 120px;       /* section breathing room */
+  --space-section-mobile: 72px;
+  --space-card-pad: 20px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* Shadows & Glows */
+  --shadow-card: 0 0 0 1px var(--color-border), 
+                 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 0 0 1px rgba(249, 115, 22, 0.2), 
+                       0 8px 40px rgba(0, 0, 0, 0.6), 
+                       0 0 32px rgba(249, 115, 22, 0.06);
+  --glow-brand: 0 0 24px rgba(249, 115, 22, 0.2);
+}
