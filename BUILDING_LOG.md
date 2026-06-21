@@ -11,7 +11,7 @@
 - Manufacturers list products with tiered pricing (more buyers = lower price)
 - Platform takes 4% fee only on successful batches
 
-**Stack**: Next.js 14 (App Router), React, Vanilla CSS (styled-jsx), No Tailwind  
+**Stack**: Next.js 16 (App Router), React, Tailwind CSS v4, Lucide React, GSAP, Lenis, Supabase, Prisma ORM (PostgreSQL)  
 **Location**: `e:/BulkBlitz/apps/web`  
 **Dev server**: `npm run dev` inside `e:/BulkBlitz/apps/web` → http://localhost:3000
 
@@ -122,84 +122,57 @@ The header was redesigned as a GitHub-style left-sidebar mobile drawer in a prev
 - [x] Verified build compiles successfully using next build (`npm run build`)
 - [x] Verified local Next dev server runs active page without errors
 
-### Session 4 (NEXT UP): Interactive Details & Polishing
-**Goal**: Implement premium redesign of detail pages and interactive features.
+### Session 4 (Completed)
+- Built interactive secondary mock-ups (Orders, Wallet, Auth, Manufacturer Dashboard) and verified Successful Next.js compilation.
 
-**Pending**:
-- [ ] Redesign the Batch Detail Page (`/batch/[id]`) to match the premium homepage aesthetic
-- [ ] Set up interactive animations / transitions between pages
-- [ ] Connect/simulate real-time WebSocket updates for active slot counts
+### Session 5 (Completed): Foundation & Navigation Overhaul
+- Migrated default styling variables to Tailwind CSS v4 `@theme` properties inside `globals.css`.
+- Standardized navigation elements (Gmail-style App Rail, collapsible side navigation drawers, custom brand convergent Logo).
+- Added global search filters and category-query selectors on the Homepage.
+- Wired up Razorpay wallet checkout API routes and notification stubs.
 
----
+### Session 6 (Completed): Profile & Dashboard Enhancements
+- Rebuilt user profile dashboard into a premium Tailwind v4 grid bento layout, adding profile avatars uploads and default address persistence.
+- Refactored buyer orders and wallet dashboards with flex-wrap timelines, transparent opacity fixes, and dynamic IFSC bank checks.
 
-## 📋 If You're Continuing This Session
+### Session 7 (Completed): Manufacturer Dashboard Overhaul
+- Developed a dynamic, responsive 5-tab dashboard for manufacturers.
+- Linked profile edit forms and client reservation summaries directly to PostgreSQL database.
+- Implemented status updates (CONFIRMED -> SHIPPED -> DELIVERED) and dispatch carrier tracking number registration.
 
-1. **Verify git status**: Run `git status` to see all premium UI and navigation changes.
-2. **Commit changes**: Stage and commit the changes: `git add -A && git commit -m "feat: Gmail-style sidebar navigation overhaul and functional search"`
-3. **Check dev server**: Verify that local development server runs correctly on http://localhost:3000 (currently running in background as task-1094).
-4. **Redesign `/batch/[id]/page.js`**: Begin Session 4 by upgrading the product batch details layout with the same design system tokens and glassmorphism.
+### Session 8 (Completed): Marketplace Pages Overhaul
+- Migrated remaining marketplace routes from legacy styled-jsx to Tailwind CSS v4 in `/auth`, `/batch/[id]`, `/manufacturer/analytics`, and `/manufacturer/batch/new`.
+- Connected the new batch launching wizard directly to the `/api/batches` creation POST handler to store active listings and price schedules in PostgreSQL.
 
 ---
 
 ## 🐛 Known Issues / Watch Points
 
-1. **styled-jsx scoping**: All component CSS uses `<style jsx>{\`...\`}</style>`. Classes defined here are COMPONENT-SCOPED. Don't define global classes inside styled-jsx unless using `<style jsx global>`.
+1. **Supabase connection**: Real-time Postgres channel updates require valid Supabase project credentials in `.env` variables to receive realtime listener triggers.
 
-2. **animations.css keyframes**: The file `app/animations.css` defines these keyframes (used throughout):
-   - `float` — slow up-down for orbs
-   - `pulseSoft` — subtle scale + opacity pulse (used on live dots)
-   - `fadeIn`, `fadeInUp` — entry animations
-   - `shimmer` — skeleton loading sweep
-   - `urgencyPulse` — red warning pulse
-   - `avatarPop` — avatar entry pop
-   - `priceDropFlash` — green flash for price drops
-   
-   The animation CLASSES (`.animate-fade-in`, `.animate-fade-in-up`, etc.) are defined in `animations.css`.
+2. **IFSC routing check**: Manufacturer bank account settings verify IFSC syntax using `/^[A-Z]{4}0[A-Z0-9]{6}$/` format before letting configurations be saved.
 
-3. **Magnet.js**: Was fixed in Session 2. The `handleMouseLeave` function must remain defined in the component before the `onMouseLeave` JSX prop. Do NOT remove it.
-
-4. **lib/mock-data.js**: CATEGORIES array has `{ id, name, icon, color, count }`. The `color` field is a hex color for each category. STATS has `{ totalBuyers, totalManufacturers, totalSaved, activeBatches }`.
-
-5. **next.config.mjs**: Has `images.domains` configured. Don't break image config.
+3. **Prisma concurrency**: Parallel transaction bookings utilize a pessimistic row-level lock (`FOR UPDATE`) inside `api/orders/route.js` to prevent double-reservation.
 
 ---
 
 ## 🔑 Design Decisions Made (Don't Revert)
 
-- **Dark mode first**: The primary design target is dark mode. Light mode exists but isn't the focus.
-- **No Tailwind**: User explicitly chose styled-jsx + CSS variables. Never add Tailwind.
-- **Kanit vibes via Plus Jakarta Sans**: User initially requested Kanit but it was already using Plus Jakarta Sans which has a similar feel. The `--font-heading` CSS variable points to this.
-- **Glassmorphism elements**: `background: var(--bg-glass)` + `backdrop-filter: blur(20px)` is used for overlaying panels.
-- **3D tilt on BatchCard**: The `perspective(1000px) rotateX rotateY` transform on mousemove must be preserved.
-- **Magnet effect on hero CTAs**: `<Magnet padding={20}>` wraps both CTA buttons.
+- **Dark mode first**: The primary design target is dark mode. Pitch black base (`#000000` / `#050505`) with amber-orange highlights.
+- **Tailwind CSS v4 Migration**: Migrated all pages and subpages to Tailwind CSS v4 for clean, high-performance styling, completely removing obsolete styled-jsx scoping.
+- **Dynamic stepper timeline**: Buyer order page and batch detail page progress indicators scale linearly based on current reservations.
+- **Gmail-style collapsible Rail**: Standardized layout drawers to collapse cleanly while triggering auto-resizing transitions across all interior grids and ThreeJS canvas components.
 
 ---
 
-## 💬 Git Status (as of Session 3 start)
+## 💬 Git Status (All Phases Completed)
 
-Files modified in this project (from upstream):
-- `apps/web/app/globals.css` — rebuilt from scratch
-- `apps/web/app/animations.css` — added keyframes  
-- `apps/web/app/layout.js` — font imports
-- `apps/web/app/page.js` — home page
-- `apps/web/components/layout/Header.js` — nav redesign
-- `apps/web/components/layout/Footer.js` — footer
-- `apps/web/components/home/HeroSection.js` — hero
-- `apps/web/components/batch/BatchCard.js` — batch card
-- `apps/web/components/ui/Magnet.js` — bugfix
-- `apps/web/components/ui/ScrollRevealText.js` — created
-- `apps/web/components/ui/CustomCursor.js` — created
-
-**To commit**: `git add -A && git commit -m "feat: premium UI overhaul — world-class design with glassmorphism, animated hero, premium batch cards"`
+All developer phases, overhauls, database connection API routes, and styling migrations are fully implemented, verified, and committed to main.
 
 ---
 
-## 🎯 Future Enhancements (not started)
+## 🎯 Future Enhancements (Next Steps)
 
-1. **Batch Detail Page** (`/batch/[id]`): Needs premium redesign matching home page aesthetic
-2. **Orders Page**: Needs timeline/status visualization
-3. **Wallet Page**: Dashboard with transaction history
-4. **Manufacturer Dashboard** (`/manufacturer`): Analytics, batch management
-5. **Dark/Light Toggle**: Toggle button in header to switch themes
-6. **Smooth Page Transitions**: Next.js app-level page transition animations
-7. **Real-time Price Updates**: WebSocket connection for live batch slot updates
+1. **Production Deployment**: Deploy to production environment via Vercel with database binds.
+2. **Real-time Price Engine**: Enhance Redis Pub/Sub backend to broadcast instant reservation tickers.
+3. **SMS Alert Service**: Replace WhatsApp/Email log print stubs with live Twilio/SendGrid configurations.
