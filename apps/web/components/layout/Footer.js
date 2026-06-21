@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Logo from '@/components/ui/Logo';
 
 const marketplaceLinks = [
   { label: 'Browse Batches', href: '/' },
@@ -87,9 +88,7 @@ export default function Footer() {
         {/* Column 1 — Brand info */}
         <div className="md:col-span-4 flex flex-col gap-4 text-left">
           <Link href="/" className="flex items-center gap-3 text-white">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-display font-black text-white text-base shadow-lg shadow-primary/25">
-              B
-            </div>
+            <Logo className="w-8 h-8" />
             <span className="font-display font-black text-lg text-white tracking-tight">BulkBlitz</span>
           </Link>
 

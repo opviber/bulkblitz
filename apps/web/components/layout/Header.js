@@ -10,6 +10,7 @@ import {
   BookOpen, Terminal, Mail, Award
 } from "lucide-react";
 import { USER, CATEGORIES } from "@/lib/mock-data";
+import Logo from "@/components/ui/Logo";
 
 function HeaderContent() {
   const pathname = usePathname();
@@ -125,13 +126,10 @@ function HeaderContent() {
           </button>
 
           <Link href="/" className="flex items-center gap-3 text-white decoration-transparent">
-            {/* Minimal High-End stacked boxes style logo */}
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-display font-black text-white text-base shadow-lg shadow-primary/25">
-              B
-            </div>
+            <Logo className="w-8 h-8" />
             <div className="flex flex-col justify-center leading-none">
               <span className="text-sm font-display font-black tracking-tight text-white">BulkBlitz</span>
-              <span className="text-[9px] font-medium tracking-wide text-neutral-500 uppercase mt-0.5">Buy Together. Pay Less.</span>
+              <span className="text-[9px] font-extrabold tracking-wider text-neutral-400 uppercase mt-0.5">Buy Together. Pay Less.</span>
             </div>
           </Link>
         </div>
@@ -389,9 +387,7 @@ function HeaderContent() {
       <div className={`fixed top-0 bottom-0 left-0 w-[280px] bg-neutral-950/95 backdrop-blur-2xl shadow-2xl z-[1200] flex flex-col transform transition-transform duration-300 ease-out ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center justify-between p-5 border-b border-white/5">
           <Link href="/" className="flex items-center gap-3 text-white decoration-transparent" onClick={() => setMobileMenuOpen(false)}>
-            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center font-display font-black text-white text-sm">
-              B
-            </div>
+            <Logo className="w-7 h-7" />
             <span className="text-sm font-display font-black tracking-tight">BulkBlitz</span>
           </Link>
           <button
