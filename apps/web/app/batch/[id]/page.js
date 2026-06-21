@@ -10,12 +10,34 @@ import {
   formatPrice,
   getCurrentTier,
   getSavingsPercent,
-  getTimeRemaining,
   getSlotsToNextTier,
   getInitials,
 } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { Star, MapPin, Check, Plus, Minus, Share2, Clock, Loader2, ShieldCheck, ChevronLeft, X, AlertCircle } from "lucide-react";
+import {
+  Star, MapPin, Check, Plus, Minus, Share2, Clock, Loader2,
+  ShieldCheck, ChevronLeft, X, AlertCircle, Heart, ChevronDown,
+  ChevronUp, Copy, Truck, Package, Users, Info
+} from "lucide-react";
+
+const FAQ_ITEMS = [
+  {
+    q: "When will I be charged?",
+    a: "Your wallet is held in escrow when you reserve slots. You are only fully charged once the batch reaches its minimum order quantity (MOQ) and locks.",
+  },
+  {
+    q: "What if the batch doesn't fill up?",
+    a: "If the batch closes without reaching its MOQ, your full payment is automatically refunded to your BulkCash wallet within 24 hours.",
+  },
+  {
+    q: "Can I cancel my reservation?",
+    a: "You can cancel your reservation at any time before the batch locks. Once locked (MOQ reached), cancellations are subject to the manufacturer's return policy.",
+  },
+  {
+    q: "How does the price drop work?",
+    a: "Each pricing tier activates when the slot count crosses a threshold. When a new tier unlocks, EVERYONE in the batch — including you — gets that lower price automatically.",
+  },
+];
 
 export default function BatchDetailPage({ params }) {
   const resolvedParams = use(params);
@@ -29,6 +51,9 @@ export default function BatchDetailPage({ params }) {
   const [priceDropped, setPriceDropped] = useState(false);
   const [recentJoinAlert, setRecentJoinAlert] = useState(null);
   const [joiningBatch, setJoiningBatch] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [openFaq, setOpenFaq] = useState(null);
 
   const loadBatch = useCallback(async function loadBatch() {
     try {
@@ -51,59 +76,41 @@ export default function BatchDetailPage({ params }) {
     if (!id) return;
     loadBatch();
 
-    // Subscribe to changes in the Batch table
     const batchChannel = supabase
       .channel(`batch-realtime-${id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "Batch",
-          filter: `id=eq.${id}`,
-        },
-        (payload) => {
-          console.log("Realtime batch update received:", payload.new);
-          setBatch((prev) => {
-            if (!prev) return prev;
-            const prevPrice = getCurrentTier(prev)?.price || 0;
-            const updatedBatch = {
-              ...prev,
-              currentSlots: payload.new.currentSlots,
-              status: payload.new.status,
-            };
-            const newPrice = getCurrentTier(updatedBatch)?.price || 0;
-            if (newPrice < prevPrice) {
-              setPriceDropped(true);
-              setTimeout(() => setPriceDropped(false), 4000);
-            }
-            return updatedBatch;
-          });
-        }
-      )
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "Batch",
+        filter: `id=eq.${id}`,
+      }, (payload) => {
+        setBatch((prev) => {
+          if (!prev) return prev;
+          const prevPrice = getCurrentTier(prev)?.price || 0;
+          const updatedBatch = { ...prev, currentSlots: payload.new.currentSlots, status: payload.new.status };
+          const newPrice = getCurrentTier(updatedBatch)?.price || 0;
+          if (newPrice < prevPrice) {
+            setPriceDropped(true);
+            setTimeout(() => setPriceDropped(false), 4000);
+          }
+          return updatedBatch;
+        });
+      })
       .subscribe();
 
-    // Subscribe to insertions in SlotReservation table
     const reservationChannel = supabase
       .channel(`reservation-realtime-${id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "SlotReservation",
-          filter: `batchId=eq.${id}`,
-        },
-        (payload) => {
-          console.log("Realtime reservation received:", payload.new);
-          const qtyJoined = payload.new.quantity;
-          setRecentJoinAlert(`A buyer just reserved ${qtyJoined} slot(s)!`);
-          setTimeout(() => setRecentJoinAlert(null), 4000);
-          
-          // Refresh batch data to display the reservation in the UI
-          loadBatch();
-        }
-      )
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "SlotReservation",
+        filter: `batchId=eq.${id}`,
+      }, (payload) => {
+        const qty = payload.new.quantity;
+        setRecentJoinAlert(`A buyer just reserved ${qty} slot(s)!`);
+        setTimeout(() => setRecentJoinAlert(null), 4000);
+        loadBatch();
+      })
       .subscribe();
 
     return () => {
@@ -123,36 +130,46 @@ export default function BatchDetailPage({ params }) {
 
       if (res.ok) {
         const order = await res.json();
-        alert(`Success! You have reserved ${selectedQty} slots.\n₹${order.totalAmount} was debited from your wallet escrow.`);
+        alert(`✅ You've reserved ${selectedQty} slot(s)!\n₹${order.totalAmount} held in escrow.`);
         router.push("/orders");
       } else {
         const err = await res.json();
-        if (err.error && err.error.includes("Insufficient wallet balance")) {
-          const confirmGo = window.confirm(
-            `${err.error}\n\nWould you like to go to your wallet to load funds?`
-          );
-          if (confirmGo) {
-            router.push("/wallet");
-          }
+        if (err.error?.includes("Insufficient wallet balance")) {
+          const go = window.confirm(`${err.error}\n\nGo to your wallet to add funds?`);
+          if (go) router.push("/wallet");
         } else {
-          alert(err.error || "Failed to join batch");
+          alert(err.error || "Failed to join batch. Please try again.");
         }
       }
     } catch (err) {
       console.error("Error joining batch:", err);
-      alert("Server error occurred while joining batch. Please try again.");
+      alert("Server error. Please try again.");
     } finally {
       setJoiningBatch(false);
     }
   };
 
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2500);
+  };
+
+  // ── Loading State ──
   if (loading) {
     return (
       <>
         <Header />
-        <main className="pt-24 min-h-screen bg-black text-white font-sans">
-          <div className="max-w-7xl mx-auto px-6 py-12">
-            <div className="w-full h-[450px] bg-neutral-900/50 border border-white/5 rounded-3xl animate-pulse" />
+        <main className="pt-24 min-h-screen bg-black text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-5">
+                <div className="h-64 bg-neutral-900/50 border border-white/5 rounded-2xl animate-pulse" />
+                <div className="h-24 bg-neutral-900/50 border border-white/5 rounded-2xl animate-pulse" />
+                <div className="h-40 bg-neutral-900/50 border border-white/5 rounded-2xl animate-pulse" />
+              </div>
+              <div className="h-[480px] bg-neutral-900/50 border border-white/5 rounded-3xl animate-pulse" />
+            </div>
           </div>
         </main>
         <Footer />
@@ -160,19 +177,25 @@ export default function BatchDetailPage({ params }) {
     );
   }
 
+  // ── Not Found State ──
   if (!batch) {
     return (
       <>
         <Header />
-        <main className="pt-24 min-h-screen bg-black text-white font-sans flex items-center justify-center">
-          <div className="text-center space-y-6 p-6">
-            <AlertCircle className="w-16 h-16 text-primary mx-auto" />
-            <h1 className="text-3xl font-extrabold tracking-tight">Batch listing not found</h1>
-            <p className="text-neutral-400 max-w-sm mx-auto">
-              This batch listing may have closed, been cancelled, or does not exist.
+        <main className="pt-24 min-h-screen bg-black text-white flex items-center justify-center">
+          <div className="text-center space-y-6 p-6 max-w-md">
+            <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+              <AlertCircle className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight">Batch not found</h1>
+            <p className="text-neutral-400 text-sm leading-relaxed">
+              This batch may have closed, been cancelled, or does not exist.
             </p>
-            <Link href="/" className="inline-flex bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 text-white font-bold py-3 px-6 rounded-xl transition-all cursor-pointer">
-              ← Back to Home
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-xl transition-all cursor-pointer shadow-lg shadow-primary/20"
+            >
+              <ChevronLeft className="w-4 h-4" /> Browse Active Batches
             </Link>
           </div>
         </main>
@@ -182,11 +205,7 @@ export default function BatchDetailPage({ params }) {
   }
 
   const manufacturer = batch.manufacturer
-    ? {
-        ...batch.manufacturer,
-        name: batch.manufacturer.businessName,
-        avatar: getInitials(batch.manufacturer.businessName),
-      }
+    ? { ...batch.manufacturer, name: batch.manufacturer.businessName, avatar: getInitials(batch.manufacturer.businessName) }
     : null;
 
   const currentTier = getCurrentTier(batch);
@@ -194,14 +213,15 @@ export default function BatchDetailPage({ params }) {
   const slotsToNext = getSlotsToNextTier(batch);
   const fillPercent = Math.min((batch.currentSlots / batch.maxSlots) * 100, 100);
   const nextTier = batch.tiers.find((t) => t.minSlots > batch.currentSlots);
+  const totalCost = (currentTier?.price || 0) * selectedQty;
 
   return (
     <>
       <Header />
       <main className="pt-24 min-h-screen bg-black text-white font-sans">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          
-          {/* Breadcrumb */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+          {/* ── Breadcrumb ── */}
           <nav className="flex items-center gap-2 mb-6 text-xs text-neutral-500">
             <Link href="/" className="hover:text-primary transition-colors">Home</Link>
             <span>/</span>
@@ -210,172 +230,259 @@ export default function BatchDetailPage({ params }) {
             <span className="text-neutral-300 font-medium truncate max-w-[200px]">{batch.title}</span>
           </nav>
 
+          {/* ── Price Drop Banner ── */}
+          {priceDropped && (
+            <div className="mb-6 p-4 rounded-2xl bg-green-500/10 border border-green-500/30 flex items-center gap-3">
+              <span className="text-2xl">🎉</span>
+              <div>
+                <p className="font-bold text-green-400 text-sm">Price just dropped!</p>
+                <p className="text-xs text-neutral-400">A new pricing tier has unlocked. Your cost is now lower!</p>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            
-            {/* Left Column — Product (2/3 width on desktop) */}
+
+            {/* ══════════════════════════════════
+                LEFT COLUMN — Product Details (2/3)
+                ══════════════════════════════════ */}
             <div className="lg:col-span-2 space-y-6">
-              
-              {/* Product Image Box */}
+
+              {/* Product Hero Image */}
               <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-gradient-to-tr from-neutral-950 to-neutral-900 flex items-center justify-center">
-                {/* Decorative mesh glow */}
-                <div className="absolute inset-0 bg-radial-gradient(circle_at_center,rgba(255,107,0,0.1),transparent_60%) pointer-events-none" />
-                
-                <span className="text-8xl opacity-80 filter drop-shadow-[0_0_24px_rgba(255,107,0,0.25)]">
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(255,107,0,0.08),transparent_65%)]" />
+                <span className="text-8xl opacity-90 drop-shadow-[0_0_32px_rgba(255,107,0,0.3)] select-none">
                   {batch.categoryIcon || "📦"}
                 </span>
-                
-                {/* Badges Overlay */}
+
+                {/* Status + Savings Badges */}
                 <div className="absolute top-4 left-4 flex gap-2">
                   {batch.status === "LIVE" && (
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 border border-green-500/20 text-green-400 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> LIVE
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/15 border border-green-500/25 text-green-400 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                      LIVE
                     </span>
                   )}
                   {savingsPercent > 0 && (
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary">
-                      Save {savingsPercent}%
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-primary/15 border border-primary/25 text-primary">
+                      Save up to {savingsPercent}%
                     </span>
                   )}
                 </div>
+
+                {/* Wishlist button */}
+                <button
+                  className={`absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center border transition-all cursor-pointer ${
+                    isWishlisted
+                      ? "bg-red-500/20 border-red-500/30 text-red-400"
+                      : "bg-black/40 border-white/10 text-white/50 hover:text-white hover:border-white/20"
+                  }`}
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                >
+                  <Heart className={`w-4 h-4 ${isWishlisted ? "fill-current" : ""}`} />
+                </button>
               </div>
 
               {/* Manufacturer Card */}
-              <div className="flex gap-4 p-5 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl shadow-xl">
+              <div className="flex gap-4 p-5 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl shadow-xl hover:border-white/10 transition-colors">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-primary to-orange-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
                   {manufacturer?.avatar || "MF"}
                 </div>
-                <div className="space-y-1">
-                  <div className="font-bold text-base flex items-center gap-2 text-white">
+                <div className="flex-1 space-y-1">
+                  <div className="font-bold text-base flex flex-wrap items-center gap-2 text-white">
                     {manufacturer?.name}
                     {manufacturer?.gstVerified && (
-                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 border border-primary/20 text-primary" title="GST Verified">
+                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 border border-primary/20 text-primary">
                         <ShieldCheck className="w-3 h-3" /> GST Verified
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-neutral-400">
+                  <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-neutral-400">
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-neutral-500" /> {manufacturer?.city}, {manufacturer?.state}
+                      <MapPin className="w-3.5 h-3.5 text-neutral-500" />
+                      {manufacturer?.city}, {manufacturer?.state}
                     </span>
-                    <span>•</span>
-                    <span>{manufacturer?.yearsInBusiness} yrs in business</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-0.5 text-amber-400 font-bold">
-                      <Star className="w-3.5 h-3.5 fill-current" /> {manufacturer?.rating}
-                    </span>
+                    {manufacturer?.yearsInBusiness && (
+                      <>
+                        <span className="text-neutral-700">•</span>
+                        <span>{manufacturer.yearsInBusiness} yrs in business</span>
+                      </>
+                    )}
+                    {manufacturer?.rating && (
+                      <>
+                        <span className="text-neutral-700">•</span>
+                        <span className="flex items-center gap-0.5 text-amber-400 font-bold">
+                          <Star className="w-3.5 h-3.5 fill-current" /> {manufacturer.rating}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right text-[10px] font-bold text-neutral-500 flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-1 text-neutral-300">
+                    <Package className="w-3.5 h-3.5" />
+                    <span>{batch.currentSlots} buyers</span>
                   </div>
                 </div>
               </div>
 
-              {/* Product Specifications Card */}
+              {/* Product Description */}
+              {batch.description && (
+                <div className="p-6 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl shadow-xl">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">About This Product</h3>
+                  <p className="text-sm text-neutral-300 leading-relaxed">{batch.description}</p>
+                </div>
+              )}
+
+              {/* Product Specifications */}
               {batch.specs && (
                 <div className="p-6 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl shadow-xl">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Product Specifications</h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Specifications</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {Object.entries(batch.specs).map(([key, value]) => (
                       <div key={key} className="flex flex-col gap-0.5">
                         <span className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">{key}</span>
-                        <span className="text-sm text-neutral-300 font-medium">{value}</span>
+                        <span className="text-sm text-neutral-200 font-medium">{value}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Reviews Card */}
-              {batch.reviews && batch.reviews.length > 0 && (
+              {/* Reviews */}
+              {batch.reviews?.length > 0 && (
                 <div className="p-6 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl shadow-xl">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
-                    Customer Reviews ({batch.reviews.length})
+                    Verified Buyer Reviews ({batch.reviews.length})
                   </h3>
                   <div className="divide-y divide-white/5">
                     {batch.reviews.map((review, i) => (
                       <div key={i} className="py-4 first:pt-0 last:pb-0">
                         <div className="flex justify-between items-center mb-1.5">
                           <span className="font-semibold text-sm text-white">{review.user}</span>
-                          <div className="flex items-center gap-0.5 text-amber-400 text-xs">
+                          <div className="flex items-center gap-0.5 text-amber-400">
                             {Array.from({ length: review.rating }).map((_, rIdx) => (
                               <Star key={rIdx} className="w-3 h-3 fill-current" />
                             ))}
                           </div>
                         </div>
                         <p className="text-sm text-neutral-400 leading-relaxed mb-1">{review.comment}</p>
-                        <span className="text-[10px] text-neutral-500">{review.date}</span>
+                        <span className="text-[10px] text-neutral-600">{review.date}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* FAQ Accordion */}
+              <div className="p-6 bg-white/[0.02] border border-white/5 backdrop-blur-xl rounded-2xl shadow-xl">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <Info className="w-4 h-4 text-primary" />
+                  Frequently Asked Questions
+                </h3>
+                <div className="space-y-2">
+                  {FAQ_ITEMS.map((item, i) => (
+                    <div key={i} className="border border-white/5 rounded-xl overflow-hidden">
+                      <button
+                        className="w-full flex items-center justify-between px-4 py-3 text-left text-xs font-bold text-white hover:bg-white/3 transition-colors cursor-pointer"
+                        onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                      >
+                        <span>{item.q}</span>
+                        {openFaq === i ? (
+                          <ChevronUp className="w-4 h-4 text-neutral-500 shrink-0" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-neutral-500 shrink-0" />
+                        )}
+                      </button>
+                      {openFaq === i && (
+                        <div className="px-4 pb-4 text-xs text-neutral-400 leading-relaxed border-t border-white/5 pt-3">
+                          {item.a}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Right Column — Actions & Tiers (1/3 width on desktop) */}
+            {/* ══════════════════════════════════
+                RIGHT COLUMN — Actions (1/3)
+                ══════════════════════════════════ */}
             <div className="lg:col-span-1">
-              <div className={`p-6 bg-white/[0.02] border border-white/5 hover:border-primary/20 backdrop-blur-xl rounded-3xl shadow-2xl flex flex-col gap-6 sticky top-24 transition-all duration-300 ${priceDropped ? "ring-2 ring-green-500 shadow-green-500/5 scale-[1.02]" : ""}`}>
-                
-                {/* Title */}
+              <div
+                className={`p-6 bg-white/[0.02] border backdrop-blur-xl rounded-3xl shadow-2xl flex flex-col gap-5 sticky top-24 transition-all duration-300 ${
+                  priceDropped
+                    ? "border-green-500/40 ring-2 ring-green-500/20 shadow-green-500/10"
+                    : "border-white/5 hover:border-primary/15"
+                }`}
+              >
+                {/* Title & Description */}
                 <div>
-                  <h1 className="text-2xl font-black tracking-tight text-white mb-2 leading-snug">{batch.title}</h1>
-                  <p className="text-xs text-neutral-400 leading-relaxed">{batch.description}</p>
+                  <h1 className="text-xl font-black tracking-tight text-white mb-1.5 leading-snug">{batch.title}</h1>
+                  <p className="text-xs text-neutral-400 leading-relaxed line-clamp-2">{batch.description}</p>
                 </div>
 
-                {/* Close Timer */}
-                <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col gap-1.5">
-                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-1.5">
+                {/* Timer */}
+                <div className="p-3.5 bg-white/[0.02] border border-white/5 rounded-2xl">
+                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-1.5 mb-1.5">
                     <Clock className="w-3.5 h-3.5 text-primary" /> Batch closes in
                   </span>
                   <LiveTimer endTime={batch.endTime} />
                 </div>
 
                 {/* Current Price */}
-                <div className="p-5 bg-green-500/5 border border-green-500/10 rounded-2xl">
-                  <div className="flex items-baseline gap-2.5">
+                <div className="p-4 bg-green-500/5 border border-green-500/15 rounded-2xl">
+                  <div className="flex items-baseline gap-2.5 flex-wrap">
                     <span className="text-3xl font-black text-green-400 tabular-nums">
                       {formatPrice(currentTier?.price)}
                     </span>
                     {savingsPercent > 0 && (
-                      <span className="text-sm text-neutral-500 line-through">
-                        {formatPrice(batch.tiers[0].price)}
-                      </span>
-                    )}
-                    {savingsPercent > 0 && (
-                      <span className="px-1.5 py-0.5 rounded bg-green-500 text-[10px] font-black text-white">
-                        -{savingsPercent}%
-                      </span>
+                      <>
+                        <span className="text-sm text-neutral-500 line-through">
+                          {formatPrice(batch.tiers[0].price)}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded-full bg-green-500 text-[10px] font-black text-white">
+                          -{savingsPercent}%
+                        </span>
+                      </>
                     )}
                   </div>
-                  <span className="block text-[10px] text-neutral-400 font-medium mt-1">
-                    per unit · Current pool buying price
-                  </span>
+                  <span className="block text-[10px] text-neutral-400 mt-1">per unit · Current pool price</span>
                 </div>
 
-                {/* Pricing Tiers Ladder */}
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Price Tiers</h4>
-                  <div className="space-y-1.5">
+                {/* Tiers Ladder */}
+                <div className="space-y-2">
+                  <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Price Tiers</h4>
+                  <div className="space-y-1">
                     {batch.tiers.map((tier, i) => {
                       const isActive = batch.currentSlots >= tier.minSlots && batch.currentSlots <= tier.maxSlots;
                       const isReached = batch.currentSlots >= tier.minSlots;
                       return (
                         <div
                           key={i}
-                          className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${isActive ? "bg-primary/5 border border-primary/20" : "bg-transparent border border-transparent"}`}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all ${
+                            isActive ? "bg-primary/8 border border-primary/20" : "bg-transparent border border-transparent"
+                          }`}
                         >
-                          <div className="flex flex-col items-center shrink-0">
-                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[8px] font-black ${isReached ? "bg-green-500 border-green-500 text-white shadow-lg shadow-green-500/20" : "border-white/15 text-white/40 bg-white/5"}`}>
-                              {isReached && <Check className="w-2.5 h-2.5 stroke-[4]" />}
-                            </div>
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                            isReached
+                              ? "bg-green-500 border-green-500 text-white shadow-[0_0_8px_rgba(34,197,94,0.25)]"
+                              : "border-white/15 bg-white/3"
+                          }`}>
+                            {isReached && <Check className="w-2.5 h-2.5 stroke-[4]" />}
                           </div>
                           <div className="flex justify-between items-center flex-1 text-xs">
-                            <span className={`font-semibold ${isReached ? "text-neutral-200" : "text-neutral-500"}`}>
+                            <span className={`font-semibold ${isReached ? "text-neutral-200" : "text-neutral-600"}`}>
                               {tier.minSlots}–{tier.maxSlots} slots
                             </span>
-                            <span className={`font-bold ${isReached ? "text-white" : "text-neutral-500"}`}>
+                            <span className={`font-bold tabular-nums ${isReached ? "text-white" : "text-neutral-600"}`}>
                               {formatPrice(tier.price)}
                             </span>
                           </div>
                           {isActive && (
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-primary/10 border border-primary/20 text-primary uppercase tracking-wide">
-                              Current
+                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-primary/15 border border-primary/25 text-primary uppercase">
+                              Now
                             </span>
                           )}
                         </div>
@@ -384,92 +491,116 @@ export default function BatchDetailPage({ params }) {
                   </div>
                 </div>
 
-                {/* Progress Tracker */}
+                {/* Progress Bar */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-xs font-bold text-neutral-400">
-                    <span>{batch.currentSlots} of {batch.maxSlots} slots filled</span>
-                    <span className="text-white">{Math.round(fillPercent)}%</span>
+                    <span className="flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" />
+                      {batch.currentSlots} / {batch.maxSlots} slots
+                    </span>
+                    <span className="text-white tabular-nums">{Math.round(fillPercent)}%</span>
                   </div>
-                  <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-white/5 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-primary to-green-500 rounded-full transition-all duration-1000 shadow-md shadow-primary/50"
+                      className="h-full bg-gradient-to-r from-primary to-green-500 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(255,107,0,0.4)]"
                       style={{ width: `${fillPercent}%` }}
                     />
                   </div>
                   {nextTier && (
-                    <div className="p-3 bg-primary/5 border border-primary/10 rounded-xl text-xs text-primary flex items-center gap-1.5 leading-relaxed">
-                      <span>🔥 <strong>{slotsToNext} more slots</strong> needed to drop the price to <strong>{formatPrice(nextTier.price)}</strong></span>
+                    <div className="p-3 bg-primary/5 border border-primary/12 rounded-xl text-xs text-primary flex items-center gap-1.5 leading-relaxed">
+                      🔥 <strong>{slotsToNext} more slots</strong> to unlock <strong>{formatPrice(nextTier.price)}</strong>/unit
                     </div>
                   )}
                 </div>
 
-                {/* Quantity Controls */}
+                {/* Quantity Selector */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Quantity (slots)</label>
+                  <label className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest">
+                    Slots to Reserve
+                  </label>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center bg-white/5 border border-white/10 rounded-xl p-1 shrink-0">
                       <button
-                        className="w-8 h-8 rounded-lg hover:bg-white/10 active:bg-white/5 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer text-white font-bold"
+                        className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer text-white font-bold"
                         onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))}
                         disabled={selectedQty <= 1}
                       >
                         <Minus className="w-4 h-4" />
                       </button>
-                      <span className="w-10 text-center font-bold text-base text-white">{selectedQty}</span>
+                      <span className="w-10 text-center font-black text-base text-white">{selectedQty}</span>
                       <button
-                        className="w-8 h-8 rounded-lg hover:bg-white/10 active:bg-white/5 flex items-center justify-center transition-colors cursor-pointer text-white font-bold"
-                        onClick={() => setSelectedQty(selectedQty + 1)}
+                        className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer text-white font-bold"
+                        onClick={() => setSelectedQty(Math.min(selectedQty + 1, batch.maxSlots - batch.currentSlots))}
                       >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
-                    <span className="text-xs text-neutral-400">
-                      Total: <strong className="text-white text-base ml-1">{formatPrice(currentTier?.price * selectedQty)}</strong>
-                    </span>
+                    <div>
+                      <span className="text-xs text-neutral-500">Total</span>
+                      <p className="text-base font-black text-white tabular-nums">{formatPrice(totalCost)}</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Reserve & Share Actions */}
-                <div className="space-y-3">
+                {/* CTA Buttons */}
+                <div className="space-y-2.5">
                   <button
-                    className="w-full bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 hover:shadow-lg hover:shadow-primary/10 cursor-pointer text-sm"
+                    className="w-full bg-gradient-to-r from-primary to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/20 cursor-pointer text-sm"
                     onClick={handleJoinBatch}
-                    disabled={joiningBatch}
+                    disabled={joiningBatch || batch.status !== "LIVE"}
                   >
                     {joiningBatch ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <><Loader2 className="w-5 h-5 animate-spin" /> Reserving…</>
+                    ) : batch.status !== "LIVE" ? (
+                      "Batch Closed"
                     ) : (
-                      <span>Join This Batch — {formatPrice(currentTier?.price * selectedQty)}</span>
+                      `Join — ${formatPrice(totalCost)}`
                     )}
                   </button>
-                  <button
-                    className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer text-sm"
-                    onClick={() => setShowShareModal(true)}
-                  >
-                    <Share2 className="w-4 h-4 text-neutral-400" />
-                    <span>Share to Drop the Price</span>
-                  </button>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      className="flex items-center justify-center gap-1.5 bg-white/5 hover:bg-white/8 border border-white/10 text-neutral-300 hover:text-white font-bold py-2.5 px-3 rounded-xl transition-all cursor-pointer text-xs"
+                      onClick={() => setShowShareModal(true)}
+                    >
+                      <Share2 className="w-3.5 h-3.5" /> Share
+                    </button>
+                    <button
+                      className={`flex items-center justify-center gap-1.5 border font-bold py-2.5 px-3 rounded-xl transition-all cursor-pointer text-xs ${
+                        isWishlisted
+                          ? "bg-red-500/10 border-red-500/25 text-red-400 hover:bg-red-500/15"
+                          : "bg-white/5 border-white/10 text-neutral-300 hover:text-white hover:bg-white/8"
+                      }`}
+                      onClick={() => setIsWishlisted(!isWishlisted)}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${isWishlisted ? "fill-current" : ""}`} />
+                      {isWishlisted ? "Saved" : "Save"}
+                    </button>
+                  </div>
                 </div>
 
-                {/* Trust Features */}
-                <div className="p-3.5 bg-white/[0.02] border border-white/5 rounded-xl space-y-2 text-[11px] text-neutral-400 leading-relaxed">
+                {/* Trust Signals */}
+                <div className="p-3.5 bg-white/[0.015] border border-white/5 rounded-xl space-y-2 text-[11px] text-neutral-400 leading-relaxed">
                   <div className="flex items-center gap-2">
-                    <span className="text-primary font-bold">🔒</span> Card held, not charged until batch closes
+                    <span className="text-primary">🔒</span>
+                    <span>Wallet held in escrow — not charged until MOQ is met</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary font-bold">🔄</span> Full refund if batch cancels
+                    <span className="text-green-400">🔄</span>
+                    <span>Full refund if batch cancels or doesn't fill</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary font-bold">📦</span> Ships in {batch.shipping?.estimatedDays || 5}-{(batch.shipping?.estimatedDays || 5) + 2} days
+                    <span className="text-amber-400">📦</span>
+                    <span>Ships in {batch.shipping?.estimatedDays || 5}–{(batch.shipping?.estimatedDays || 5) + 2} business days</span>
                   </div>
                 </div>
 
                 {/* Recent Joiners */}
-                {batch.recentJoiners && batch.recentJoiners.length > 0 && (
-                  <div className="flex items-center gap-2.5 pt-2 border-t border-white/5">
+                {batch.recentJoiners?.length > 0 && (
+                  <div className="flex items-center gap-2.5 pt-1 border-t border-white/5">
                     <div className="flex -space-x-2">
                       {batch.recentJoiners.slice(0, 5).map((j, i) => (
-                        <div key={i} className="w-7 h-7 rounded-full bg-neutral-800 border-2 border-black flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                        <div key={i} className="w-7 h-7 rounded-full bg-neutral-800 border-2 border-black flex items-center justify-center text-[10px] font-bold text-white">
                           {j.avatar}
                         </div>
                       ))}
@@ -488,58 +619,71 @@ export default function BatchDetailPage({ params }) {
 
       <Footer />
 
-      {/* Real-time Join Notification Toast */}
+      {/* ── Real-time Toast ── */}
       {recentJoinAlert && (
-        <div className="fixed bottom-6 right-6 p-4 bg-neutral-900 border border-green-500 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-bounce backdrop-blur-xl">
-          <span className="text-lg">⚡</span>
-          <p className="text-sm font-semibold text-white leading-none">{recentJoinAlert}</p>
+        <div className="fixed bottom-6 right-6 p-4 bg-neutral-900 border border-green-500/50 rounded-xl shadow-2xl flex items-center gap-3 z-50 backdrop-blur-xl max-w-xs">
+          <span className="text-lg shrink-0">⚡</span>
+          <p className="text-sm font-semibold text-white leading-snug">{recentJoinAlert}</p>
         </div>
       )}
 
-      {/* Share Modal Dialog */}
+      {/* ── Share Modal ── */}
       {showShareModal && (
-        <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-6 animate-fade-in"
+        <div
+          className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-6"
           onClick={() => setShowShareModal(false)}
         >
-          <div 
-            className="bg-neutral-950 border border-white/10 p-6 rounded-2xl max-w-sm w-full relative shadow-2xl space-y-4 animate-scale-in"
+          <div
+            className="bg-neutral-950 border border-white/10 p-6 rounded-2xl max-w-sm w-full relative shadow-2xl space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <button 
+            <button
               className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors cursor-pointer"
               onClick={() => setShowShareModal(false)}
             >
               <X className="w-4 h-4" />
             </button>
-            <h3 className="text-lg font-bold text-white pr-8">Share This Batch</h3>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Every person who joins through your link drops the price for everyone — including you!
-            </p>
-            <div className="flex flex-col gap-2.5 pt-2">
-              <button 
+
+            <div>
+              <h3 className="text-lg font-black text-white pr-8">Share This Batch</h3>
+              <p className="text-xs text-neutral-400 mt-1 leading-relaxed">
+                Every new buyer drops the price for <strong className="text-white">everyone</strong> in the batch — including you!
+              </p>
+            </div>
+
+            {/* Copy link */}
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white/3 border border-white/5">
+              <span className="text-xs text-neutral-400 flex-1 truncate font-mono">
+                {typeof window !== "undefined" ? window.location.href : ""}
+              </span>
+              <button
+                onClick={handleCopyLink}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                  linkCopied
+                    ? "bg-green-500 text-white"
+                    : "bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white"
+                }`}
+              >
+                {linkCopied ? <><Check className="w-3.5 h-3.5 inline mr-1" />Copied</> : <><Copy className="w-3.5 h-3.5 inline mr-1" />Copy</>}
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <button
                 className="w-full bg-[#128c7e] hover:bg-[#075e54] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer"
                 onClick={() => {
-                  alert("WhatsApp share link copied to clipboard!");
+                  const url = typeof window !== "undefined" ? encodeURIComponent(window.location.href) : "";
+                  window.open(`https://api.whatsapp.com/send?text=🔥 Join this batch on BulkBlitz and get up to ${savingsPercent}% off! ${url}`, "_blank");
                   setShowShareModal(false);
                 }}
               >
                 💬 Share on WhatsApp
               </button>
-              <button 
-                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer"
+              <button
+                className="w-full bg-neutral-900 hover:bg-neutral-800 border border-white/5 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer"
                 onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert("Link copied to clipboard!");
-                  setShowShareModal(false);
-                }}
-              >
-                📋 Copy Batch Link
-              </button>
-              <button 
-                className="w-full bg-neutral-900 hover:bg-neutral-850 border border-white/5 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all cursor-pointer"
-                onClick={() => {
-                  alert("Twitter post template copied!");
+                  const url = typeof window !== "undefined" ? encodeURIComponent(window.location.href) : "";
+                  window.open(`https://twitter.com/intent/tweet?text=🔥 Pooling demand to crush prices on BulkBlitz! Join this batch to unlock factory pricing: ${url}`, "_blank");
                   setShowShareModal(false);
                 }}
               >
