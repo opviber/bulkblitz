@@ -55,7 +55,7 @@ export async function POST(request) {
 export async function PUT(request) {
   try {
     const body = await request.json();
-    const { id } = body;
+    const { id, type, street, city, state, pin } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -86,6 +86,21 @@ export async function PUT(request) {
       );
     }
 
+    // If address editing fields are provided, update the address details
+    if (type !== undefined || street !== undefined || city !== undefined || state !== undefined || pin !== undefined) {
+      const updatedAddress = await prisma.address.update({
+        where: { id },
+        data: {
+          type: type ?? address.type,
+          street: street ?? address.street,
+          city: city ?? address.city,
+          state: state ?? address.state,
+          pin: pin ?? address.pin,
+        },
+      });
+      return NextResponse.json(updatedAddress);
+    }
+
     // Execute in a transaction: set all default to false, then target to true
     const result = await prisma.$transaction(async (tx) => {
       await tx.address.updateMany({
@@ -103,7 +118,7 @@ export async function PUT(request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error setting default address:", error);
+    console.error("Error updating address:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
