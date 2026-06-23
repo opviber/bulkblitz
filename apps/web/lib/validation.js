@@ -57,6 +57,42 @@ export const refundSchema = z.object({
   reason: z.string().max(200).optional(),
 });
 
+export const onboardingSchema = z.object({
+  gstNumber: z
+    .string()
+    .regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/, "Invalid GSTIN"),
+  panNumber: z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, "Invalid PAN").optional(),
+  bankAccount: z.string().min(6).max(24),
+  bankIfsc: z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC"),
+});
+
+export const uploadSchema = z.object({
+  fileName: z.string().min(1).max(200),
+  contentType: z.string().min(3).max(100),
+});
+
+export const trackingSchema = z.object({
+  trackingNumber: z.string().min(3).max(60),
+  carrier: z.string().min(2).max(40),
+});
+
+export const disputeResolveSchema = z.object({
+  status: z.enum(["UNDER_REVIEW", "RESOLVED", "REJECTED"]),
+  resolution: z.string().max(2000).optional(),
+  refund: z.boolean().optional(),
+});
+
+export const adminBatchActionSchema = z.object({
+  batchId: z.string().uuid(),
+  action: z.enum(["approve", "reject", "feature", "unfeature"]),
+});
+
+export const adminManufacturerActionSchema = z.object({
+  manufacturerId: z.string().uuid(),
+  action: z.enum(["verify", "unverify", "blacklist", "unblacklist", "kyc_verify", "kyc_reject"]),
+  note: z.string().max(500).optional(),
+});
+
 /**
  * Parse a request body against a schema. Returns { data } or { error: NextResponse }.
  */
