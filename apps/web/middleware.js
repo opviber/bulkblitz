@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { ACCESS_COOKIE } from "@/lib/auth";
+
+const ACCESS_COOKIE = "bb-access-token";
 
 // Routes that require an authenticated session.
 const PROTECTED = [
