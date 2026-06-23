@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import LiveTimer from "@/components/batch/LiveTimer";
+import TierDropBurst from "@/components/ui/TierDropBurst";
 import {
   formatPrice,
   getCurrentTier,
@@ -87,6 +88,7 @@ export default function BatchDetailPage({ params }) {
           const newPrice = getCurrentTier(updated)?.price || 0;
           if (newPrice < prevPrice) {
             setPriceDropped(true);
+            setTierBurstKey((k) => k + 1);
             setTimeout(() => setPriceDropped(false), 4000);
           }
           return updated;
