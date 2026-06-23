@@ -99,7 +99,18 @@ npm run db:seed
 npx vercel --prod
 ```
 
-Vercel auto-detects Next.js. Set all env vars in the Vercel dashboard (Settings → Environment Variables).
+Vercel auto-detects Next.js. 
+
+> [!IMPORTANT]
+> **Root Directory Setting**:
+> Since the Next.js app is located in `apps/web`, you **must** configure the **Root Directory** in Vercel:
+> 1. Go to your project page in the Vercel Dashboard.
+> 2. Navigate to **Settings** → **General**.
+> 3. Find the **Root Directory** setting, click **Edit**, and change the value to `apps/web`.
+> 4. Click **Save**.
+> 5. Redeploy the project from the **Deployments** tab.
+>
+> Set all environment variables in the Vercel dashboard (**Settings** → **Environment Variables**).
 
 The `vercel.json` crons activate automatically on Vercel:
 - `GET /api/cron/close-batches` — every minute (closes expired batches)
