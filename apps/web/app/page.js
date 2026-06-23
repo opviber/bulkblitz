@@ -10,6 +10,7 @@ import {
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
+import HyperframeExplainer from '@/components/home/HyperframeExplainer';
 import BatchCard from '@/components/batch/BatchCard';
 import { CATEGORIES, STATS } from '@/lib/mock-data';
 
@@ -188,8 +189,13 @@ function HomePageContent() {
       <main className="relative bg-neutral-950">
         <HeroSection stats={STATS} />
 
+        {/* ── Hyperframe: scroll-driven 5-scene business idea explainer ── */}
+        <div id="how-it-works">
+          <HyperframeExplainer />
+        </div>
+
         {/* ── SECTION 1: LIVE BATCHES ─────────────────────────────────────── */}
-        <section className="py-20 border-t border-white/5" id="batches">
+        <section className="py-20 border-t border-white/5" id="live-feed">
           <div className="container mx-auto px-4">
 
             {/* Section Header */}
