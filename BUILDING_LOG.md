@@ -1,5 +1,5 @@
 # BulkBlitz — AI Building Log
-> **Last Updated**: 2026-06-22 by Antigravity (Gemini)
+> **Last Updated**: 2026-06-23 by Antigravity (Gemini)
 > **Next AI**: Read this file fully before making any changes.
 
 ---
@@ -151,6 +151,11 @@ The header was redesigned as a GitHub-style left-sidebar mobile drawer in a prev
 ### Session 8 (Completed): Marketplace Pages Overhaul
 - Migrated remaining marketplace routes from legacy styled-jsx to Tailwind CSS v4 in `/auth`, `/batch/[id]`, `/manufacturer/analytics`, and `/manufacturer/batch/new`.
 - Connected the new batch launching wizard directly to the `/api/batches` creation POST handler to store active listings and price schedules in PostgreSQL.
+
+### Session 11 (Completed): Vercel Production Deployment & Bug Fixing
+- **Vercel Hobby Cron Fix**: Resolved Vercel deployment validator crash by adjusting cron schedules in [vercel.json](file:///e:/BulkBlitz/apps/web/vercel.json) to once-per-day (`0 0 * * *` and `0 1 * * *`) as required by Vercel Hobby accounts. Suggested setting up an external trigger (like `cron-job.org` or GitHub Actions) to run at the original minute/5-minute intervals.
+- **Vercel Prisma Client Generation Fix**: Configured a `postinstall` script in [package.json](file:///e:/BulkBlitz/apps/web/package.json) to run `prisma generate` upon dependency installation, and moved `@prisma/client` to production dependencies. This ensures the Prisma engines are generated inside the build container before static page generation compiles, preventing the `Cannot find module '.prisma/client/default'` crash.
+- **Vercel Root Directory & Preset Resolution**: Staged, committed, and pushed configurations to `main` branch. Informed user to use `apps/web` as the root directory and ensure the Next.js framework preset is active on Vercel to avoid the 404 static page serving issue.
 
 ---
 
