@@ -234,7 +234,6 @@ function HomePageContent() {
                       manufacturer={batch.manufacturer}
                       index={i}
                     />
-                  </div>
                 ))
               ) : (
                 <div className="col-span-full py-16 flex flex-col items-center justify-center text-center border border-dashed border-white/5 rounded-2xl bg-neutral-900/10">
