@@ -172,12 +172,12 @@ function HomePageContent() {
       <main className="relative bg-neutral-950">
         <HeroSection stats={STATS} />
 
-        {/* ── Hyperframe: scroll-driven 5-scene business idea explainer ── */}
+        {/* -- Hyperframe: scroll-driven 5-scene business idea explainer -- */}
         <div id="how-it-works">
           <HyperframeExplainer />
         </div>
 
-        {/* ── SECTION 1: LIVE BATCHES ─────────────────────────────────────── */}
+        {/* -- SECTION 1: LIVE BATCHES --------------------------------------- */}
         <section className="py-20 border-t border-white/5" id="live-feed">
           <div className="container mx-auto px-4">
 
@@ -228,7 +228,6 @@ function HomePageContent() {
                 ))
               ) : currentTabBatches.length > 0 ? (
                 currentTabBatches.slice(0, 4).map((batch, i) => (
-                  <div key={batch.id} className="reveal" style={{ transitionDelay: `${i * 100}ms` }}>
                     <BatchCard
                       batch={batch}
                       manufacturer={batch.manufacturer}
@@ -249,7 +248,7 @@ function HomePageContent() {
           </div>
         </section>
 
-        {/* ── SECTION 2: BROWSE BY CATEGORY ───────────────────────────────── */}
+        {/* -- SECTION 2: BROWSE BY CATEGORY --------------------------------- */}
         <section className="py-20 border-t border-white/5 bg-neutral-950/40" id="categories-section">
           <div className="container mx-auto px-4">
 
@@ -329,7 +328,6 @@ function HomePageContent() {
                       manufacturer={batch.manufacturer}
                       index={i}
                     />
-                  </div>
                 ))
               ) : (
                 <div className="col-span-full py-16 flex flex-col items-center justify-center text-center border border-dashed border-white/5 rounded-2xl bg-neutral-900/10">
@@ -355,7 +353,7 @@ function HomePageContent() {
           </div>
         </section>
 
-        {/* ── SECTION 3: WHY IT DROPS ─────────────────────────────────────── */}
+        {/* -- SECTION 3: WHY IT DROPS --------------------------------------- */}
         <section className="py-20 border-t border-white/5 bg-neutral-950" id="price-drop-proof">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -462,7 +460,7 @@ function HomePageContent() {
           </div>
         </section>
 
-        {/* ── SECTION 4: MANUFACTURER CTA ─────────────────────────────────── */}
+        {/* -- SECTION 4: MANUFACTURER CTA ----------------------------------- */}
         <section className="py-20 border-t border-white/5 reveal" id="cta-section">
           <div className="container mx-auto px-4">
             <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-neutral-950 via-neutral-900/50 to-neutral-950 p-8 md:p-12 shadow-2xl">
