@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/close-batches",
+      "schedule": "* * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

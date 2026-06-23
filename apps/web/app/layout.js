@@ -24,6 +24,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 import JsonLd from "@/components/seo/JsonLd";
+import { Toaster } from "sonner";
 
 export const metadata = {
   title: "BulkBlitz — Bulk Up. Price Down.",
@@ -101,6 +102,17 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         {children}
+        <Toaster
+          position="top-center"
+          theme="dark"
+          toastOptions={{
+            style: {
+              background: "var(--color-surface-raised, #18181B)",
+              color: "var(--color-text-primary, #FAFAFA)",
+              border: "1px solid var(--color-border, rgba(255,255,255,0.07))",
+            },
+          }}
+        />
       </body>
     </html>
   );

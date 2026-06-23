@@ -1,0 +1,51 @@
+import { NextResponse } from "next/server";
+import { ACCESS_COOKIE } from "@/lib/auth";
+
+// Routes that require an authenticated session.
+const PROTECTED = [
+  "/orders",
+  "/wallet",
+  "/profile",
+  "/manufacturer",
+  "/admin",
+  "/refer",
+  "/wishlist",
+];
+
+// Admin-only path prefix (role is re-checked server-side in the route/page).
+const ADMIN_PREFIX = "/admin";
+
+export function middleware(request) {
+  const { pathname } = request.nextUrl;
+
+  // Only enforce session presence in production. In development the
+  // DEV_FALLBACK_USER path keeps local work usable without Supabase.
+  if (process.env.NODE_ENV !== "production") return NextResponse.next();
+
+  const needsAuth = PROTECTED.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
+  if (!needsAuth) return NextResponse.next();
+
+  const token = request.cookies.get(ACCESS_COOKIE)?.value;
+  if (!token) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    "/orders/:path*",
+    "/wallet/:path*",
+    "/profile/:path*",
+    "/manufacturer/:path*",
+    "/admin/:path*",
+    "/refer/:path*",
+    "/wishlist/:path*",
+  ],
+};

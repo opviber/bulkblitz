@@ -82,3 +82,43 @@ export async function sendEmailNotification(email, subject, body) {
     timestamp,
   };
 }
+
+// =============================================================================
+// Unified dispatch — persists an in-app Notification row and routes to the
+// configured provider channel. Safe to call from any server route.
+// =============================================================================
+import { prisma } from "./prisma";
+
+/**
+ * dispatchNotification(userId, { channel, title, body, link })
+ * channel ∈ WHATSAPP | PUSH | EMAIL | SMS
+ */
+export async function dispatchNotification(userId, { channel = "PUSH", title, body, link }) {
+  try {
+    await prisma.notification.create({
+      data: { userId, channel, title, body, link: link || null },
+    });
+  } catch (e) {
+    console.warn("notification persist failed:", e?.message);
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return { success: false };
+    const text = `${title}\n${body}`;
+    switch (channel) {
+      case "WHATSAPP":
+        return await sendWhatsAppNotification(user.phone, text);
+      case "EMAIL":
+        if (user.email) return await sendEmailNotification(user.email, title, body);
+        return await sendPushNotification(userId, title, body);
+      case "SMS":
+      case "PUSH":
+      default:
+        return await sendPushNotification(userId, title, body);
+    }
+  } catch (e) {
+    console.warn("notification dispatch failed:", e?.message);
+    return { success: false };
+  }
+}

@@ -239,3 +239,32 @@ main, footer {
 .pulse-glow-bar {
   animation: pulse-glow 2s infinite ease-in-out;
 }
+
+/* ===========================================================================
+   Accessibility — respect reduced motion (added in Phase 1 hardening)
+   =========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Light-mode token scaffold (opt-in via <html class="light">; wired fully in
+   the Phase 4 design pass). Defined here so components can begin referencing
+   theme-aware tokens. */
+:root.light {
+  --color-void: #FAFAF9;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #F4F4F5;
+  --color-surface-overlay: #ECECEE;
+  --color-border: rgba(0, 0, 0, 0.10);
+  --color-border-subtle: rgba(0, 0, 0, 0.06);
+  --color-text-primary: #0A0A0A;
+  --color-text-secondary: #52525B;
+  --color-text-muted: #71717A;
+}

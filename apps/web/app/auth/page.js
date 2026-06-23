@@ -4,17 +4,21 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Phone, ArrowRight, Loader2, RefreshCw, ChevronLeft } from "lucide-react";
+import { toast } from "sonner";
 import Logo from "@/components/ui/Logo";
 
 export default function AuthPage() {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(30);
 
-  const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+  const otpRefs = [
+    useRef(null), useRef(null), useRef(null),
+    useRef(null), useRef(null), useRef(null),
+  ];
 
   useEffect(() => {
     let interval;
@@ -26,32 +30,62 @@ export default function AuthPage() {
     return () => clearInterval(interval);
   }, [otpSent, timer]);
 
-  const handleSendOtp = (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     if (phoneNumber.length !== 10) {
-      alert("Please enter a valid 10-digit phone number");
+      toast.error("Please enter a valid 10-digit phone number");
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const res = await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phoneNumber }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not send OTP");
       setOtpSent(true);
       setTimer(30);
-    }, 1200);
+      toast.success(data.sandbox ? "OTP sent (dev code: 123456)" : "OTP sent");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleVerifyOtp = (e) => {
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
     const pin = otp.join("");
-    if (pin.length !== 4) {
-      alert("Please enter the 4-digit OTP");
+    if (pin.length !== 6) {
+      toast.error("Please enter the 6-digit OTP");
       return;
     }
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const ref =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("ref")
+          : null;
+      const res = await fetch("/api/auth/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phoneNumber, token: pin, referralCode: ref || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Invalid code");
+      toast.success("Welcome to BulkBlitz!");
+      const next =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("next")
+          : null;
+      router.push(next || "/");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
       setLoading(false);
-      router.push("/");
-    }, 1500);
+    }
   };
 
   const handleOtpChange = (index, value) => {
@@ -61,7 +95,7 @@ export default function AuthPage() {
     setOtp(newOtp);
 
     // Focus next input
-    if (value && index < 3) {
+    if (value && index < 5) {
       otpRefs[index + 1].current.focus();
     }
   };
@@ -72,18 +106,30 @@ export default function AuthPage() {
     }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     setTimer(30);
-    alert("OTP Resent! (Sandbox SMS Logged)");
+    try {
+      await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phoneNumber }),
+      });
+      toast.success("OTP resent");
+    } catch {
+      toast.error("Could not resend OTP");
+    }
   };
 
   const handleSocialLogin = (provider) => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      alert(`${provider} Login Successful! (Mocked Social Auth Sandbox)`);
-      router.push("/");
-    }, 1200);
+    // Social login is handled by Supabase OAuth redirect in production.
+    const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (base) {
+      window.location.href = `${base}/auth/v1/authorize?provider=${provider.toLowerCase()}&redirect_to=${encodeURIComponent(
+        window.location.origin + "/auth/callback"
+      )}`;
+    } else {
+      toast.message(`${provider} login requires Supabase configuration`);
+    }
   };
 
   return (
@@ -199,12 +245,12 @@ export default function AuthPage() {
                   Verify Code
                 </h2>
                 <p className="text-sm text-neutral-400">
-                  Enter the 4-digit code sent to +91 {phoneNumber.replace(/(\d{5})(\d{5})/, "$1-$2")}.
+                  Enter the 6-digit code sent to +91 {phoneNumber.replace(/(\d{5})(\d{5})/, "$1-$2")}.
                 </p>
               </div>
 
               <form onSubmit={handleVerifyOtp} className="space-y-6">
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-6 gap-2 sm:gap-3">
                   {otp.map((digit, idx) => (
                     <input
                       key={idx}

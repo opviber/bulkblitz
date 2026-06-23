@@ -11,28 +11,19 @@ export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
-export async function getScopedUser(request) {
-  if (!request) return null;
-  const headerUserId = request.headers.get("x-user-id");
-  if (headerUserId) {
-    const user = await prisma.user.findUnique({
-      where: { id: headerUserId },
-    });
-    if (user) return user;
-  }
-  return await prisma.user.findFirst({
-    where: { role: "BUYER" },
-  });
+// -----------------------------------------------------------------------------
+// Backwards-compatible scoping helpers.
+//
+// These now delegate to the verified session (lib/auth.js) instead of trusting
+// a spoofable `x-user-id` header. The `request` argument is kept for call-site
+// compatibility but is no longer used for identity.
+// -----------------------------------------------------------------------------
+export async function getScopedUser(/* request */) {
+  const { getSessionUser } = await import("./auth");
+  return getSessionUser();
 }
 
-export async function getScopedManufacturer(request) {
-  if (!request) return null;
-  const headerUserId = request.headers.get("x-user-id");
-  if (headerUserId) {
-    const manufacturer = await prisma.manufacturer.findFirst({
-      where: { userId: headerUserId },
-    });
-    if (manufacturer) return manufacturer;
-  }
-  return await prisma.manufacturer.findFirst();
+export async function getScopedManufacturer(/* request */) {
+  const { getSessionManufacturer } = await import("./auth");
+  return getSessionManufacturer();
 }

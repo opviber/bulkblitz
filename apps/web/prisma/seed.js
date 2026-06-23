@@ -60,6 +60,7 @@ async function main() {
     data: {
       userId: userMfr.id,
       businessName: "Sharma Industries",
+      slug: "sharma-industries",
       city: "Nagpur",
       state: "Maharashtra",
       gstNumber: "27AAAAA1111A1Z1",
