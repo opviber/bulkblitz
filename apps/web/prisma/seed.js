@@ -11,24 +11,42 @@ async function main() {
 
   // 1. Clean existing records (in reverse dependency order)
   await prisma.review.deleteMany({});
+  await prisma.dispute.deleteMany({});
+  await prisma.notification.deleteMany({});
+  await prisma.wishlist.deleteMany({});
+  await prisma.referral.deleteMany({});
+  await prisma.payout.deleteMany({});
   await prisma.order.deleteMany({});
   await prisma.slotReservation.deleteMany({});
   await prisma.tierSchedule.deleteMany({});
   await prisma.batch.deleteMany({});
+  await prisma.manufacturerKyc.deleteMany({});
   await prisma.manufacturer.deleteMany({});
   await prisma.address.deleteMany({});
   await prisma.bulkCashTransaction.deleteMany({});
+  await prisma.auditLog.deleteMany({});
   await prisma.user.deleteMany({});
 
   console.log("🧹 Cleared existing database records.");
 
-  // 2. Create Users (Buyers and Manufacturers)
+  // 2. Create Users: ADMIN + Buyer + Manufacturer
+  await prisma.user.create({
+    data: {
+      phone: "9000000000",
+      email: "admin@bulkblitz.in",
+      name: "BulkBlitz Admin",
+      role: "ADMIN",
+      referralCode: "BBADMIN",
+    },
+  });
+
   const userBuyer = await prisma.user.create({
     data: {
       phone: "+91 9876543210",
       email: "ashish@sharma.in",
       name: "Ashish Sharma",
       role: "BUYER",
+      referralCode: "BBBUYER1",
       walletBalance: 2475.0,
       trustScore: 98,
       addresses: {

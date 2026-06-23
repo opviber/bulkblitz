@@ -9,6 +9,7 @@ const NAV = [
   { href: "/admin/batches", label: "Batch approvals" },
   { href: "/admin/manufacturers", label: "Manufacturers" },
   { href: "/admin/disputes", label: "Disputes" },
+  { href: "/admin/users", label: "Users" },
 ];
 
 export default function AdminGuard({ children, active }) {

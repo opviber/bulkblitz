@@ -14,6 +14,7 @@ import {
   getInitials,
 } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 import {
   Star, MapPin, Check, Plus, Minus, Share2, Clock, Loader2,
   ShieldCheck, ChevronLeft, X, AlertCircle, Heart, ChevronDown,
@@ -77,73 +78,142 @@ export default function BatchDetailPage({ params }) {
     loadBatch();
 
     const batchChannel = supabase
-      .channel(`batch-realtime-${id}`)
-      .on("postgres_changes", {
-        event: "UPDATE",
-        schema: "public",
-        table: "Batch",
-        filter: `id=eq.${id}`,
-      }, (payload) => {
+      .channel(`batch:${id}`)          // must match server broadcastBatchUpdate channel
+      .on("broadcast", { event: "PRICE_UPDATED" }, ({ payload }) => {
         setBatch((prev) => {
           if (!prev) return prev;
           const prevPrice = getCurrentTier(prev)?.price || 0;
-          const updatedBatch = { ...prev, currentSlots: payload.new.currentSlots, status: payload.new.status };
-          const newPrice = getCurrentTier(updatedBatch)?.price || 0;
+          const updated = { ...prev, currentSlots: payload.currentSlots };
+          const newPrice = getCurrentTier(updated)?.price || 0;
           if (newPrice < prevPrice) {
             setPriceDropped(true);
             setTimeout(() => setPriceDropped(false), 4000);
           }
-          return updatedBatch;
+          return updated;
         });
+        setRecentJoinAlert(`Price dropped to ₹${payload.pricePerUnit}/unit!`);
+        setTimeout(() => setRecentJoinAlert(null), 5000);
+      })
+      .on("broadcast", { event: "SLOT_FILLED" }, ({ payload }) => {
+        setBatch((prev) => prev ? { ...prev, currentSlots: payload.currentSlots } : prev);
+      })
+      .on("broadcast", { event: "BATCH_CLOSED" }, ({ payload }) => {
+        setBatch((prev) => prev ? { ...prev, status: payload.fulfilled ? "CLOSED" : "CANCELLED" } : prev);
+        if (payload.fulfilled) {
+          toast.success(`Batch locked at ₹${payload.finalPrice}/unit!`);
+        } else {
+          toast.error("Batch didn't fill — no charge made.");
+        }
       })
       .subscribe();
 
-    const reservationChannel = supabase
-      .channel(`reservation-realtime-${id}`)
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "SlotReservation",
-        filter: `batchId=eq.${id}`,
-      }, (payload) => {
-        const qty = payload.new.quantity;
-        setRecentJoinAlert(`A buyer just reserved ${qty} slot(s)!`);
-        setTimeout(() => setRecentJoinAlert(null), 4000);
-        loadBatch();
-      })
-      .subscribe();
+    // Reservation-level inserts are covered by the SLOT_FILLED broadcast above.
+    // Refetch once as a safety net after 3 s in case a broadcast is missed.
+    const fallbackTimer = setTimeout(() => loadBatch(), 3000);
 
     return () => {
       supabase.removeChannel(batchChannel);
-      supabase.removeChannel(reservationChannel);
+      clearTimeout(fallbackTimer);
     };
   }, [id, loadBatch]);
+
+  /** Load the Razorpay checkout SDK script once. */
+  const loadRazorpayScript = () =>
+    new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
 
   const handleJoinBatch = async () => {
     setJoiningBatch(true);
     try {
-      const res = await fetch("/api/orders", {
+      // 1. Atomically reserve slots + create payment hold
+      const idempotencyKey = `${id}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const joinRes = await fetch(`/api/batches/${id}/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ batchId: id, quantity: selectedQty }),
+        body: JSON.stringify({ quantity: selectedQty, idempotencyKey }),
       });
-
-      if (res.ok) {
-        const order = await res.json();
-        alert(`✅ You've reserved ${selectedQty} slot(s)!\n₹${order.totalAmount} held in escrow.`);
-        router.push("/orders");
-      } else {
-        const err = await res.json();
-        if (err.error?.includes("Insufficient wallet balance")) {
-          const go = window.confirm(`${err.error}\n\nGo to your wallet to add funds?`);
-          if (go) router.push("/wallet");
-        } else {
-          alert(err.error || "Failed to join batch. Please try again.");
-        }
+      const joinData = await joinRes.json();
+      if (!joinRes.ok) {
+        toast.error(joinData.error || "Could not reserve slots");
+        return;
       }
+
+      const { reservation, razorpayOrder } = joinData;
+
+      // 2a. Sandbox mode (no real Razorpay order) → skip checkout
+      if (!razorpayOrder || razorpayOrder.sandbox) {
+        toast.success(
+          `${selectedQty} slot${selectedQty > 1 ? "s" : ""} reserved! Held at ₹${reservation.pricePerUnit}/unit.`,
+          { duration: 5000 }
+        );
+        router.push("/orders");
+        return;
+      }
+
+      // 2b. Real payment → launch Razorpay checkout
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        toast.error("Payment gateway failed to load. Try again.");
+        return;
+      }
+
+      await new Promise((resolve, reject) => {
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          amount: razorpayOrder.amount,
+          currency: "INR",
+          name: "BulkBlitz",
+          description: `${batch.title} — ${selectedQty} slot(s)`,
+          order_id: razorpayOrder.id,
+          handler: async (response) => {
+            // 3. Verify signature + confirm reservation
+            const verifyRes = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                amount: razorpayOrder.amount / 100,
+                reservationId: reservation.id,
+              }),
+            });
+            if (verifyRes.ok) {
+              toast.success("Payment confirmed! Your slot is locked.", { duration: 5000 });
+              router.push("/orders");
+              resolve();
+            } else {
+              const e = await verifyRes.json();
+              toast.error(e.error || "Payment verification failed");
+              reject(new Error(e.error));
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              toast.message("Payment cancelled. Your slot reservation was released.");
+              // Cancel the reservation to free slots
+              fetch(`/api/batches/${id}/cancel-reservation`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ reservationId: reservation.id }),
+              }).catch(() => {});
+              resolve();
+            },
+          },
+          prefill: { name: "", contact: "" },
+          theme: { color: "#F97316" },
+        };
+        new window.Razorpay(options).open();
+      });
     } catch (err) {
-      console.error("Error joining batch:", err);
-      alert("Server error. Please try again.");
+      console.error("Join error:", err);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setJoiningBatch(false);
     }
