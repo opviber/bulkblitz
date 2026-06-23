@@ -15,7 +15,8 @@
   /* Text Colors */
   --color-text-primary: #FAFAFA;
   --color-text-secondary: #A1A1AA;
-  --color-text-muted: #52525B;
+  /* ↑ WCAG AA fix: raised from #52525B (2.5:1) to #808080 (4.7:1 on #111113) */
+  --color-text-muted: #808080;
 
   /* Status Colors */
   --color-live: #22C55E;

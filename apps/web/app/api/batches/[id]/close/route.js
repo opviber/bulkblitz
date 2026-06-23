@@ -6,6 +6,33 @@ import { broadcastBatchUpdate } from "@/lib/realtime";
 import { creditWallet } from "@/lib/wallet";
 import { dispatchNotification } from "@/lib/notifications";
 
+/** Credit the referrer ₹10 BulkCash for the referred user's first ever order. */
+async function maybeRewardReferrer(userId) {
+  try {
+    const referral = await prisma.referral.findFirst({
+      where: { referredId: userId, rewarded: false },
+    });
+    if (!referral) return;
+    const orderCount = await prisma.order.count({ where: { userId } });
+    if (orderCount !== 1) return; // Only on first order
+    await prisma.referral.update({ where: { id: referral.id }, data: { rewarded: true } });
+    await creditWallet(
+      referral.referrerId,
+      referral.rewardAmount,
+      `Referral reward for bringing user ${userId}`,
+      `referral-reward-${referral.id}`
+    );
+    await dispatchNotification(referral.referrerId, {
+      channel: "PUSH",
+      title: "You earned BulkCash! 🎉",
+      body: `₹${referral.rewardAmount} credited for your referral's first order.`,
+      link: "/wallet",
+    });
+  } catch (e) {
+    console.warn("referral reward failed:", e?.message);
+  }
+}
+
 // POST /api/batches/:id/close
 // Internal endpoint (cron / admin). Locks the final tier, captures or refunds.
 // Protected by CRON_SECRET (Bearer) in production.
@@ -79,6 +106,7 @@ export async function POST(request, { params }) {
           },
         });
         await prisma.slotReservation.update({ where: { id: r.id }, data: { status: "CONFIRMED" } });
+        await maybeRewardReferrer(r.userId);
         await dispatchNotification(r.userId, {
           channel: "WHATSAPP",
           title: "Batch confirmed!",

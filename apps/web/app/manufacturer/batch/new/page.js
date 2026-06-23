@@ -83,9 +83,46 @@ export default function CreateBatchWizard() {
     });
   };
 
+  // Upload images to Supabase Storage and return public URLs.
+  // Falls back to data-URL strings in sandbox mode.
+  const uploadImages = async (files) => {
+    const urls = [];
+    for (const file of files) {
+      try {
+        const res = await fetch("/api/uploads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName: file.name, contentType: file.type }),
+        });
+        const { uploadUrl, publicUrl, sandbox } = await res.json();
+        if (sandbox || !uploadUrl) {
+          // Sandbox: use a data URL as a stand-in
+          const dataUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+          });
+          urls.push(dataUrl);
+        } else {
+          // Real upload via signed URL
+          await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+          urls.push(publicUrl);
+        }
+      } catch {
+        // Skip failed uploads silently
+      }
+    }
+    return urls;
+  };
+
   const handleLaunch = async () => {
     setLoading(true);
     try {
+      // Upload any images that are File objects (not already URLs)
+      const imageUrls = await uploadImages(
+        uploadedImages.filter((img) => img instanceof File || img?.file)
+      );
+
       const res = await fetch("/api/batches", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -96,6 +133,7 @@ export default function CreateBatchWizard() {
           moq: parseInt(batchData.moq),
           maxSlots: parseInt(batchData.maxSlots),
           endTime: new Date(batchData.endTime).toISOString(),
+          images: imageUrls.length > 0 ? imageUrls : undefined,
           tiers: tiers.map((t) => ({
             minSlots: parseInt(t.minSlots),
             maxSlots: parseInt(t.maxSlots),
@@ -105,15 +143,17 @@ export default function CreateBatchWizard() {
       });
 
       if (res.ok) {
-        alert("🎉 Batch launched successfully! Your listing is now LIVE.");
+        toast.success("Batch submitted for review! It will go live after admin approval.", {
+          duration: 5000,
+        });
         router.push("/manufacturer");
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to launch batch listing");
+        toast.error(err.error || "Failed to submit batch");
       }
     } catch (err) {
-      console.error("Error launching batch:", err);
-      alert("An unexpected error occurred. Please try again.");
+      console.error("Error submitting batch:", err);
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -54,6 +54,7 @@ export async function POST(request) {
       maxSlots,
       endTime,
       tiers,
+      images,
     } = body;
 
     // Validate inputs
@@ -79,12 +80,14 @@ export async function POST(request) {
         title,
         description,
         category,
-        status: "LIVE", // Launch live immediately for preview
+        // New batches always start as PENDING_APPROVAL; admin approves → LIVE.
+        // In dev/sandbox without an admin, you can manually update via prisma studio.
+        status: "PENDING_APPROVAL",
         moq: parseInt(moq),
         maxSlots: parseInt(maxSlots),
         currentSlots: 0,
         endTime: new Date(endTime),
-        images: ["/placeholder-product.jpg"], // default catalog image
+        images: Array.isArray(images) && images.length > 0 ? images : ["/placeholder-product.jpg"],
         tiers: {
           create: tiers.map((tier) => ({
             minSlots: parseInt(tier.minSlots),

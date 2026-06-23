@@ -25,6 +25,7 @@ const spaceGrotesk = Space_Grotesk({
 
 import JsonLd from "@/components/seo/JsonLd";
 import { Toaster } from "sonner";
+import BottomTabNav from "@/components/layout/BottomTabNav";
 
 export const metadata = {
   title: "BulkBlitz — Bulk Up. Price Down.",
@@ -100,8 +101,9 @@ export default function RootLayout({ children }) {
         <JsonLd data={orgSchema} />
         <JsonLd data={websiteSchema} />
       </head>
-      <body>
+      <body className="pb-16 md:pb-0">
         {children}
+        <BottomTabNav />
         <Toaster
           position="top-center"
           theme="dark"

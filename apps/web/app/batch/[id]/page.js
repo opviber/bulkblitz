@@ -619,6 +619,21 @@ export default function BatchDetailPage({ params }) {
 
       <Footer />
 
+      {/* ── Mobile sticky "Join" bar — visible only on small screens ── */}
+      {batch && batch.status === "LIVE" && (
+        <div className="fixed bottom-16 left-0 right-0 z-40 flex md:hidden px-4 pb-2 pt-2 bg-gradient-to-t from-black via-black/95 to-transparent pointer-events-none">
+          <button
+            onClick={() => {
+              // Scroll to the desktop join panel so the action is clear on tablet
+              document.getElementById("join-panel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }}
+            className="pointer-events-auto w-full h-14 rounded-2xl bg-[var(--color-brand,#F97316)] text-black font-black text-base flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30"
+          >
+            Join batch · {batch.tiers ? `₹${Math.min(...batch.tiers.map(t => t.price))}/unit` : ""}
+          </button>
+        </div>
+      )}
+
       {/* ── Real-time Toast ── */}
       {recentJoinAlert && (
         <div className="fixed bottom-6 right-6 p-4 bg-neutral-900 border border-green-500/50 rounded-xl shadow-2xl flex items-center gap-3 z-50 backdrop-blur-xl max-w-xs">

@@ -265,6 +265,22 @@ main, footer {
   --color-border: rgba(0, 0, 0, 0.10);
   --color-border-subtle: rgba(0, 0, 0, 0.06);
   --color-text-primary: #0A0A0A;
-  --color-text-secondary: #52525B;
-  --color-text-muted: #71717A;
+  --color-text-secondary: #3F3F46;
+  --color-text-muted: #52525B;
+}
+
+/* System-level light-mode: apply light tokens automatically if user prefers light */
+@media (prefers-color-scheme: light) {
+  :root:not(.dark) {
+    --color-void: #FAFAF9;
+    --color-surface: #FFFFFF;
+    --color-surface-raised: #F4F4F5;
+    --color-surface-overlay: #ECECEE;
+    --color-border: rgba(0, 0, 0, 0.10);
+    --color-border-subtle: rgba(0, 0, 0, 0.06);
+    --color-text-primary: #0A0A0A;
+    --color-text-secondary: #3F3F46;
+    --color-text-muted: #52525B;
+    color-scheme: light;
+  }
 }
