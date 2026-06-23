@@ -82,9 +82,19 @@ function HeaderContent() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Synchronize theme attribute
+  // — On mount, restore saved theme from localStorage (only runs once on client)
+  useEffect(() => {
+    const saved = localStorage.getItem("bb_theme");
+    if (saved === "light" || saved === "dark") {
+      setTheme(saved);
+      document.documentElement.setAttribute("data-theme", saved);
+    }
+  }, []);
+
+  // — On change, persist to localStorage + sync to <html>
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("bb_theme", theme);
   }, [theme]);
 
   // Synchronize search input text with URL query params

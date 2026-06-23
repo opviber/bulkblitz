@@ -94,25 +94,7 @@ function HomePageContent() {
     loadBatches();
   }, []);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-          }
-        });
-      },
-      { threshold: 0.05 }
-    );
-
-    const revealElements = document.querySelectorAll('.reveal');
-    revealElements.forEach((el) => observer.observe(el));
-
-    return () => {
-      revealElements.forEach((el) => observer.unobserve(el));
-    };
-  }, [loading, batches, activeCategory, activeTab]);
+  // Replaced by <StaggerReveal> wrapping categories + batch grid
 
   const handleCategoryChange = (catId) => {
     const params = new URLSearchParams(window.location.search);
@@ -343,7 +325,6 @@ function HomePageContent() {
                 ))
               ) : filteredBatches.length > 0 ? (
                 filteredBatches.map((batch, i) => (
-                  <div key={batch.id} className="reveal" style={{ transitionDelay: `${i * 100}ms` }}>
                     <BatchCard
                       batch={batch}
                       manufacturer={batch.manufacturer}
