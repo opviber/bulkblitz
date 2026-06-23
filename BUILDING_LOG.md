@@ -152,6 +152,29 @@ The header was redesigned as a GitHub-style left-sidebar mobile drawer in a prev
 - Migrated remaining marketplace routes from legacy styled-jsx to Tailwind CSS v4 in `/auth`, `/batch/[id]`, `/manufacturer/analytics`, and `/manufacturer/batch/new`.
 - Connected the new batch launching wizard directly to the `/api/batches` creation POST handler to store active listings and price schedules in PostgreSQL.
 
+### Merged Backend Branches (Completed)
+We merged the core functional backend integration branches:
+1. **Phase 1 — E2E Transactional Backend (`feat/phase1-e2e-backend`)**:
+   - Integrated real session auth with Supabase Auth (OTP and sessions saved as httpOnly cookie).
+   - Added atomic, row-locked slot reservation (`SELECT ... FOR UPDATE`) in `/api/batches/[id]/join` with Razorpay authorization holds.
+   - Built the cron closure endpoint `/api/cron/close-batches` and transactional BulkCash wallet backend.
+   - Set up Supabase Realtime broadcast channels for live updates (`PRICE_UPDATED`, `SLOT_FILLED`).
+2. **Phase 2 — Operator Layer & Dashboard Backend (`feat/phase2-marketplace`)**:
+   - Added file uploads to Supabase Storage.
+   - Added KYC onboarding backend (GST + Bank verification) for manufacturers.
+   - Implemented operator endpoints for admin/manufacturer tracking updates, payouts, and disputes resolution.
+3. **Phase 3 & 4 — Growth Features & Mobile Optimization (`feat/phase3-4-design-growth`)**:
+   - Wired up real notification adapters for MSG91 WhatsApp and Resend emails.
+   - Implemented referral rewards (₹10 BulkCash credited to referrer on referred user's first order).
+   - Built the Drop-Alert cron job to notify wishlist watchers when a batch crosses a pricing tier.
+   - Implemented mobile bottom navigation tabs and a sticky mobile "Join Batch" CTA bar.
+   - Applied WCAG AA contrast adjustments and prefers-color-scheme light-mode fallback.
+4. **Phase 5 — Payment Integration & Polish (`feat/phase5-polish`)**:
+   - Wired the full Razorpay payment checkout widget client-side flow.
+   - Configured global Router error/loading/not-found boundaries.
+   - Added dynamic SEO tags on product detail pages and drafted comprehensive deployment documents.
+   - Decoupled runtime database dependencies in `middleware.js` to prevent Edge environment runtime compilation crashes.
+
 ### Session 11 (Completed): Vercel Production Deployment & Bug Fixing
 - **Vercel Hobby Cron Fix**: Resolved Vercel deployment validator crash by adjusting cron schedules in [vercel.json](file:///e:/BulkBlitz/apps/web/vercel.json) to once-per-day (`0 0 * * *` and `0 1 * * *`) as required by Vercel Hobby accounts. Suggested setting up an external trigger (like `cron-job.org` or GitHub Actions) to run at the original minute/5-minute intervals.
 - **Vercel Prisma Client Generation Fix**: Configured a `postinstall` script in [package.json](file:///e:/BulkBlitz/apps/web/package.json) to run `prisma generate` upon dependency installation, and moved `@prisma/client` to production dependencies. This ensures the Prisma engines are generated inside the build container before static page generation compiles, preventing the `Cannot find module '.prisma/client/default'` crash.
