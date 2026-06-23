@@ -10,6 +10,8 @@ export const phoneSchema = z
 
 export const otpSendSchema = z.object({
   phone: phoneSchema,
+  /** Optional intent — only affects user creation, never escalates an existing user. */
+  intent: z.enum(["buyer", "seller"]).optional(),
 });
 
 export const otpVerifySchema = z.object({
@@ -17,6 +19,17 @@ export const otpVerifySchema = z.object({
   token: z.string().min(4).max(8),
   name: z.string().min(1).max(80).optional(),
   referralCode: z.string().min(4).max(16).optional(),
+  /** "seller" creates a manufacturer profile shell + sets role MANUFACTURER on first sign-up. */
+  intent: z.enum(["buyer", "seller"]).optional(),
+  businessName: z.string().min(2).max(120).optional(),
+  city: z.string().min(2).max(80).optional(),
+  state: z.string().min(2).max(80).optional(),
+});
+
+export const upgradeToSellerSchema = z.object({
+  businessName: z.string().min(2).max(120),
+  city: z.string().min(2).max(80),
+  state: z.string().min(2).max(80),
 });
 
 export const joinBatchSchema = z.object({

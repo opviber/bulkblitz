@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { 
   Building2, CheckCircle2, Package, Coins, Percent, Users, TrendingUp, Settings, PlusCircle, Calendar, MapPin, ShieldCheck, ArrowUpRight, ArrowDownRight, Check, Truck, AlertCircle, ExternalLink, X, Loader2, CreditCard, BarChart3, Sparkles, Activity
@@ -285,7 +283,7 @@ export default function ManufacturerDashboard() {
 
   return (
     <>
-      <Header />
+
 
       <main className="pt-28 pb-20 min-h-[calc(100vh-150px)] bg-[#050505] text-left">
         <div className="max-w-6xl mx-auto px-4">
@@ -881,7 +879,7 @@ export default function ManufacturerDashboard() {
         </div>
       </main>
 
-      <Footer />
+
 
       {/* Carrier Fulfillment Modal Overlay */}
       {showFulfillModal && (

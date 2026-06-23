@@ -16,7 +16,7 @@ export async function POST(request) {
   if (!client) {
     if (allowSandbox) {
       // Local/dev without Supabase: pretend OTP was sent (code logged server-side).
-      console.log(`[sandbox] OTP for +91${data.phone} = 123456`);
+      console.log(`[sandbox] OTP for +91${data.phone} = 123456 (intent: ${data.intent || "buyer"})`);
       return NextResponse.json({ ok: true, sandbox: true });
     }
     return NextResponse.json({ error: "Auth provider not configured" }, { status: 503 });

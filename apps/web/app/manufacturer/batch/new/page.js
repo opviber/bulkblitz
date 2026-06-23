@@ -3,8 +3,6 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { CATEGORIES } from "@/lib/mock-data";
 import { formatPrice } from "@/lib/utils";
 import { 
@@ -171,7 +169,7 @@ export default function CreateBatchWizard() {
 
   return (
     <>
-      <Header />
+
 
       <main className="pt-24 pb-16 min-h-screen bg-black text-white font-sans bg-[radial-gradient(circle_at_top_right,rgba(255,107,0,0.06),transparent_50%)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
@@ -680,7 +678,7 @@ export default function CreateBatchWizard() {
         </div>
       </main>
 
-      <Footer />
+
     </>
   );
 }

@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { formatPrice } from "@/lib/utils";
 import { 
   ArrowLeft, TrendingUp, Coins, Percent, Eye, BarChart3, 
@@ -95,7 +93,7 @@ export default function ManufacturerAnalytics() {
 
   return (
     <>
-      <Header />
+
 
       <main className="pt-24 pb-16 min-h-screen bg-black text-white font-sans bg-[radial-gradient(circle_at_center_top,rgba(255,107,0,0.04),transparent_55%)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -401,7 +399,7 @@ export default function ManufacturerAnalytics() {
         </div>
       </main>
 
-      <Footer />
+
     </>
   );
 }

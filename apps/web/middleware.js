@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const ACCESS_COOKIE = "bb-access-token";
 
-// Routes that require an authenticated session.
+// Routes that require *any* authenticated session.
 const PROTECTED = [
   "/orders",
   "/wallet",
@@ -11,10 +11,8 @@ const PROTECTED = [
   "/admin",
   "/refer",
   "/wishlist",
+  "/become-a-seller",
 ];
-
-// Admin-only path prefix (role is re-checked server-side in the route/page).
-const ADMIN_PREFIX = "/admin";
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
@@ -48,5 +46,6 @@ export const config = {
     "/admin/:path*",
     "/refer/:path*",
     "/wishlist/:path*",
+    "/become-a-seller/:path*",
   ],
 };

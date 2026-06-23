@@ -1,370 +1,465 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+// =============================================================================
+// /auth — Role-aware sign-up & sign-in.
+//
+// Flow:
+//   1. ROLE — buyer or seller card (skipped via ?intent=seller URL param)
+//   2. PHONE — 10-digit number, send OTP
+//   3. OTP — 6 digits + (sellers only) business name / city / state
+//   4. On success: BUYER → "/" (or ?next=) · MANUFACTURER → "/manufacturer"
+// =============================================================================
+
+import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Phone, ArrowRight, Loader2, RefreshCw, ChevronLeft } from "lucide-react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  ShoppingBag, Factory, ArrowRight, ArrowLeft, Phone, Loader2, RefreshCw,
+  CheckCircle2, ShieldCheck, TrendingUp, Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 import Logo from "@/components/ui/Logo";
 
-export default function AuthPage() {
+const INDIAN_STATES = [
+  "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana",
+  "Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur",
+  "Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana",
+  "Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Delhi","Jammu & Kashmir","Ladakh",
+  "Puducherry","Chandigarh","Andaman & Nicobar","Dadra & Nagar Haveli","Daman & Diu","Lakshadweep",
+];
+
+const ROLE_CARDS = [
+  {
+    key: "buyer",
+    title: "I want to buy",
+    badge: "Buyer",
+    icon: ShoppingBag,
+    line: "Join batches with other buyers and unlock manufacturer prices.",
+    points: ["Real factory prices", "Pay only the final tier", "Free if batch fails MOQ"],
+  },
+  {
+    key: "seller",
+    title: "I want to sell",
+    badge: "Manufacturer",
+    icon: Factory,
+    line: "List tier-priced batches. Get pre-paid orders. Ship the volume that fills.",
+    points: ["4% flat fee", "3-day payout", "Zero unsold inventory risk"],
+  },
+];
+
+function AuthInner() {
   const router = useRouter();
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const params = useSearchParams();
+
+  // Allow deep-linking: ?intent=seller starts the seller flow, ?next=... preserves redirect
+  const initialIntent = params.get("intent") === "seller" ? "seller" : null;
+  const nextPath = params.get("next") || null;
+
+  const [step, setStep] = useState(initialIntent ? "phone" : "role");
+  const [intent, setIntent] = useState(initialIntent || null);
+  const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [biz, setBiz] = useState({ businessName: "", city: "", state: "" });
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(30);
+  const [sentSandbox, setSentSandbox] = useState(false);
 
-  const otpRefs = [
-    useRef(null), useRef(null), useRef(null),
-    useRef(null), useRef(null), useRef(null),
-  ];
+  const otpRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
 
   useEffect(() => {
-    let interval;
-    if (otpSent && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((t) => t - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [otpSent, timer]);
+    if (step !== "otp" || timer <= 0) return;
+    const id = setInterval(() => setTimer((t) => t - 1), 1000);
+    return () => clearInterval(id);
+  }, [step, timer]);
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
-    if (phoneNumber.length !== 10) {
-      toast.error("Please enter a valid 10-digit phone number");
+  // ── Step 1: role
+  function pickRole(role) {
+    setIntent(role);
+    setStep("phone");
+  }
+
+  // ── Step 2: send OTP
+  async function sendOtp(e) {
+    e?.preventDefault?.();
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      toast.error("Enter a valid 10-digit Indian mobile number");
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/otp/send", {
+      const r = await fetch("/api/auth/otp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phoneNumber }),
+        body: JSON.stringify({ phone, intent }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not send OTP");
-      setOtpSent(true);
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Could not send code");
+      setSentSandbox(Boolean(d.sandbox));
+      setStep("otp");
       setTimer(30);
-      toast.success(data.sandbox ? "OTP sent (dev code: 123456)" : "OTP sent");
+      toast.success(d.sandbox ? "Sandbox mode — code is 123456" : "Code sent over SMS");
+      setTimeout(() => otpRefs[0]?.current?.focus(), 50);
     } catch (err) {
       toast.error(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleVerifyOtp = async (e) => {
+  // ── OTP input handlers
+  function onOtpChange(i, raw) {
+    const v = raw.replace(/\D/g, "").slice(0, 1);
+    setOtp((prev) => {
+      const next = [...prev];
+      next[i] = v;
+      return next;
+    });
+    if (v && i < 5) otpRefs[i + 1].current?.focus();
+  }
+  function onOtpKey(i, e) {
+    if (e.key === "Backspace" && !otp[i] && i > 0) otpRefs[i - 1].current?.focus();
+  }
+  function onOtpPaste(e) {
+    const text = (e.clipboardData?.getData("text") || "").replace(/\D/g, "").slice(0, 6);
+    if (!text) return;
     e.preventDefault();
-    const pin = otp.join("");
-    if (pin.length !== 6) {
-      toast.error("Please enter the 6-digit OTP");
+    const next = text.padEnd(6, "").split("").slice(0, 6);
+    setOtp(next);
+    otpRefs[Math.min(text.length, 5)].current?.focus();
+  }
+
+  // ── Step 3: verify (+ business details if seller signup)
+  async function verifyOtp(e) {
+    e?.preventDefault?.();
+    const token = otp.join("");
+    if (token.length !== 6) {
+      toast.error("Enter the 6-digit code");
       return;
+    }
+    if (intent === "seller") {
+      if (!biz.businessName.trim() || !biz.city.trim() || !biz.state.trim()) {
+        toast.error("Please fill your business details");
+        return;
+      }
     }
     setLoading(true);
     try {
-      const ref =
-        typeof window !== "undefined"
-          ? new URLSearchParams(window.location.search).get("ref")
-          : null;
-      const res = await fetch("/api/auth/otp/verify", {
+      const body = {
+        phone,
+        token,
+        name: name.trim() || undefined,
+        intent,
+        ...(intent === "seller" ? biz : {}),
+      };
+      const r = await fetch("/api/auth/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phoneNumber, token: pin, referralCode: ref || undefined }),
+        body: JSON.stringify(body),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Invalid code");
-      toast.success("Welcome to BulkBlitz!");
-      const next =
-        typeof window !== "undefined"
-          ? new URLSearchParams(window.location.search).get("next")
-          : null;
-      router.push(next || "/");
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Invalid code");
+
+      window.dispatchEvent(new Event("session:refresh"));
+      toast.success(
+        d.isNew
+          ? (d.becameSeller ? "Welcome, Seller. Let's set up KYC next." : "Welcome to BulkBlitz!")
+          : "Welcome back."
+      );
+      const dest = nextPath || d.redirectTo || "/";
+      router.push(dest);
     } catch (err) {
       toast.error(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleOtpChange = (index, value) => {
-    if (isNaN(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value.substring(value.length - 1);
-    setOtp(newOtp);
-
-    // Focus next input
-    if (value && index < 5) {
-      otpRefs[index + 1].current.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      otpRefs[index - 1].current.focus();
-    }
-  };
-
-  const handleResend = async () => {
-    setTimer(30);
-    try {
-      await fetch("/api/auth/otp/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phoneNumber }),
-      });
-      toast.success("OTP resent");
-    } catch {
-      toast.error("Could not resend OTP");
-    }
-  };
-
-  const handleSocialLogin = (provider) => {
-    // Social login is handled by Supabase OAuth redirect in production.
-    const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (base) {
-      window.location.href = `${base}/auth/v1/authorize?provider=${provider.toLowerCase()}&redirect_to=${encodeURIComponent(
-        window.location.origin + "/auth/callback"
-      )}`;
-    } else {
-      toast.message(`${provider} login requires Supabase configuration`);
-    }
-  };
-
+  // ===== UI =====
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-black text-white font-sans">
-      
-      {/* Left Column: Form */}
-      <div className="flex flex-col justify-between p-6 sm:p-12 md:p-16 lg:p-24 relative overflow-hidden bg-gradient-to-b from-neutral-950 to-neutral-900 border-r border-white/5">
-        
-        {/* Decorative Grid Background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
-        
-        {/* Top: Logo */}
-        <div className="relative z-10 flex justify-between items-center mb-12">
-          <Link href="/" className="flex items-center gap-3 group">
-            <Logo className="w-8 h-8 transition-transform group-hover:scale-110 duration-300" />
-            <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-white via-neutral-200 to-primary bg-clip-text text-transparent">
-              BulkBlitz
+    <div className="min-h-screen flex bg-[var(--bg-primary)] text-[var(--text-primary)] relative overflow-hidden">
+      {/* Decorative gradient orbs */}
+      <div className="pointer-events-none absolute -top-32 -right-32 w-[480px] h-[480px] rounded-full bg-[var(--primary)]/15 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-32 -left-32 w-[480px] h-[480px] rounded-full bg-[var(--accent)]/10 blur-[140px]" />
+
+      {/* LEFT — visual / brand panel */}
+      <aside className="hidden lg:flex w-1/2 relative flex-col p-12 border-r border-[var(--border-default)]">
+        <Link href="/" className="inline-flex items-center gap-2 group">
+          <Logo size={36} />
+          <span className="font-bold text-xl tracking-tight">BulkBlitz</span>
+        </Link>
+
+        <div className="flex-1 flex flex-col justify-center max-w-md">
+          <h2 className="text-5xl font-black tracking-tight leading-[1.05] mb-5">
+            Bulk up.
+            <br />
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--accent)] to-[var(--accent-2)] bg-clip-text text-transparent">
+              Price down.
             </span>
-          </Link>
-          <Link href="/" className="text-xs text-neutral-400 hover:text-white transition-colors flex items-center gap-1">
-            <ChevronLeft className="w-3.5 h-3.5" /> Back to Home
-          </Link>
+          </h2>
+          <p className="text-base text-[var(--text-secondary)] leading-relaxed mb-8">
+            India's first crowd-powered manufacturing marketplace. Pool together. Pay factory prices.
+          </p>
+          <div className="space-y-3">
+            {[
+              { icon: TrendingUp, text: "Live tier-drop pricing in real time" },
+              { icon: ShieldCheck, text: "Card hold + capture only at final price" },
+              { icon: Sparkles, text: "No-fill = no charge. Always." },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
+                <span className="w-8 h-8 rounded-lg bg-[var(--primary)]/12 text-[var(--primary)] flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4" />
+                </span>
+                <span>{text}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Center: Dynamic Forms Container */}
-        <div className="relative z-10 my-auto max-w-md w-full mx-auto">
-          {!otpSent ? (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">
-                  Verify Phone Number
-                </h2>
-                <p className="text-sm text-neutral-400">
-                  Enter your phone number to sign in or create an account instantly.
-                </p>
-              </div>
+        <p className="text-xs text-[var(--text-tertiary)]">© 2026 BulkBlitz. Made for India.</p>
+      </aside>
 
-              <form onSubmit={handleSendOtp} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
-                    Phone Number
-                  </label>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-4 font-semibold text-neutral-400 select-none">
-                      +91
-                    </span>
-                    <input
-                      type="tel"
-                      placeholder="Enter 10-digit number"
-                      maxLength={10}
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-14 pr-4 font-semibold text-lg text-white focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all placeholder-neutral-600"
-                      required
-                    />
-                  </div>
-                </div>
+      {/* RIGHT — form panel */}
+      <section className="flex-1 flex items-center justify-center p-5 sm:p-8 relative z-10">
+        <div className="w-full max-w-md">
+          {/* Mobile-only brand row */}
+          <div className="lg:hidden flex items-center gap-2 mb-8">
+            <Logo size={32} />
+            <span className="font-bold text-lg tracking-tight">BulkBlitz</span>
+          </div>
 
-                <button
-                  type="submit"
-                  disabled={loading || phoneNumber.length !== 10}
-                  className="w-full bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
-                >
-                  {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <span>Send OTP Code</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
+          {/* Step indicator */}
+          <StepDots step={step} />
 
-              {/* Social Login Separator */}
-              <div className="flex items-center my-6 text-xs text-neutral-500 font-bold uppercase tracking-widest before:content-[''] before:flex-1 before:border-b before:border-white/5 before:mr-4 after:content-[''] after:flex-1 after:border-b after:border-white/5 after:ml-4">
-                or continue with
-              </div>
+          {/* ── ROLE STEP ── */}
+          {step === "role" && (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+              <header>
+                <h1 className="text-3xl font-black tracking-tight mb-2">Welcome.</h1>
+                <p className="text-[var(--text-secondary)]">How do you want to use BulkBlitz?</p>
+              </header>
 
-              {/* Social Login Buttons */}
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => handleSocialLogin("Google")}
-                  className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl py-3 px-4 text-sm font-semibold text-white transition-all cursor-pointer"
-                  disabled={loading}
-                >
-                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-                  </svg>
-                  <span>Google</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSocialLogin("Facebook")}
-                  className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl py-3 px-4 text-sm font-semibold text-white transition-all cursor-pointer"
-                  disabled={loading}
-                >
-                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/>
-                  </svg>
-                  <span>Facebook</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">
-                  Verify Code
-                </h2>
-                <p className="text-sm text-neutral-400">
-                  Enter the 6-digit code sent to +91 {phoneNumber.replace(/(\d{5})(\d{5})/, "$1-$2")}.
-                </p>
-              </div>
-
-              <form onSubmit={handleVerifyOtp} className="space-y-6">
-                <div className="grid grid-cols-6 gap-2 sm:gap-3">
-                  {otp.map((digit, idx) => (
-                    <input
-                      key={idx}
-                      ref={otpRefs[idx]}
-                      type="text"
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(idx, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                      className="h-16 w-full text-center text-2xl font-extrabold text-white bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-primary focus:bg-white/10 focus:ring-4 focus:ring-primary/10 transition-all"
-                      required
-                    />
-                  ))}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading || otp.join("").length !== 4}
-                  className="w-full bg-gradient-to-r from-primary to-orange-600 hover:from-primary-hover hover:to-orange-700 disabled:from-neutral-800 disabled:to-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:translate-y-0 hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
-                >
-                  {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <span>Verify & Proceed</span>
-                  )}
-                </button>
-
-                <div className="flex justify-between items-center text-xs">
-                  {timer > 0 ? (
-                    <span className="text-neutral-400">
-                      Resend OTP in <strong className="text-white">{timer}s</strong>
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleResend}
-                      className="text-primary hover:text-primary-hover font-semibold transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Resend Code
-                    </button>
-                  )}
+              <div className="space-y-3">
+                {ROLE_CARDS.map((c) => (
                   <button
-                    type="button"
-                    onClick={() => setOtpSent(false)}
-                    className="text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    key={c.key}
+                    onClick={() => pickRole(c.key)}
+                    className="group w-full text-left p-5 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] hover:border-[var(--primary)]/40 hover:bg-[var(--bg-elevated)] transition-all duration-200 hover:-translate-y-0.5"
                   >
-                    Edit Phone Number
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-[var(--primary)]/12 text-[var(--primary)] flex items-center justify-center shrink-0 group-hover:bg-[var(--primary)] group-hover:text-white transition-colors">
+                        <c.icon className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-bold text-base text-[var(--text-primary)]">{c.title}</span>
+                          <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-[var(--primary)]/12 text-[var(--primary)]">
+                            {c.badge}
+                          </span>
+                        </div>
+                        <p className="text-sm text-[var(--text-secondary)] mb-2.5 leading-snug">{c.line}</p>
+                        <ul className="flex flex-wrap gap-x-3 gap-y-1">
+                          {c.points.map((p) => (
+                            <li key={p} className="text-[11px] text-[var(--text-tertiary)] flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-[var(--success)]" />
+                              {p}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-[var(--text-tertiary)] group-hover:text-[var(--primary)] group-hover:translate-x-1 transition-all shrink-0 mt-2" />
+                    </div>
                   </button>
-                </div>
-              </form>
+                ))}
+              </div>
+
+              <p className="text-center text-xs text-[var(--text-tertiary)]">
+                You can switch later — one account, both roles.
+              </p>
             </div>
           )}
+
+          {/* ── PHONE STEP ── */}
+          {step === "phone" && (
+            <form onSubmit={sendOtp} className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+              <BackBtn onClick={() => setStep("role")} disabled={Boolean(initialIntent)} />
+              <header>
+                <h1 className="text-3xl font-black tracking-tight mb-2">
+                  {intent === "seller" ? "Sell on BulkBlitz" : "Welcome to BulkBlitz"}
+                </h1>
+                <p className="text-[var(--text-secondary)]">
+                  We'll send you a one-time code to verify your number.
+                </p>
+              </header>
+
+              <label className="block">
+                <span className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                  Mobile number
+                </span>
+                <div className="flex items-center h-12 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-default)] focus-within:border-[var(--primary)]/60 focus-within:ring-2 focus-within:ring-[var(--primary)]/20 transition-all">
+                  <span className="pl-4 pr-2 text-sm font-medium text-[var(--text-secondary)] border-r border-[var(--border-default)]">
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    autoFocus
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    placeholder="98xxxxxxxx"
+                    className="flex-1 h-full bg-transparent px-3 text-base focus:outline-none placeholder-[var(--text-tertiary)]"
+                  />
+                </div>
+              </label>
+
+              <button
+                type="submit"
+                disabled={loading || phone.length !== 10}
+                className="w-full h-12 rounded-xl bg-[var(--primary)] text-white font-semibold flex items-center justify-center gap-2 hover:bg-[var(--accent)] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_8px_24px_rgba(255,106,0,0.25)]"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Send code <ArrowRight className="w-4 h-4" /></>}
+              </button>
+
+              <p className="text-center text-xs text-[var(--text-tertiary)]">
+                By continuing you agree to our{" "}
+                <Link href="/legal/terms" className="underline hover:text-[var(--text-secondary)]">Terms</Link> and{" "}
+                <Link href="/legal/privacy" className="underline hover:text-[var(--text-secondary)]">Privacy Policy</Link>.
+              </p>
+            </form>
+          )}
+
+          {/* ── OTP STEP ── */}
+          {step === "otp" && (
+            <form onSubmit={verifyOtp} className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+              <BackBtn onClick={() => setStep("phone")} />
+              <header>
+                <h1 className="text-3xl font-black tracking-tight mb-2">Verify your number</h1>
+                <p className="text-[var(--text-secondary)]">
+                  Enter the 6-digit code sent to <span className="text-[var(--text-primary)] font-medium">+91 {phone}</span>
+                  {sentSandbox && <span className="block text-xs text-[var(--accent-warning)] mt-1">Sandbox mode: use 123456</span>}
+                </p>
+              </header>
+
+              <div className="flex gap-2 sm:gap-3" onPaste={onOtpPaste}>
+                {otp.map((v, i) => (
+                  <input
+                    key={i}
+                    ref={otpRefs[i]}
+                    inputMode="numeric"
+                    type="text"
+                    maxLength={1}
+                    value={v}
+                    onChange={(e) => onOtpChange(i, e.target.value)}
+                    onKeyDown={(e) => onOtpKey(i, e)}
+                    className="w-full h-12 sm:h-14 text-center text-xl font-bold rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-default)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/30 transition-all focus:outline-none"
+                  />
+                ))}
+              </div>
+
+              {/* Seller extras: business details */}
+              {intent === "seller" && (
+                <div className="space-y-3 pt-1 border-t border-[var(--border-default)] mt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] pt-3">
+                    Business details
+                  </p>
+                  <Field
+                    placeholder="Business name (e.g. Rajesh Cotton Mills)"
+                    value={biz.businessName}
+                    onChange={(v) => setBiz((b) => ({ ...b, businessName: v }))}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field
+                      placeholder="City"
+                      value={biz.city}
+                      onChange={(v) => setBiz((b) => ({ ...b, city: v }))}
+                    />
+                    <select
+                      value={biz.state}
+                      onChange={(e) => setBiz((b) => ({ ...b, state: e.target.value }))}
+                      className="h-11 px-3 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-default)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--primary)]/60"
+                    >
+                      <option value="">State</option>
+                      {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || otp.join("").length !== 6}
+                className="w-full h-12 rounded-xl bg-[var(--primary)] text-white font-semibold flex items-center justify-center gap-2 hover:bg-[var(--accent)] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_8px_24px_rgba(255,106,0,0.25)]"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Verify & continue <ArrowRight className="w-4 h-4" /></>}
+              </button>
+
+              <div className="text-center text-sm">
+                {timer > 0 ? (
+                  <span className="text-[var(--text-tertiary)]">Resend code in <span className="text-[var(--text-secondary)] font-medium">{timer}s</span></span>
+                ) : (
+                  <button type="button" onClick={sendOtp} disabled={loading}
+                    className="inline-flex items-center gap-1.5 text-[var(--primary)] font-medium hover:underline">
+                    <RefreshCw className="w-3.5 h-3.5" /> Resend code
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
         </div>
-
-        {/* Bottom: Terms */}
-        <div className="relative z-10 mt-12 text-center">
-          <p className="text-xs text-neutral-500 leading-relaxed max-w-sm mx-auto">
-            By proceeding, you agree to BulkBlitz&apos;s{" "}
-            <Link href="#" className="text-neutral-400 hover:text-white underline transition-colors">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="#" className="text-neutral-400 hover:text-white underline transition-colors">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-        </div>
-      </div>
-
-      {/* Right Column: Decorative Banner */}
-      <div className="hidden lg:flex flex-col justify-center p-16 relative overflow-hidden bg-gradient-to-tr from-black via-neutral-950 to-neutral-900 border-l border-white/5">
-        
-        {/* Neon Orbs */}
-        <div className="absolute top-[-100px] right-[-50px] w-96 h-96 rounded-full bg-primary/10 blur-[100px] animate-pulse" />
-        <div className="absolute bottom-[10%] left-[-50px] w-72 h-72 rounded-full bg-orange-600/10 blur-[80px]" />
-        
-        <div className="relative z-10 max-w-md space-y-8">
-          <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 border border-primary/20 text-primary tracking-wide uppercase mb-4">
-              🚀 Bulk Price Revolution
-            </span>
-            <h1 className="text-5xl font-black tracking-tight text-white leading-none">
-              bulk up.<br />
-              price down.
-            </h1>
-          </div>
-
-          <p className="text-lg text-neutral-400 leading-relaxed">
-            Join the crowd. Drop the price. Unlock wholesale pricing directly from verified manufacturers.
-          </p>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-xl">
-              <span className="block text-2xl font-black text-white bg-gradient-to-r from-white to-primary bg-clip-text text-transparent mb-1">
-                ₹24.8L+
-              </span>
-              <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                Total Saved
-              </span>
-            </div>
-            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-xl">
-              <span className="block text-2xl font-black text-white bg-gradient-to-r from-white to-orange-400 bg-clip-text text-transparent mb-1">
-                12.5k+
-              </span>
-              <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                Active Buyers
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
+  );
+}
+
+function StepDots({ step }) {
+  const stepOrder = ["role", "phone", "otp"];
+  const idx = stepOrder.indexOf(step);
+  return (
+    <div className="flex items-center gap-1.5 mb-7">
+      {stepOrder.map((s, i) => (
+        <span
+          key={s}
+          className={`h-1 rounded-full transition-all duration-500 ${
+            i <= idx
+              ? "bg-[var(--primary)] w-8"
+              : "bg-[var(--border-default)] w-5"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function BackBtn({ onClick, disabled = false }) {
+  if (disabled) return null;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors -mt-1"
+    >
+      <ArrowLeft className="w-4 h-4" /> Back
+    </button>
+  );
+}
+
+function Field({ placeholder, value, onChange }) {
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full h-11 px-3.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-default)] text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--primary)]/60 focus:ring-2 focus:ring-[var(--primary)]/20 transition-all"
+    />
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[var(--bg-primary)]" />}>
+      <AuthInner />
+    </Suspense>
   );
 }

@@ -137,6 +137,26 @@ export function truncate(str, maxLen = 50) {
 }
 
 /**
+ * Build a URL-safe slug from a free-text business name. Adds a short random
+ * suffix to keep collisions unlikely without an extra DB roundtrip.
+ *
+ * @param {string} name
+ * @returns {string} e.g. "Rajesh Cotton Mills" -> "rajesh-cotton-mills-x7k2"
+ */
+export function slugifyBusinessName(name) {
+  const base = (name || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 48) || "seller";
+  const suffix = Math.random().toString(36).slice(2, 6);
+  return `${base}-${suffix}`;
+}
+
+/**
  * Calculate fill percentage of a batch.
  *
  * @param {number} current - Current number of slots filled

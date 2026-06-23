@@ -4,40 +4,75 @@ import crypto from "crypto";
 import { otpVerifySchema, parseBody } from "@/lib/validation";
 import { supabaseAuthClient, allowSandbox, ACCESS_COOKIE } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { slugifyBusinessName } from "@/lib/utils";
 
 function genReferralCode() {
-  return "BB" + crypto.randomBytes(3).toString("hex").toUpperCase();
+  return "BB" + crypto.randomBytes(3).toString(/* encoding */ "hex").toUpperCase();
 }
 
-/** Find-or-create the Prisma user, applying referral attribution once. */
-async function upsertUser({ phone, email, name, referralCode }) {
-  let user = await prisma.user.findUnique({ where: { phone } });
-  if (user) return user;
+/**
+ * Find-or-create the Prisma user, applying referral attribution once.
+ * If `intent === "seller"` on first sign-up, also creates a Manufacturer shell
+ * and sets role = MANUFACTURER. Existing accounts are never silently escalated.
+ *
+ * Returns { user, manufacturer, isNew, becameSeller }
+ */
+async function upsertUser({ phone, email, name, referralCode, intent, businessName, city, state }) {
+  const existing = await prisma.user.findUnique({
+    where: { phone },
+    include: { /* role is on user */ },
+  });
 
-  // New user — resolve referrer (if a valid code was supplied).
+  if (existing) {
+    // Existing accounts keep their role. Upgrade happens via /api/auth/upgrade-to-seller.
+    const mfr = await prisma.manufacturer.findUnique({ where: { userId: existing.id } });
+    return { user: existing, manufacturer: mfr, isNew: false, becameSeller: false };
+  }
+
+  // New user
   let referredById = null;
   if (referralCode) {
     const referrer = await prisma.user.findUnique({ where: { referralCode } });
     if (referrer) referredById = referrer.id;
   }
 
-  user = await prisma.user.create({
+  const wantsSeller = intent === "seller" && businessName && city && state;
+
+  const user = await prisma.user.create({
     data: {
       phone,
       email: email || null,
-      name: name || `User ${phone.slice(-4)}`,
+      name: name || (wantsSeller ? businessName.slice(0, 60) : `User ${phone.slice(-4)}`),
+      role: wantsSeller ? "MANUFACTURER" : "BUYER",
       referralCode: genReferralCode(),
       referredById,
     },
   });
 
-  // Record the referral row (reward credited later when they transact).
-  if (referredById) {
-    await prisma.referral.create({
-      data: { referrerId: referredById, referredId: user.id, rewardAmount: 10 },
-    }).catch(() => {});
+  let manufacturer = null;
+  if (wantsSeller) {
+    manufacturer = await prisma.manufacturer.create({
+      data: {
+        userId: user.id,
+        businessName: businessName.trim(),
+        slug: slugifyBusinessName(businessName),
+        city: city.trim(),
+        state: state.trim(),
+      },
+    });
+    // KYC shell (UNSUBMITTED) so the dashboard can prompt them to verify.
+    await prisma.manufacturerKyc
+      .create({ data: { manufacturerId: manufacturer.id, status: "UNSUBMITTED" } })
+      .catch(() => {});
   }
-  return user;
+
+  if (referredById) {
+    await prisma.referral
+      .create({ data: { referrerId: referredById, referredId: user.id, rewardAmount: 10 } })
+      .catch(() => {});
+  }
+
+  return { user, manufacturer, isNew: true, becameSeller: wantsSeller };
 }
 
 export async function POST(request) {
@@ -55,19 +90,30 @@ export async function POST(request) {
     if (data.token !== "123456") {
       return NextResponse.json({ error: "Invalid code" }, { status: 401 });
     }
-    const user = await upsertUser({
+    const result = await upsertUser({
       phone: data.phone,
       name: data.name,
       referralCode: data.referralCode,
+      intent: data.intent,
+      businessName: data.businessName,
+      city: data.city,
+      state: data.state,
     });
-    // Dev session marker (not a real JWT). middleware only enforces in prod.
-    cookieStore.set(ACCESS_COOKIE, `sandbox.${user.id}`, {
+    cookieStore.set(ACCESS_COOKIE, `sandbox.${result.user.id}`, {
       httpOnly: true,
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 30,
     });
-    return NextResponse.json({ ok: true, user: { id: user.id, name: user.name, role: user.role }, sandbox: true });
+    return NextResponse.json({
+      ok: true,
+      user: { id: result.user.id, name: result.user.name, role: result.user.role },
+      manufacturer: result.manufacturer ? { id: result.manufacturer.id, slug: result.manufacturer.slug } : null,
+      isNew: result.isNew,
+      becameSeller: result.becameSeller,
+      redirectTo: result.user.role === "MANUFACTURER" ? "/manufacturer" : "/",
+      sandbox: true,
+    });
   }
 
   // --- Real Supabase verification ---
@@ -80,11 +126,15 @@ export async function POST(request) {
     return NextResponse.json({ error: vErr?.message || "Invalid code" }, { status: 401 });
   }
 
-  const user = await upsertUser({
+  const result = await upsertUser({
     phone: data.phone,
     email: vData.user?.email,
     name: data.name,
     referralCode: data.referralCode,
+    intent: data.intent,
+    businessName: data.businessName,
+    city: data.city,
+    state: data.state,
   });
 
   const { access_token, expires_in } = vData.session;
@@ -96,5 +146,12 @@ export async function POST(request) {
     maxAge: expires_in || 3600,
   });
 
-  return NextResponse.json({ ok: true, user: { id: user.id, name: user.name, role: user.role } });
+  return NextResponse.json({
+    ok: true,
+    user: { id: result.user.id, name: result.user.name, role: result.user.role },
+    manufacturer: result.manufacturer ? { id: result.manufacturer.id, slug: result.manufacturer.slug } : null,
+    isNew: result.isNew,
+    becameSeller: result.becameSeller,
+    redirectTo: result.user.role === "MANUFACTURER" ? "/manufacturer" : "/",
+  });
 }

@@ -3,16 +3,17 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { 
-  Menu, X, Search, Bell, Sun, Moon, 
-  ShoppingCart, Factory, Info, ChevronDown, ChevronRight, 
-  Compass, Package, Wallet, HelpCircle, Plus, 
-  BookOpen, Terminal, Mail, Award, Zap, Users, UserPlus, 
-  TrendingUp, ShoppingBag, Cpu, Shirt, Home, Wheat, Sparkles, 
-  PenTool, Dumbbell
+import {
+  Menu, X, Search, Bell, Sun, Moon,
+  ShoppingCart, Factory, Info, ChevronDown, ChevronRight,
+  Compass, Package, Wallet, HelpCircle, Plus,
+  BookOpen, Terminal, Mail, Award, Zap, Users, UserPlus,
+  TrendingUp, ShoppingBag, Cpu, Shirt, Home, Wheat, Sparkles,
+  PenTool, Dumbbell, LogOut, ArrowRight, Briefcase
 } from "lucide-react";
-import { USER, CATEGORIES } from "@/lib/mock-data";
+import { CATEGORIES } from "@/lib/mock-data";
 import Logo from "@/components/ui/Logo";
+import { useSession } from "@/lib/useSession";
 
 const CATEGORY_ICON_MAP = {
   fmcg: ShoppingBag,
@@ -29,6 +30,7 @@ function HeaderContent() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, isAuthed, isSeller, logout } = useSession();
 
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [activeRail, setActiveRail] = useState("buyer");
@@ -240,24 +242,42 @@ function HeaderContent() {
             {theme === "light" ? <Moon className="w-4.5 h-4.5" /> : <Sun className="w-4.5 h-4.5" />}
           </button>
 
-          {/* Get Started CTA */}
-          <Link href="/auth" className="hidden sm:inline-flex items-center justify-center px-4 py-1.5 rounded-lg btn-primary-new font-bold text-xs">
-            Get Started
-          </Link>
-
-          {/* User Profile Tooltip */}
-          <Link href="/profile" className="relative group flex items-center cursor-pointer" title="My Profile">
-            <div className="w-8 h-8 rounded-full border border-primary/30 bg-primary/10 text-primary flex items-center justify-center text-xs font-bold hover:scale-105 transition-transform duration-200 overflow-hidden">
-              {customAvatar ? (
-                <img src={customAvatar} className="w-full h-full object-cover" alt="User Profile" />
-              ) : (
-                USER.avatar
+          {/* Auth state: Sign-in CTA when logged out · Avatar + (optional) "Go to Seller Hub" when logged in */}
+          {!isAuthed ? (
+            <>
+              <Link
+                href="/auth"
+                className="hidden sm:inline-flex items-center justify-center px-4 py-1.5 rounded-lg btn-primary-new font-bold text-xs"
+              >
+                Sign in
+              </Link>
+            </>
+          ) : (
+            <>
+              {isSeller && (
+                <Link
+                  href="/manufacturer"
+                  className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--primary)]/12 text-[var(--primary)] hover:bg-[var(--primary)]/20 transition-colors"
+                  title="Switch to Seller Hub"
+                >
+                  <Briefcase className="w-3.5 h-3.5" />
+                  Seller Hub
+                </Link>
               )}
-            </div>
-            <span className="absolute top-12 right-0 bg-neutral-900 border border-white/5 text-white text-[10px] font-semibold px-2 py-1 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
-              Trust Score: {USER.trustScore}
-            </span>
-          </Link>
+              <Link href="/profile" className="relative group flex items-center cursor-pointer" title="My Profile">
+                <div className="w-8 h-8 rounded-full border border-primary/30 bg-primary/10 text-primary flex items-center justify-center text-xs font-bold hover:scale-105 transition-transform duration-200 overflow-hidden">
+                  {customAvatar ? (
+                    <img src={customAvatar} className="w-full h-full object-cover" alt="User Profile" />
+                  ) : (
+                    <span>{(user?.name || "U").charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <span className="absolute top-12 right-0 bg-neutral-900 border border-white/5 text-white text-[10px] font-semibold px-2 py-1 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+                  {user?.name} · Trust {user?.trustScore ?? 100}
+                </span>
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -312,10 +332,17 @@ function HeaderContent() {
                 </Link>
               )}
               {activeRail === "mfg" && (
-                <Link href="/manufacturer/batch/new" className="w-full flex items-center justify-center gap-2 py-2 rounded-xl btn-primary-new text-xs font-bold shadow-lg shadow-primary/20">
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Create Batch</span>
-                </Link>
+                isSeller ? (
+                  <Link href="/manufacturer/batch/new" className="w-full flex items-center justify-center gap-2 py-2 rounded-xl btn-primary-new text-xs font-bold shadow-lg shadow-primary/20">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create Batch</span>
+                  </Link>
+                ) : (
+                  <Link href={isAuthed ? "/become-a-seller" : "/auth?intent=seller"} className="w-full flex items-center justify-center gap-2 py-2 rounded-xl btn-primary-new text-xs font-bold shadow-lg shadow-primary/20">
+                    <Factory className="w-3.5 h-3.5" />
+                    <span>Become a Seller</span>
+                  </Link>
+                )
               )}
               {activeRail === "help" && (
                 <button
@@ -401,29 +428,39 @@ function HeaderContent() {
               )}
 
               {activeRail === "mfg" && (
-                <>
-                  <Link
-                    href="/manufacturer"
-                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/manufacturer" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}
-                  >
-                    <Terminal className="w-4 h-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                  <Link
-                    href="/manufacturer/analytics"
-                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/manufacturer/analytics" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}
-                  >
-                    <Award className="w-4 h-4" />
-                    <span>Analytics</span>
-                  </Link>
-                  <Link
-                    href="/manufacturer/batch/new"
-                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/manufacturer/batch/new" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Create Batch</span>
-                  </Link>
-                </>
+                isSeller ? (
+                  <>
+                    <Link href="/manufacturer" className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/manufacturer" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}>
+                      <Terminal className="w-4 h-4" /><span>Dashboard</span>
+                    </Link>
+                    <Link href="/manufacturer/batches" className="flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors">
+                      <Package className="w-4 h-4" /><span>My Batches</span>
+                    </Link>
+                    <Link href="/manufacturer/orders" className="flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors">
+                      <ShoppingBag className="w-4 h-4" /><span>Orders</span>
+                    </Link>
+                    <Link href="/manufacturer/analytics" className={`flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors ${pathname === "/manufacturer/analytics" ? "bg-primary/10 text-primary font-bold hover:bg-primary/10" : ""}`}>
+                      <Award className="w-4 h-4" /><span>Analytics</span>
+                    </Link>
+                    <Link href="/manufacturer/payouts" className="flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors">
+                      <Wallet className="w-4 h-4" /><span>Payouts</span>
+                    </Link>
+                    <Link href="/manufacturer/onboarding" className="flex items-center gap-3 px-3 py-2 rounded-full text-neutral-400 hover:text-white text-xs font-semibold hover:bg-neutral-900 transition-colors">
+                      <Award className="w-4 h-4" /><span>KYC</span>
+                    </Link>
+                  </>
+                ) : (
+                  <div className="p-3 rounded-xl bg-neutral-900/70 border border-white/5">
+                    <p className="text-[11px] font-semibold text-white mb-1.5">Manufacture & list batches.</p>
+                    <p className="text-[10px] text-neutral-400 leading-relaxed mb-2.5">Get pre-paid orders. 4% fee, 3-day payout.</p>
+                    <Link
+                      href={isAuthed ? "/become-a-seller" : "/auth?intent=seller"}
+                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary hover:underline"
+                    >
+                      <Factory className="w-3 h-3" /> Become a Seller <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                )
               )}
 
               {activeRail === "help" && (
@@ -568,22 +605,54 @@ function HeaderContent() {
             )}
 
             {activeRail === "mfg" && (
-              <>
-                <Link href="/manufacturer" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                  <Terminal className="w-4 h-4" />
-                  <span>Dashboard</span>
+              isSeller ? (
+                <>
+                  <Link href="/manufacturer" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <Terminal className="w-4 h-4" /><span>Dashboard</span>
+                  </Link>
+                  <Link href="/manufacturer/batches" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <Package className="w-4 h-4" /><span>My Batches</span>
+                  </Link>
+                  <Link href="/manufacturer/orders" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <ShoppingBag className="w-4 h-4" /><span>Orders</span>
+                  </Link>
+                  <Link href="/manufacturer/analytics" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <Award className="w-4 h-4" /><span>Analytics</span>
+                  </Link>
+                  <Link href="/manufacturer/payouts" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <Wallet className="w-4 h-4" /><span>Payouts</span>
+                  </Link>
+                  <Link href="/manufacturer/batch/new" className="flex items-center gap-3 px-4 py-2.5 text-primary text-sm font-bold hover:bg-primary/10 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
+                    <Plus className="w-4 h-4" /><span>Create Batch</span>
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  href={isAuthed ? "/become-a-seller" : "/auth?intent=seller"}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary text-sm font-bold"
+                >
+                  <Factory className="w-4 h-4" /><span>Become a Seller</span><ArrowRight className="w-4 h-4 ml-auto" />
                 </Link>
-                <Link href="/manufacturer/analytics" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                  <Award className="w-4 h-4" />
-                  <span>Analytics</span>
-                </Link>
-                <Link href="/manufacturer/batch/new" className="flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white text-sm font-semibold hover:bg-neutral-900 rounded-lg" onClick={() => setMobileMenuOpen(false)}>
-                  <Plus className="w-4 h-4" />
-                  <span>Create Batch</span>
-                </Link>
-              </>
+              )
             )}
           </nav>
+
+          {/* Account section (mobile) */}
+          <div className="mt-auto pt-4 border-t border-white/5 space-y-1">
+            {isAuthed ? (
+              <button
+                onClick={() => { setMobileMenuOpen(false); logout(); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-neutral-400 hover:text-danger hover:bg-danger/5 rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4" /><span>Sign out</span>
+              </button>
+            ) : (
+              <Link href="/auth" onClick={() => setMobileMenuOpen(false)} className="block w-full text-center px-4 py-2.5 rounded-lg btn-primary-new text-sm font-bold">
+                Sign in / Sign up
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </>
@@ -596,10 +665,17 @@ function HeaderSkeleton() {
   );
 }
 
+function HeaderRouteGate() {
+  const pathname = usePathname();
+  // SellerShell renders its own chrome on /manufacturer/*; skip the global header there.
+  if (pathname?.startsWith("/manufacturer")) return null;
+  return <HeaderContent />;
+}
+
 export default function Header() {
   return (
     <Suspense fallback={<HeaderSkeleton />}>
-      <HeaderContent />
+      <HeaderRouteGate />
     </Suspense>
   );
 }
