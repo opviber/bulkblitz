@@ -11,6 +11,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/home/HeroSection';
 import HyperframeExplainer from '@/components/home/HyperframeExplainer';
+import StaggerReveal from '@/components/ui/StaggerReveal';
 import BatchCard from '@/components/batch/BatchCard';
 import { CATEGORIES, STATS } from '@/lib/mock-data';
 

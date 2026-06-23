@@ -212,3 +212,61 @@ All development phases, homepage UX overhauls, and styling migrations are fully 
 1. **Production Deployment**: Deploy to production environment via Vercel with database binds.
 2. **Real-time Price Engine**: Enhance Redis Pub/Sub backend to broadcast instant reservation tickers.
 3. **SMS Alert Service**: Replace WhatsApp/Email log print stubs with live Twilio/SendGrid configurations.
+---
+
+## Session 12 (2026-06-23 to 24): Steps 1–5 UX/Design Overhaul
+
+**Author**: BulkBlitz Builder (Gumloop AI)
+**Branches**: `feat/role-based-auth-and-dashboards`, `feat/hero-and-hyperframe-explainer`, `feat/ui-polish-and-transitions`
+
+### Step 1: Role-Based Auth & Seller Hub Dashboard
+- `/auth` page rewritten with 3-stage flow: pick role (Buy/Sell) → phone OTP → (if seller) business details
+- `?intent=seller` deep-links to seller flow; `?next=` preserves post-login redirect
+- New `POST /api/auth/upgrade-to-seller` for existing buyers who opt to sell
+- OTP verify creates Manufacturer shell + UNSUBMITTED KYC on first signup with `intent="seller"`
+- `/api/auth/session` returns manufacturer data + `isSeller`/`isAdmin` flags
+- New `SellerShell.js` — full sidebar menu (12 sections), collapse-to-icons, mobile drawer, "Switch to buyer" pill
+- `/manufacturer/layout.js` gates the subtree: redirects unauth → `/auth`, non-sellers → `/become-a-seller`
+- New `/become-a-seller` page with upgrade form + state selector
+- `Header.js` rewritten to use real session (no mock `USER` data). Mfg rail is role-aware.
+- Middleware protects `/become-a-seller`
+- `useSession()` now exposes `user`, `manufacturer`, `isSeller`, `isAdmin`, `refresh`, `logout`
+
+### Step 2: Cinematic Hero + Hyperframe Explainer
+- Kinetic word-by-word headline: "Bulk up. Price down." with brand gradient on second line
+- Live demo batch card loops 5-tier drop (₹500→₹260) every 2.6s — shimmer edge, fill bar, savings %, tier ticks
+- Session-aware CTAs (guest/buyer/seller each get the right action)
+- 5-scene scroll-pinned explainer: Alone→Crowd→Tier ladder→Cards captured→Boxes ship
+- Each scene is hand-authored SVG (no AI imagery, no stock). Driven by 0..1 scroll progress.
+- Scene dots + quick-jump nav. `prefers-reduced-motion` falls back to static 2-column grid.
+- 3D cube hero replaced with brand-aligned background (soft glow + industrial grid)
+
+### Step 3: Light Mode (White-Orange Theme)
+- Unified theme system: `data-theme='light'` overrides in globals.css
+- Light tokens: `--bg-primary: #F5F5F5`, `--text-primary: #121212`
+- Body gets smooth 300ms background/color cross-fade on theme switch
+- Header sun/moon toggle persists to localStorage + `<html data-theme="...">`
+- All hardcoded backgrounds replaced with theme-aware CSS vars
+
+### Step 4: Polish & Remove AI-Generic Elements
+- Deleted: `HeroCubeScene.js`, `ManufacturingOrbitScene.js`, `CustomCursor.js`, `Magnet.js`, `ScrollRevealText.js`
+- Replaced: `loading.js` (Logo pulse), `error.js` (recovery UI), `not-found.js` (branded 404)
+- New: `MagneticButton.js` (pointer-tracking spring), `StaggerReveal.js` (scroll stagger)
+
+### Step 5: Page Transitions & Microinteractions
+- New `app/template.js` + `PageTransition.js` — 420ms slide-up + blur-in on every route change
+- Reduced-motion: instant cross-fade
+- New `TierDropBurst.js` — particle burst + banner when batch crosses a tier. Wired into batch/[id]/page.js
+
+### Key Design Decisions Made
+- One phone = one account. User can hold both roles (buyer can opt to sell later)
+- `useSession()` is the single source of truth for client auth state
+- All transitions use `cubic-bezier(0.16, 1, 0.3, 1)` easing consistently
+- **Do not revert**: Role-aware auth flow, session-driven headers, light/dark theme system, StaggerReveal patterns
+
+### Known Issues / Watch Points (Updated)
+- `tokens.css` still exists but no longer imported — safe to delete
+- `three.js`, `@react-three/fiber`, `@react-three/drei` in package.json are now unused deps — can `npm uninstall`
+- Dev mode bypasses middleware auth — local dev works without Supabase but prod is fine
+- No robots.txt/sitemap — SEO gap
+- Mock data still powers some home page stats — should eventually come from DB
